@@ -1,0 +1,24 @@
+import Fastify from 'fastify';
+import { createLogger } from '@linkflow/logger';
+import { healthRoutes } from './modules/health/index.js';
+
+import {
+  corsPlugin,
+  helmetPlugin,
+  sensiblePlugin,
+  swaggerPlugin,
+} from './plugins/index.js';
+
+export async function buildApp() {
+  const app = Fastify({
+    logger: createLogger(process.env.NODE_ENV === 'production'),
+  });
+
+  await app.register(healthRoutes);
+  await app.register(corsPlugin);
+  await app.register(helmetPlugin);
+  await app.register(sensiblePlugin);
+  await app.register(swaggerPlugin);
+
+  return app;
+}
