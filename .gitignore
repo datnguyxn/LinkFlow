@@ -126,3 +126,4 @@ storybook-static/
 *.pem
 *.key
 *.crt
+/generated/prisma

@@ -10,53 +10,53 @@ This application allows users to create and manage shortened URLs while providin
 
 ### Authentication & Authorization
 
-* User registration and login
-* JWT Authentication
-* OAuth2 Login (Google/GitHub)
-* Refresh Token
-* Role-Based Access Control (RBAC)
+- User registration and login
+- JWT Authentication
+- OAuth2 Login (Google/GitHub)
+- Refresh Token
+- Role-Based Access Control (RBAC)
 
 ### URL Management
 
-* Create shortened URLs
-* Custom URL slug
-* Automatic slug generation
-* URL expiration
-* Password-protected URLs
-* Bulk URL creation
-* URL management dashboard
+- Create shortened URLs
+- Custom URL slug
+- Automatic slug generation
+- URL expiration
+- Password-protected URLs
+- Bulk URL creation
+- URL management dashboard
 
 ### Analytics
 
-* Click tracking
-* Total clicks
-* Unique visitors
-* Browser statistics
-* Operating system statistics
-* Device statistics
-* Country and region analytics
-* Referrer tracking
-* Time-based analytics
-* QR Code generation
+- Click tracking
+- Total clicks
+- Unique visitors
+- Browser statistics
+- Operating system statistics
+- Device statistics
+- Country and region analytics
+- Referrer tracking
+- Time-based analytics
+- QR Code generation
 
 ### Search
 
-* Full-text search using PostgreSQL
-* Optional Elasticsearch integration
+- Full-text search using PostgreSQL
+- Optional Elasticsearch integration
 
 ### Notifications
 
-* Email verification
-* Password reset
-* URL expiration reminders
-* WebSocket notifications
+- Email verification
+- Password reset
+- URL expiration reminders
+- WebSocket notifications
 
 ### Administration
 
-* User management
-* URL moderation
-* Analytics dashboard
-* System monitoring
+- User management
+- URL moderation
+- Analytics dashboard
+- System monitoring
 
 ---
 
@@ -120,78 +120,78 @@ Recharts (Analytics Dashboard)
 
 ## Backend
 
-* Node.js
-* Express.js
-* TypeScript
-* Prisma ORM
+- Node.js
+- Express.js
+- TypeScript
+- Prisma ORM
 
 ## Database
 
-* PostgreSQL
+- PostgreSQL
 
 ## Cache
 
-* Redis
+- Redis
 
 ## Message Queue
 
-* RabbitMQ
+- RabbitMQ
 
 ## Authentication
 
-* JWT
-* OAuth2
-* Passport.js
-* RBAC
+- JWT
+- OAuth2
+- Passport.js
+- RBAC
 
 ## Realtime
 
-* WebSocket (Socket.IO)
+- WebSocket (Socket.IO)
 
 ## File Storage
 
-* AWS S3
-* MinIO (local development)
+- AWS S3
+- MinIO (local development)
 
 ## Search
 
-* PostgreSQL Full-text Search
-* Elasticsearch (optional)
+- PostgreSQL Full-text Search
+- Elasticsearch (optional)
 
 ## API Documentation
 
-* Swagger / OpenAPI
+- Swagger / OpenAPI
 
 ## Testing
 
-* Jest
-* Supertest
-* Unit Testing
-* Integration Testing
+- Jest
+- Supertest
+- Unit Testing
+- Integration Testing
 
 ## DevOps
 
-* Docker
-* Docker Compose
-* GitHub Actions
-* Nginx
+- Docker
+- Docker Compose
+- GitHub Actions
+- Nginx
 
 ## Monitoring
 
-* Prometheus
-* Grafana
-* ELK Stack (Elasticsearch, Logstash, Kibana)
+- Prometheus
+- Grafana
+- ELK Stack (Elasticsearch, Logstash, Kibana)
 
 ## Cloud
 
 Designed to be deployed on cloud infrastructure such as:
 
-* AWS
-* Google Cloud Platform
-* Microsoft Azure
-* DigitalOcean
-* Railway
-* Render
+- AWS
+- Google Cloud Platform
+- Microsoft Azure
+- DigitalOcean
+- Railway
+- Render
 
 Infrastructure can be provisioned using Docker containers and deployed through CI/CD pipelines.
 
@@ -384,77 +384,78 @@ LinkFlow/
 └── README.md
 
 ```
+
 ---
 
 # Planned Infrastructure
 
-* RESTful API
-* Event-driven architecture
-* Background job processing
-* Redis caching layer
-* Cloud object storage
-* Containerized deployment
-* CI/CD pipeline
-* API documentation
-* Centralized logging
-* Metrics collection
-* Distributed monitoring
+- RESTful API
+- Event-driven architecture
+- Background job processing
+- Redis caching layer
+- Cloud object storage
+- Containerized deployment
+- CI/CD pipeline
+- API documentation
+- Centralized logging
+- Metrics collection
+- Distributed monitoring
 
 ---
 
 # Non-functional Requirements
 
-* Scalable architecture
-* Secure authentication
-* High availability
-* Horizontal scalability
-* Rate limiting
-* Caching
-* Logging
-* Monitoring
-* Automated testing
-* API versioning
-* Cloud-ready deployment
+- Scalable architecture
+- Secure authentication
+- High availability
+- Horizontal scalability
+- Rate limiting
+- Caching
+- Logging
+- Monitoring
+- Automated testing
+- API versioning
+- Cloud-ready deployment
 
 ---
 
 # Future Enhancements
 
-* URL preview
-* Team workspaces
-* Organization support
-* Custom domains
-* Link scheduling
-* A/B testing
-* Campaign tracking (UTM)
-* Webhook integrations
-* Mobile application
-* GraphQL API
-* Kubernetes deployment
-* Multi-region deployment
-* CDN integration
-* Event sourcing
-* Distributed tracing (OpenTelemetry)
+- URL preview
+- Team workspaces
+- Organization support
+- Custom domains
+- Link scheduling
+- A/B testing
+- Campaign tracking (UTM)
+- Webhook integrations
+- Mobile application
+- GraphQL API
+- Kubernetes deployment
+- Multi-region deployment
+- CDN integration
+- Event sourcing
+- Distributed tracing (OpenTelemetry)
 
 ---
 
 # Development Roadmap
 
-* Sprint 1 - Auth	
-* Sprint 2 - Users	
-* Sprint 3 - URLs	
-* Sprint 4 - Redirect	
-* Sprint 5 - Analytics	
-* Sprint 6 - Dashboard	
-* Sprint 7 - Search	
-* Sprint 8 - Notifications	
-* Sprint 9 - API Keys	
-* Sprint 10 - Workspace	
-* Sprint 11 - Admin	
-* Sprint 12 - Cloud Deployment	
-* Sprint 13 - Documentation	
-* Sprint 14 - Testing & Performance	
-* Sprint 15 - Future Features	
+- Sprint 1 - Auth
+- Sprint 2 - Users
+- Sprint 3 - URLs
+- Sprint 4 - Redirect
+- Sprint 5 - Analytics
+- Sprint 6 - Dashboard
+- Sprint 7 - Search
+- Sprint 8 - Notifications
+- Sprint 9 - API Keys
+- Sprint 10 - Workspace
+- Sprint 11 - Admin
+- Sprint 12 - Cloud Deployment
+- Sprint 13 - Documentation
+- Sprint 14 - Testing & Performance
+- Sprint 15 - Future Features
 
 ---
 
