@@ -1,0 +1,14 @@
+{
+  "name": "LinkFlow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Nguyen Trong Dat",
+  "license": "ISC",
+  "packageManager": "pnpm@10.34.4"
+}
