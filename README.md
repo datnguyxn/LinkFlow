@@ -206,7 +206,6 @@ LinkFlow/
 │   ├── api/                    # REST API (Express/Fastify + TypeScript)
 │   ├── worker/                 # Background jobs (BullMQ/RabbitMQ consumers)
 │   ├── web/                    # Frontend (Next.js)
-│   └── docs/                   # Swagger UI (optional)
 │
 ├── packages/
 │   ├── config/                  # Shared configuration
@@ -217,6 +216,7 @@ LinkFlow/
 │   ├── shared/                 # Shared file
 │   ├── eslint-config/           # Config eslint
 │   ├── tsconfig/                # Config ts
+│   ├── constant/               # Constant 
 │   └── ui/                     # Shared React components (if needed)
 │
 ├── infra/
@@ -236,6 +236,7 @@ LinkFlow/
 │   ├── architecture/
 │   ├── api/
 │   ├── database/
+│   ├── adr/
 │   └── sprint/
 │
 ├── .github/
