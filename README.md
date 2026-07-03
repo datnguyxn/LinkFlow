@@ -440,13 +440,21 @@ LinkFlow/
 
 # Development Roadmap
 
-* Sprint 1 — Project Setup & Authentication
-* Sprint 2 — URL Shortening Core Features
-* Sprint 3 — Analytics & QR Code
-* Sprint 4 — Background Jobs & Notifications
-* Sprint 5 — Search, File Storage & Realtime
-* Sprint 6 — Monitoring, Testing & CI/CD
-* Sprint 7 — Cloud Deployment & Production Hardening
+* Sprint 1 - Auth	
+* Sprint 2 - Users	
+* Sprint 3 - URLs	
+* Sprint 4 - Redirect	
+* Sprint 5 - Analytics	
+* Sprint 6 - Dashboard	
+* Sprint 7 - Search	
+* Sprint 8 - Notifications	
+* Sprint 9 - API Keys	
+* Sprint 10 - Workspace	
+* Sprint 11 - Admin	
+* Sprint 12 - Cloud Deployment	
+* Sprint 13 - Documentation	
+* Sprint 14 - Testing & Performance	
+* Sprint 15 - Future Features	
 
 ---
 
