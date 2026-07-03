@@ -7,18 +7,18 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
   app.get('/health', controller.getHealth.bind(controller));
 
   app.get(
-    "/health-swagger",
+    '/health-swagger',
     {
       schema: {
-        tags: ["Health"],
-        summary: "Health check",
+        tags: ['Health'],
+        summary: 'Health check',
 
         response: {
           200: {
-            type: "object",
+            type: 'object',
             properties: {
-              success: { type: "boolean" },
-              message: { type: "string" },
+              success: { type: 'boolean' },
+              message: { type: 'string' },
             },
           },
         },
@@ -27,8 +27,8 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
     async () => {
       return {
         success: true,
-        message: "Server is running",
+        message: 'Server is running',
       };
-    }
+    },
   );
 };

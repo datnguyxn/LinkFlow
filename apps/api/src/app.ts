@@ -2,12 +2,7 @@ import Fastify from 'fastify';
 import { createLogger } from '@linkflow/logger';
 import { healthRoutes } from './modules/health/index.js';
 
-import {
-  corsPlugin,
-  helmetPlugin,
-  sensiblePlugin,
-  swaggerPlugin,
-} from './plugins/index.js';
+import { corsPlugin, helmetPlugin, sensiblePlugin, swaggerPlugin } from './plugins/index.js';
 
 export async function buildApp() {
   const app = Fastify({

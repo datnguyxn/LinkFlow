@@ -223,14 +223,14 @@ MINIO_BUCKET=linkflow
 
 ## 🗄 Services
 
-| Service | Port | Description |
-|----------|------|-------------|
-| PostgreSQL | 5432 | Main database |
-| Redis | 6379 | Cache & Session |
-| RabbitMQ | 5672 | Message Queue |
-| RabbitMQ Management | 15672 | Management UI |
-| MinIO API | 9000 | Object Storage API |
-| MinIO Console | 9001 | Web Console |
+| Service             | Port  | Description        |
+| ------------------- | ----- | ------------------ |
+| PostgreSQL          | 5432  | Main database      |
+| Redis               | 6379  | Cache & Session    |
+| RabbitMQ            | 5672  | Message Queue      |
+| RabbitMQ Management | 15672 | Management UI      |
+| MinIO API           | 9000  | Object Storage API |
+| MinIO Console       | 9001  | Web Console        |
 
 ---
 
