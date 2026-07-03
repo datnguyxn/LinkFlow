@@ -1,0 +1,526 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  email    String  @unique
+  username String? @unique
+
+  passwordHash String? @map("password_hash")
+
+  fullName String? @map("full_name")
+
+  avatarUrl String? @map("avatar_url")
+
+  status UserStatus @default(ACTIVE)
+
+  emailVerified Boolean @default(false) @map("email_verified")
+
+  theme Boolean @default(false)
+
+  language String?
+
+  timezone String?
+
+  lastLoginAt DateTime? @map("last_login_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  deletedAt DateTime? @map("deleted_at")
+
+  oauthAccounts OAuthAccount[]
+
+  refreshTokens RefreshToken[]
+
+  ownedWorkspaces Workspace[] @relation("WorkspaceOwner")
+
+  workspaceMembers WorkspaceMember[]
+
+  urls Url[]
+
+  notifications Notification[]
+
+  apiKeys ApiKey[]
+
+  auditLogs AuditLog[]
+  userRoles UserRole[]
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  provider OAuthProvider
+
+  providerAccountId String @map("provider_account_id")
+
+  accessToken String? @map("access_token") @db.Text
+
+  refreshToken String? @map("refresh_token") @db.Text
+
+  expiresAt DateTime? @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("oauth_accounts")
+}
+
+model RefreshToken {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  tokenHash String @map("token_hash")
+
+  expiresAt DateTime @map("expires_at")
+
+  revoked Boolean @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Workspace {
+  id String @id @default(uuid()) @db.Uuid
+
+  ownerId String @map("owner_id") @db.Uuid
+
+  name String
+
+  slug String @unique
+
+  logoUrl String? @map("logo_url") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // ===========================
+  // Relations
+  // ===========================
+
+  owner User @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  members WorkspaceMember[]
+
+  urls Url[]
+
+  tags Tag[]
+
+  apiKeys ApiKey[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id String @id @default(uuid()) @db.Uuid
+
+  workspaceId String @map("workspace_id") @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  role WorkspaceRole @default(MEMBER)
+
+  invitedAt DateTime? @map("invited_at")
+
+  joinedAt DateTime? @map("joined_at")
+
+  // ===========================
+  // Relations
+  // ===========================
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+model Url {
+  id String @id @default(uuid()) @db.Uuid
+
+  workspaceId String @map("workspace_id") @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  shortCode String @unique @map("short_code")
+
+  originalUrl String @map("original_url") @db.Text
+
+  title String?
+
+  description String? @db.Text
+
+  faviconUrl String? @map("favicon_url") @db.Text
+
+  passwordHash String? @map("password_hash")
+
+  expiresAt DateTime? @map("expires_at")
+
+  maxClicks Int? @map("max_clicks")
+
+  clickCount Int @default(0) @map("click_count")
+
+  status UrlStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  deletedAt DateTime? @map("deleted_at")
+
+  // ======================
+  // Relations
+  // ======================
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  qrCode QRCode?
+
+  tags UrlTag[]
+
+  clickEvents ClickEvent[]
+
+  dailyStatistics DailyStatistic[]
+
+  browserStatistics BrowserStatistic[]
+
+  countryStatistics CountryStatistic[]
+
+  deviceStatistics DeviceStatistic[]
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([shortCode])
+  @@map("urls")
+}
+
+model QRCode {
+  id String @id @default(uuid()) @db.Uuid
+
+  urlId String @unique @map("url_id") @db.Uuid
+
+  imageUrl String @map("image_url") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  @@map("qr_codes")
+}
+
+model Tag {
+  id String @id @default(uuid()) @db.Uuid
+
+  workspaceId String @map("workspace_id") @db.Uuid
+
+  name String
+
+  color String
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  urls UrlTag[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("tags")
+}
+
+model UrlTag {
+  urlId String @map("url_id") @db.Uuid
+
+  tagId String @map("tag_id") @db.Uuid
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([urlId, tagId])
+  @@map("url_tags")
+}
+
+model ClickEvent {
+  id String @id @default(uuid()) @db.Uuid
+
+  urlId String @map("url_id") @db.Uuid
+
+  ipAddress String? @map("ip_address")
+
+  country String?
+
+  city String?
+
+  region String?
+
+  latitude Decimal? @db.Decimal(10, 7)
+
+  longitude Decimal? @db.Decimal(10, 7)
+
+  browser String?
+
+  browserVersion String? @map("browser_version")
+
+  operatingSystem String? @map("operating_system")
+
+  device String?
+
+  referrer String? @db.Text
+
+  userAgent String? @map("user_agent") @db.Text
+
+  clickedAt DateTime @default(now()) @map("clicked_at")
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  @@index([urlId])
+  @@index([clickedAt])
+  @@index([country])
+  @@map("click_events")
+}
+
+model DailyStatistic {
+  id String @id @default(uuid()) @db.Uuid
+
+  urlId String @map("url_id") @db.Uuid
+
+  date DateTime @db.Date
+
+  totalClicks Int @default(0) @map("total_clicks")
+
+  uniqueClicks Int @default(0) @map("unique_clicks")
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  @@unique([urlId, date])
+  @@index([urlId])
+  @@map("daily_statistics")
+}
+
+model BrowserStatistic {
+  id String @id @default(uuid()) @db.Uuid
+
+  urlId String @map("url_id") @db.Uuid
+
+  browser String
+
+  clicks Int @default(0)
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  @@unique([urlId, browser])
+  @@index([urlId])
+  @@map("browser_statistics")
+}
+
+model CountryStatistic {
+  id String @id @default(uuid()) @db.Uuid
+
+  urlId String @map("url_id") @db.Uuid
+
+  country String
+
+  clicks Int @default(0)
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  @@unique([urlId, country])
+  @@index([urlId])
+  @@map("country_statistics")
+}
+
+model DeviceStatistic {
+  id String @id @default(uuid()) @db.Uuid
+
+  urlId String @map("url_id") @db.Uuid
+
+  device String
+
+  clicks Int @default(0)
+
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  @@unique([urlId, device])
+  @@index([urlId])
+  @@map("device_statistics")
+}
+
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  title String
+
+  message String @db.Text
+
+  type NotificationType
+
+  isRead Boolean @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model ApiKey {
+  id String @id @default(uuid()) @db.Uuid
+
+  workspaceId String @map("workspace_id") @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  name String
+
+  keyHash String @map("key_hash")
+
+  lastUsedAt DateTime? @map("last_used_at")
+
+  expiresAt DateTime? @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("api_keys")
+}
+
+model Role {
+  id String @id @default(uuid()) @db.Uuid
+
+  name String @unique
+
+  description String? @db.Text
+
+  permissions RolePermission[]
+  userRoles   UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id String @id @default(uuid()) @db.Uuid
+
+  name String @unique
+
+  description String? @db.Text
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId String @map("role_id") @db.Uuid
+
+  permissionId String @map("permission_id") @db.Uuid
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model AuditLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+
+  action String
+
+  resource String
+
+  resourceId String? @map("resource_id") @db.Uuid
+
+  metadata Json?
+
+  ipAddress String? @map("ip_address")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model UserRole {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum UrlStatus {
+  ACTIVE
+  DISABLED
+  EXPIRED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum OAuthProvider {
+  GOOGLE
+  GITHUB
+}

@@ -14,11 +14,11 @@ export async function buildApp() {
     logger: createLogger(process.env.NODE_ENV === 'production'),
   });
 
-  await app.register(healthRoutes);
+  await app.register(swaggerPlugin);
   await app.register(corsPlugin);
   await app.register(helmetPlugin);
   await app.register(sensiblePlugin);
-  await app.register(swaggerPlugin);
+  await app.register(healthRoutes);
 
   return app;
 }
