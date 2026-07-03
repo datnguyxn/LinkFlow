@@ -8,6 +8,12 @@ export const envSchema = z.object({
   API_PREFIX: z.string(),
 
   DATABASE_URL: z.string().optional(),
+  
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_PUBLISHABLE_KEY: z.string().optional(),
+  SUPABASE_SECRET_KEY: z.string().optional(),
+  SUPABASE_JWKS_URL: z.string().optional(),
+  DIRECT_URL: z.string().optional(),
 
   JWT_ACCESS_SECRET: z.string().optional(),
   JWT_REFRESH_SECRET: z.string().optional(),

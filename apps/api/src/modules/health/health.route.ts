@@ -31,4 +31,19 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
       };
     },
   );
+
+  app.get('/health-database', async (request, reply) => {
+    try {
+      await app.prisma.$queryRaw`SELECT 1`;
+      return {
+        success: true,
+        message: 'Database is reachable',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Database is not reachable',
+      };
+    }
+  });
 };
