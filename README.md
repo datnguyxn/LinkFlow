@@ -209,13 +209,14 @@ LinkFlow/
 │   └── docs/                   # Swagger UI (optional)
 │
 ├── packages/
-│   ├── database/               # Prisma schema & migrations
-│   ├── config/                 # Shared configuration
+│   ├── config/                  # Shared configuration
 │   ├── logger/                 # Pino/Winston logger
 │   ├── types/                  # Shared TypeScript types
 │   ├── validation/             # Zod/Joi schemas
 │   ├── utils/                  # Shared utilities
-│   ├── auth/                   # Shared auth helpers
+│   ├── shared/                 # Shared file
+│   ├── eslint-config/           # Config eslint
+│   ├── tsconfig/                # Config ts
 │   └── ui/                     # Shared React components (if needed)
 │
 ├── infra/
@@ -228,6 +229,8 @@ LinkFlow/
 │   └── terraform/              # Cloud Infrastructure (AWS)
 │
 ├── scripts/
+│
+├── prisma/
 │
 ├── docs/
 │   ├── architecture/
