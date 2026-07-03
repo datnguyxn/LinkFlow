@@ -203,21 +203,147 @@ Infrastructure can be provisioned using Docker containers and deployed through C
 LinkFlow/
 │
 ├── apps/
-│   ├── api/                    # REST API (Express/Fastify + TypeScript)
-│   ├── worker/                 # Background jobs (BullMQ/RabbitMQ consumers)
-│   ├── web/                    # Frontend (Next.js)
+│   │
+│   ├── api/                                # Fastify REST API
+│   │   ├── src/
+│   │   │   ├── app.ts
+│   │   │   ├── server.ts
+│   │   │   │
+│   │   │   ├── config/
+│   │   │   │   ├── env.ts
+│   │   │   │   ├── database.ts
+│   │   │   │   ├── redis.ts
+│   │   │   │   ├── jwt.ts
+│   │   │   │   ├── mail.ts
+│   │   │   │   └── index.ts
+│   │   │   │
+│   │   │   ├── common/
+│   │   │   │   ├── constants/
+│   │   │   │   ├── decorators/
+│   │   │   │   ├── dto/
+│   │   │   │   ├── enums/
+│   │   │   │   ├── errors/
+│   │   │   │   ├── guards/
+│   │   │   │   ├── hooks/
+│   │   │   │   ├── interceptors/
+│   │   │   │   ├── interfaces/
+│   │   │   │   ├── middleware/
+│   │   │   │   ├── serializers/
+│   │   │   │   ├── validators/
+│   │   │   │   └── utils/
+│   │   │   │
+│   │   │   ├── infrastructure/
+│   │   │   │   ├── database/
+│   │   │   │   ├── cache/
+│   │   │   │   ├── queue/
+│   │   │   │   ├── mail/
+│   │   │   │   ├── storage/
+│   │   │   │   └── monitoring/
+│   │   │   │
+│   │   │   ├── plugins/
+│   │   │   │   ├── cors.ts
+│   │   │   │   ├── helmet.ts
+│   │   │   │   ├── swagger.ts
+│   │   │   │   ├── prisma.ts
+│   │   │   │   ├── redis.ts
+│   │   │   │   └── auth.ts
+│   │   │   │
+│   │   │   ├── socket/
+│   │   │   │   ├── gateway.ts
+│   │   │   │   ├── publisher.ts
+│   │   │   │   ├── subscriber.ts
+│   │   │   │   ├── manager.ts
+│   │   │   │   ├── events.ts
+│   │   │   │   └── index.ts
+│   │   │   │
+│   │   │   ├── events/
+│   │   │   │
+│   │   │   ├── queues/
+│   │   │   │
+│   │   │   ├── jobs/
+│   │   │   │
+│   │   │   ├── modules/
+│   │   │   │   │
+│   │   │   │   ├── auth/
+│   │   │   │   ├── users/
+│   │   │   │   ├── urls/
+│   │   │   │   ├── redirects/
+│   │   │   │   ├── analytics/
+│   │   │   │   ├── dashboard/
+│   │   │   │   ├── search/
+│   │   │   │   ├── notifications/
+│   │   │   │   ├── api-keys/
+│   │   │   │   ├── workspaces/
+│   │   │   │   ├── admin/
+│   │   │   │   └── health/
+│   │   │   │
+│   │   │   └── types/
+│   │   │
+│   │   ├── tests/
+│   │   │   ├── unit/
+│   │   │   ├── integration/
+│   │   │   └── e2e/
+│   │   │
+│   │   ├── tsconfig.json
+│   │   ├── tsup.config.ts
+│   │   ├── vitest.config.ts
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   │
+│   ├── web/                               # Next.js
+│   │   ├── src/
+│   │   │   ├── app/
+│   │   │   ├── components/
+│   │   │   │   ├── common/
+│   │   │   │   ├── dashboard/
+│   │   │   │   ├── url/
+│   │   │   │   ├── auth/
+│   │   │   │   └── search/
+│   │   │   │
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   ├── store/
+│   │   │   ├── providers/
+│   │   │   ├── layouts/
+│   │   │   ├── lib/
+│   │   │   ├── utils/
+│   │   │   ├── styles/
+│   │   │   ├── types/
+│   │   │   └── middleware.ts
+│   │   │
+│   │   ├── public/
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── worker/
+│   │   ├── src/
+│   │   │   ├── jobs/
+│   │   │   ├── queues/
+│   │   │   ├── consumers/
+│   │   │   ├── producers/
+│   │   │   └── server.ts
+│   │   └── package.json
+│   │
+│   └── docs/
+│       └── Swagger UI
 │
 ├── packages/
-│   ├── config/                  # Shared configuration
-│   ├── logger/                 # Pino/Winston logger
-│   ├── types/                  # Shared TypeScript types
-│   ├── validation/             # Zod/Joi schemas
-│   ├── utils/                  # Shared utilities
-│   ├── shared/                 # Shared file
-│   ├── eslint-config/           # Config eslint
-│   ├── tsconfig/                # Config ts
-│   ├── constant/               # Constant 
-│   └── ui/                     # Shared React components (if needed)
+│   │
+│   ├── config/
+│   ├── logger/
+│   ├── types/
+│   ├── validation/
+│   ├── utils/
+│   ├── shared/
+│   ├── ui/
+│   ├── database/
+│   ├── eslint-config/
+│   └── tsconfig/
+│
+├── prisma/
+│   ├── schema.prisma
+│   ├── migrations/
+│   └── seed.ts
 │
 ├── infra/
 │   ├── docker/
@@ -226,27 +352,32 @@ LinkFlow/
 │   ├── prometheus/
 │   ├── grafana/
 │   ├── loki/
-│   └── terraform/              # Cloud Infrastructure (AWS)
+│   ├── tempo/
+│   └── terraform/
 │
 ├── scripts/
 │
-├── prisma/
-│
 ├── docs/
 │   ├── architecture/
+│   │   ├── system-design.md
+│   │   ├── database.md
+│   │   ├── sequence-diagrams/
+│   │   ├── deployment.md
+│   │   └── event-driven.md
+│   │
 │   ├── api/
 │   ├── database/
-│   ├── adr/
-│   └── sprint/
+│   ├── sprint/
+│   └── postman/
 │
 ├── .github/
 │   └── workflows/
 │
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
-├── package.json
+├── turbo.json
 ├── pnpm-workspace.yaml
-├── turbo.json                  # nếu dùng Turborepo
+├── package.json
 ├── .env.example
 ├── .gitignore
 ├── LICENSE
