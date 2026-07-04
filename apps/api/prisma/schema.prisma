@@ -57,8 +57,9 @@ model User {
 
   apiKeys ApiKey[]
 
-  auditLogs AuditLog[]
-  userRoles UserRole[]
+  auditLogs              AuditLog[]
+  userRoles              UserRole[]
+  EmailVerificationToken EmailVerificationToken[]
 
   @@map("users")
 }
@@ -494,6 +495,21 @@ model UserRole {
 
   @@id([userId, roleId])
   @@map("user_roles")
+}
+
+model EmailVerificationToken {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId    String @db.Uuid
+  tokenHash String @map("token_hash")
+
+  expiresAt DateTime @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_verification_tokens")
 }
 
 enum UserStatus {

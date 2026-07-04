@@ -32,7 +32,7 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.get('/health-database', async (request, reply) => {
+  app.get('/health-database', async () => {
     try {
       await app.prisma.$queryRaw`SELECT 1`;
       return {
@@ -40,6 +40,7 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
         message: 'Database is reachable',
       };
     } catch (error) {
+      console.error('Database health check failed:', error);
       return {
         success: false,
         message: 'Database is not reachable',
