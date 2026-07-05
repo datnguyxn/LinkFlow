@@ -1,24 +1,39 @@
-import dotenv from "dotenv";
-import { beforeAll, beforeEach, afterEach, afterAll, vi } from "vitest";
-import { prisma } from "../src/infrastructure/database/index.ts";
+// import dotenv from "dotenv";
+// import { beforeAll, beforeEach, afterEach, afterAll, vi } from "vitest";
+// import { prisma } from "../src/infrastructure/database/index.ts";
 
-// Load test environment
+// // Load test environment
+// dotenv.config({
+//   path: ".env.test",
+// });
+
+// beforeAll(async () => {
+//   await prisma.$connect();
+// });
+
+// beforeEach(async () => {
+//   vi.clearAllMocks();
+// });
+
+// afterEach(async () => {
+//   vi.restoreAllMocks();
+// });
+
+// afterAll(async () => {
+//   await prisma.$disconnect();
+// });
+
+import dotenv from "dotenv";
+import { beforeEach, afterEach, vi } from "vitest";
+
 dotenv.config({
   path: ".env.test",
 });
 
-beforeAll(async () => {
-  await prisma.$connect();
-});
-
-beforeEach(async () => {
+beforeEach(() => {
   vi.clearAllMocks();
 });
 
-afterEach(async () => {
+afterEach(() => {
   vi.restoreAllMocks();
-});
-
-afterAll(async () => {
-  await prisma.$disconnect();
 });
