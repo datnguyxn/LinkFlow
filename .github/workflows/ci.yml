@@ -103,5 +103,5 @@ jobs:
       - name: Build
         run: pnpm --filter ${{ matrix.package }} build
 
-      # - name: Test
-      #   run: pnpm --filter ${{ matrix.package }} test
+      - name: Test
+        run: pnpm --filter ${{ matrix.package }} test
