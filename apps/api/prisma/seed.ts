@@ -35,3 +35,42 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+// import { PrismaClient } from "@prisma/client";
+
+// const prisma = new PrismaClient();
+
+// async function main() {
+//   const roles = [
+//     {
+//       name: "OWNER",
+//       description: "Workspace owner",
+//     },
+//     {
+//       name: "ADMIN",
+//       description: "Workspace administrator",
+//     },
+//     {
+//       name: "MEMBER",
+//       description: "Workspace member",
+//     },
+//   ];
+
+//   for (const role of roles) {
+//     await prisma.role.upsert({
+//       where: {
+//         name: role.name,
+//       },
+//       update: {},
+//       create: role,
+//     });
+//   }
+
+//   console.log("✅ Default roles seeded");
+// }
+
+// main()
+//   .catch(console.error)
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });

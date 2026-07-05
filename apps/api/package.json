@@ -12,7 +12,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-    "prisma": {
+  "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
@@ -20,9 +20,13 @@
   "license": "ISC",
   "packageManager": "pnpm@10.34.4",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
     "@fastify/env": "^7.0.0",
     "@fastify/helmet": "^13.0.2",
+    "@fastify/jwt": "^10.1.0",
+    "@fastify/multipart": "^10.0.0",
+    "@fastify/rate-limit": "^11.1.0",
     "@fastify/sensible": "^6.0.4",
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^6.0.0",
@@ -32,6 +36,9 @@
     "dotenv": "^17.4.2",
     "fastify": "^5.9.0",
     "fastify-plugin": "^6.0.0",
+    "fastify-type-provider-zod": "^7.0.0",
+    "i18next": "^26.3.4",
+    "i18next-fs-backend": "^2.6.6",
     "pino": "^10.3.1",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",

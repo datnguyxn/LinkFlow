@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']),
-
+  NAME: z.string(),
   PORT: z.coerce.number(),
-
   API_PREFIX: z.string(),
+  BASE_URL: z.string(),
 
   DATABASE_URL: z.string().optional(),
   
@@ -15,7 +15,7 @@ export const envSchema = z.object({
   SUPABASE_JWKS_URL: z.string().optional(),
   DIRECT_URL: z.string().optional(),
 
-  JWT_ACCESS_SECRET: z.string().optional(),
+  JWT_ACCESS_SECRET: z.string().min(1),
   JWT_REFRESH_SECRET: z.string().optional(),
   JWT_ACCESS_EXPIRES_IN: z.string(),
   JWT_REFRESH_EXPIRES_IN: z.string(),
@@ -45,6 +45,8 @@ export const envSchema = z.object({
   SMTP_FROM: z.string().optional(),
 
   NEXT_PUBLIC_API_URL: z.string(),
+
+  COOKIE_SECRET: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

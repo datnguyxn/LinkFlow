@@ -1,0 +1,32 @@
+{
+    "common": {
+        "successData": "Data retrieved successfully.",
+        "errorData": "Data not found.",
+        "internalServerError": "Internal server error."
+    },
+    "auth": {
+        "loginSuccess": "Login successful",
+        "registerSuccess": "Registration successful",
+        "emailExists": "Email already exists",
+        "invalidEmail": "Invalid email address",
+        "usernameTooShort": "Username must be at least 3 characters long",
+        "passwordTooShort": "Password must be at least 8 characters long",
+        "passwordTooLong": "Password must be at most 32 characters long",
+        "passwordNoUppercase": "Password must contain at least one uppercase letter",
+        "passwordNoLowercase": "Password must contain at least one lowercase letter",
+        "passwordNoNumber": "Password must contain at least one number",
+        "passwordNoSpecialCharacter": "Password must contain at least one special character",
+        "fullNameTooShort": "Full name must be at least 2 characters long",
+        "fullNameTooLong": "Full name must be at most 50 characters long",
+        "invalidFullName": "Full name contains invalid characters",
+        "invalidPassword": "Invalid password",
+        "invalidUsername": "Invalid username",
+        "invalidCredentials": "Invalid email or password",
+        "userNotFound": "User not found"
+    }, 
+    "request": {
+        "invalidRequest": "Invalid request",
+        "manyRequests": "Too many requests, please try again later",
+        "retryLater": "Retry after {{after}} seconds"
+    }
+}

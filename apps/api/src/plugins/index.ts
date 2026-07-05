@@ -1,5 +1,10 @@
-export { default as corsPlugin } from './cors.js';
-export { default as helmetPlugin } from './helmet.js';
-export { default as sensiblePlugin } from './sensible.js';
-export { default as swaggerPlugin } from './swagger.js';
-export { default as prismaPlugin } from './prisma.js';
+export { default as sensiblePlugin } from './sensible.plugin.ts';
+export * from './i18n.plugin.ts';
+export { default as languagePlugin } from './language.plugin.ts';
+export { default as helmetPlugin } from './helmet.plugin.ts';
+export { default as corsPlugin } from './cors.plugin.ts';
+export { default as swaggerPlugin } from './swagger.plugin.ts';
+export { default as cookiePlugin } from './cookie.plugin.ts';
+export { default as jwtPlugin } from './jwt.plugin.ts';
+export { default as rateLimitPlugin } from './rate-limit.plugin.ts';
+export { default as multipartPlugin } from './multipart.plugin.ts';

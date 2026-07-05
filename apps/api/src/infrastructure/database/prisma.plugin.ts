@@ -1,5 +1,5 @@
 import fp from "fastify-plugin";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "./prisma.client.ts";
 
 export default fp(async (fastify) => {
     await prisma.$connect();
