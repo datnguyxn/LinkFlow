@@ -29,7 +29,6 @@ vi.mock("../../../src/modules/auth/service/jwt.service", () => {
 // =====================
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
 import { hashPassword } from "../../../src/modules/auth/utils/password.util";
-import { ConflictError } from "../../../src/common/errors";
 
 describe("AuthService", () => {
     let authService: AuthService;
