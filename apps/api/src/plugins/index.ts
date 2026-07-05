@@ -8,3 +8,4 @@ export { default as cookiePlugin } from './cookie.plugin.ts';
 export { default as jwtPlugin } from './jwt.plugin.ts';
 export { default as rateLimitPlugin } from './rate-limit.plugin.ts';
 export { default as multipartPlugin } from './multipart.plugin.ts';
+export { default as errorPlugin } from './error.plugin.ts';

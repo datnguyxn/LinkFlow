@@ -1,21 +1,47 @@
 import { z } from 'zod';
-import i18n from "../../../plugins/i18n.plugin.ts";
 
-
+/**
+ * Validation schema for user registration request
+ * - Ensures email format is valid
+ * - Enforces strong password rules
+ * - Validates full name length constraints
+ */
 export const registerSchema = z.object({
-    email: z.string().email({ message: i18n.t('auth.invalidEmail') }),
-    username: z.string().min(3, { message: i18n.t('auth.usernameTooShort') }),
+    /**
+     * User email
+     * Must be a valid email format
+     */
+    email: z.string().email({ message: 'auth.invalidEmail' }),
+
+    /**
+     * Password rules:
+     * - 8 to 32 characters
+     * - At least 1 uppercase letter
+     * - At least 1 lowercase letter
+     * - At least 1 number
+     * - At least 1 special character
+     */
     password: z
         .string()
-        .min(8, { message: i18n.t('auth.passwordTooShort') })
-        .max(32, { message: i18n.t('auth.passwordTooLong') })
-        .regex(/[A-Z]/, { message: i18n.t('auth.passwordMissingUppercase') })
-        .regex(/[a-z]/, { message: i18n.t('auth.passwordMissingLowercase') })
-        .regex(/[0-9]/, { message: i18n.t('auth.passwordMissingNumber') })
-        .regex(/[^A-Za-z0-9]/, { message: i18n.t('auth.passwordMissingSpecialCharacter') }),
+        .min(8, { message: 'auth.passwordTooShort' })
+        .max(32, { message: 'auth.passwordTooLong' })
+        .regex(/[A-Z]/, { message: 'auth.passwordMissingUppercase' })
+        .regex(/[a-z]/, { message: 'auth.passwordMissingLowercase' })
+        .regex(/[0-9]/, { message: 'auth.passwordMissingNumber' })
+        .regex(/[^A-Za-z0-9]/, { message: 'auth.passwordMissingSpecialCharacter' }),
 
+    /**
+     * Full name of user
+     * - Must be between 2 and 50 characters
+     */
     fullName: z
         .string()
-        .min(2, { message: i18n.t('auth.fullNameTooShort') })
-        .max(50, { message: i18n.t('auth.fullNameTooLong') }),
+        .min(2, { message: 'auth.fullNameTooShort' })
+        .max(50, { message: 'auth.fullNameTooLong' }),
 });
+
+/**
+ * Type inferred from register schema
+ * Used in service/controller layers
+ */
+export type RegisterBody = z.infer<typeof registerSchema>;

@@ -27,6 +27,7 @@
     "request": {
         "invalidRequest": "Yêu cầu không hợp lệ",
         "manyRequests": "Quá nhiều yêu cầu, vui lòng thử lại sau",
-        "retryLater": "Thử lại sau sau {{after}} giây"
+        "retryLater": "Thử lại sau sau {{after}} giây",
+        "validationFailed": "Xác thực thất bại"
     }
 }

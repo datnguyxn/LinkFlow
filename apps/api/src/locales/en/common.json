@@ -27,6 +27,7 @@
     "request": {
         "invalidRequest": "Invalid request",
         "manyRequests": "Too many requests, please try again later",
-        "retryLater": "Retry after {{after}} seconds"
+        "retryLater": "Retry after {{after}} seconds",
+        "validationFailed": "Validation failed"
     }
 }

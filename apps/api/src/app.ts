@@ -13,7 +13,8 @@ import {
   cookiePlugin,
   jwtPlugin,
   rateLimitPlugin,
-  multipartPlugin
+  multipartPlugin,
+  errorPlugin
 }
   from './plugins/index.ts';
 import { prismaPlugin } from './infrastructure/database/index.ts';
@@ -37,6 +38,7 @@ export async function buildApp() {
   await app.register(jwtPlugin);
   await app.register(rateLimitPlugin);
   await app.register(multipartPlugin);
+  await app.register(errorPlugin);
 
 
   await app.register(languagePlugin);
