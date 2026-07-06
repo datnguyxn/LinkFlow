@@ -1,6 +1,4 @@
-import { loadEnv } from '../../config/env/index.js';
-
-const env = loadEnv();
+import { config } from '../../config/env/index.js';
 
 export class HealthService {
   getHealth() {
@@ -8,7 +6,7 @@ export class HealthService {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: env.NODE_ENV,
+      environment: config.NODE_ENV,
       version: '1.0.0',
     };
   }

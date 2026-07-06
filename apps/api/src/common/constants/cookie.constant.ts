@@ -1,16 +1,14 @@
 import type { CookieSerializeOptions } from "@fastify/cookie";
-import { loadEnv } from "../../config/env/index.ts";
+import { config } from "../../config/env/index.ts";
 import { ROUTE } from "./route.constant.ts";
 
 export function cookieOptions(): CookieSerializeOptions {
-    const env = loadEnv();
-
     return {
         httpOnly: true,
-        secure: env.NODE_ENV === "production",
+        secure: config.NODE_ENV === "production",
         sameSite: "lax",
 
-        path: env.API_PREFIX + ROUTE.AUTH + "/refresh-token",
+        path: config.API_PREFIX + ROUTE.AUTH + "/refresh-token",
 
         maxAge: 60 * 60 * 24 * 7, // 7 days
 

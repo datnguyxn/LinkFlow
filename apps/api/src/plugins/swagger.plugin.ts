@@ -2,24 +2,22 @@ import fp from 'fastify-plugin';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import {  ROUTE, AUTH, HTTP_STATUS } from '../common/constants/index.ts';
-import { loadEnv } from '../config/env/index.ts';
-
-const env = loadEnv();
+import { config } from '../config/env/index.ts';
 
 export default fp(async (app) => {
   await app.register(swagger, {
     openapi: {
       openapi: '3.0.3',
       info: {
-        title: `${env.NAME} API`,
+        title: `${config.NAME} API`,
         description: 'REST API documentation',
         version: '1.0.0',
       },
 
       servers: [
         {
-          url: `${env.BASE_URL}:${env.PORT}`,
-          description: env.NODE_ENV === 'production' ? 'Production server' : 'Development server',
+          url: `${config.BASE_URL}:${config.PORT}`,
+          description: config.NODE_ENV === 'production' ? 'Production server' : 'Development server',
         },
       ],
 
