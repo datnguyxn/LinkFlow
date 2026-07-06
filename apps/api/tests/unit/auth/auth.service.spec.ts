@@ -53,10 +53,7 @@ describe("AuthService", () => {
             refreshTokenRepository,
             jwtService,
             transactionService,
-            authPublisher,
-            {
-                JWT_REFRESH_EXPIRES_MS: 604800000,
-            } as any,
+            authPublisher
         );
     });
 

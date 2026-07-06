@@ -8,7 +8,7 @@ import type {
     SendWorkspaceInvitationEmail,
 } from "../interfaces/mail.service.ts";
 
-import { loadEnv } from "../../../config/env/index.ts";
+import { config } from "../../../config/env/index.ts";
 
 import { verifyEmailTemplate } from "../templates/verify-email.template.ts";
 import { resetPasswordTemplate } from "../templates/reset-password.template.ts";
@@ -16,20 +16,16 @@ import { resetPasswordTemplate } from "../templates/reset-password.template.ts";
 export class SmtpProvider implements MailService {
 
     private readonly transporter: Transporter;
-    private readonly env: ReturnType<typeof loadEnv>;
 
     constructor() {
-
-        this.env = loadEnv();
-
         this.transporter = nodemailer.createTransport({
-            host: this.env.SMTP_HOST,
-            port: Number(this.env.SMTP_PORT),
-            secure: this.env.SMTP_SECURE === "true",
+            host: config.SMTP_HOST,
+            port: Number(config.SMTP_PORT),
+            secure: config.SMTP_SECURE === "true",
 
             auth: {
-                user: this.env.SMTP_FROM,
-                pass: this.env.SMTP_PASSWORD,
+                user: config.SMTP_FROM,
+                pass: config.SMTP_PASSWORD,
             },
         });
 
@@ -40,11 +36,11 @@ export class SmtpProvider implements MailService {
     ): Promise<void> {
 
         const verifyUrl =
-            `${this.env.CLIENT_URL}/verify-email?token=${data.verifyToken}`;
+            `${config.CLIENT_URL}/verify-email?token=${data.verifyToken}`;
 
         await this.transporter.sendMail({
 
-            from: `"LinkFlow" <${this.env.SMTP_FROM}>`,
+            from: `"LinkFlow" <${config.SMTP_FROM}>`,
 
             to: data.email,
 
@@ -67,11 +63,11 @@ export class SmtpProvider implements MailService {
     ): Promise<void> {
 
         const resetUrl =
-            `${this.env.CLIENT_URL}/reset-password?token=${data.resetToken}`;
+            `${config.CLIENT_URL}/reset-password?token=${data.resetToken}`;
 
         await this.transporter.sendMail({
 
-            from: `"LinkFlow" <${this.env.SMTP_FROM}>`,
+            from: `"LinkFlow" <${config.SMTP_FROM}>`,
 
             to: data.email,
 

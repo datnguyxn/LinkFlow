@@ -1,2 +1,5 @@
-export * from './env.js';
-export * from './env.schema.js';
+// src/config/env/config.ts
+
+import { loadEnv } from "./env.ts";
+
+export const config = loadEnv();

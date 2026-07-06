@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import { createLogger } from '@linkflow/logger';
 import { healthRoutes } from './modules/health/index.js';
 import { routes } from './routes/index.js';
-import { loadEnv } from './config/env/index.ts';
+import { config } from './config/env/index.ts';
 import {
   sensiblePlugin,
   languagePlugin,
@@ -22,13 +22,11 @@ import { rabbitMQPlugin } from "./infrastructure/queue/index.ts";
 import { redisPlugin } from "./infrastructure/cache/index.ts";
 import { registerWorkers } from './bootstrap/workers.ts';
 
-const env = loadEnv();
-
 export async function buildApp() {
   await registerI18n();
 
   const app = Fastify({
-    logger: createLogger(process.env.NODE_ENV === env.NODE_ENV),
+    logger: createLogger(process.env.NODE_ENV === config.NODE_ENV),
   });
 
   await app.register(rabbitMQPlugin);
@@ -52,7 +50,7 @@ export async function buildApp() {
   await app.register(languagePlugin);
 
   await app.register(routes, {
-    prefix: env.API_PREFIX,
+    prefix: config.API_PREFIX,
   });
   await app.register(healthRoutes);
 

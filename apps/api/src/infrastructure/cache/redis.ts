@@ -1,15 +1,13 @@
 import { createClient, type RedisClientType } from "redis";
-import { loadEnv } from "../../config/env/index.ts";
+import { config } from "../../config/env/index.ts";
 
 class RedisService {
     private client: RedisClientType;
-    private env: ReturnType<typeof loadEnv>;
 
     constructor() {
-        this.env = loadEnv();
-
+        
         this.client = createClient({
-            url: this.env.REDIS_URL,
+            url: config.REDIS_URL,
         });
 
         this.client.on("connect", () => {

@@ -8,7 +8,7 @@ import { JwtService } from './jwt.service.ts';
 import { HTTP_STATUS, ROLE } from '../../../common/constants/index.ts';
 import { AppError } from '../../../common/errors/index.ts';
 import { TransactionService } from '../../../infrastructure/database/index.ts';
-import { loadEnv } from '../../../config/env/index.ts';
+import { config } from '../../../config/env/index.ts';
 import type { UserRegisteredEvent } from '../../../events/auth/user-registered.event.ts';
 import { randomUUID } from 'crypto';
 import { AuthPublisher } from '../publishers/auth.publisher.ts';
@@ -27,7 +27,6 @@ export class AuthService {
         private jwtService = new JwtService(),
         private transactionService = new TransactionService(),
         private authPublisher = new AuthPublisher(new Publisher()),
-        private env = loadEnv(),
     ) {}
 
     /**
@@ -91,7 +90,7 @@ export class AuthService {
             userId: result.newUser.id,
             token: {
                 tokenHash: await this.jwtService.hashRefreshToken(tokens.refreshToken),
-                expiresAt: new Date(Date.now() + parseInt(this.env.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
+                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
                 user: {
                     connect: {
                         id: result.newUser.id,
