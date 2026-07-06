@@ -2,7 +2,7 @@ import type { CookieSerializeOptions } from "@fastify/cookie";
 import { loadEnv } from "../../config/env/index.ts";
 import { ROUTE } from "./route.constant.ts";
 
-export function getCookieOptions(): CookieSerializeOptions {
+export function cookieOptions(): CookieSerializeOptions {
     const env = loadEnv();
 
     return {
