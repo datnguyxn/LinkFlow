@@ -6,7 +6,7 @@ vi.mock("../../../src/modules/auth/utils/password.util", () => ({
 
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
 import { hashPassword } from "../../../src/modules/auth/utils/password.util";
-import { ROLE } from "../../../src/common/constants";
+import { ROLE } from "../../../src/common/constants/role.constant";
 
 describe("AuthService", () => {
     let authService: AuthService;
