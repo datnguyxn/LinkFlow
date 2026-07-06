@@ -1,7 +1,7 @@
 import { AuthService } from '../service/auth.service.ts';
 import { ResponseHandler } from "../../../common/responses/handler.response.js";
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { HTTP_STATUS } from "../../../common/constants/index.ts";
+import { HTTP_STATUS, cookieOptions } from "../../../common/constants/index.ts";
 import type { AuthResponse } from "../types/auth.type.ts";
 import type { RegisterBody } from "../validator/register.validator.ts";
 
@@ -44,6 +44,13 @@ export class AuthController {
                 request.t("common.invalidCredentials")
             );
         }
+
+        // Set refresh token in HTTP-only cookie for security
+        reply.setCookie(
+            "refreshToken",
+            data.refreshToken,
+            cookieOptions,
+        );
 
         // Successful registration
         return ResponseHandler.success<AuthResponse>(

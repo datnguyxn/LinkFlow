@@ -8,7 +8,7 @@ export const envSchema = z.object({
   BASE_URL: z.string(),
 
   DATABASE_URL: z.string().optional(),
-  
+
   SUPABASE_URL: z.string().optional(),
   SUPABASE_PUBLISHABLE_KEY: z.string().optional(),
   SUPABASE_SECRET_KEY: z.string().optional(),
@@ -19,12 +19,15 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1),
   JWT_ACCESS_EXPIRES_IN: z.string(),
   JWT_REFRESH_EXPIRES_IN: z.string(),
+  JWT_ACCESS_EXPIRES_MS: z.coerce.number(),
+  JWT_REFRESH_EXPIRES_MS: z.coerce.number(),
 
   REDIS_HOST: z.string().optional(),
   REDIS_PORT: z.coerce.number().optional(),
   REDIS_PASSWORD: z.string().optional(),
+  REDIS_URL: z.string(),
 
-  RABBITMQ_URL: z.string().optional(),
+  RABBITMQ_URL: z.string(),
 
   MINIO_ENDPOINT: z.string().optional(),
   MINIO_PORT: z.coerce.number().optional(),
@@ -43,8 +46,9 @@ export const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.string().optional(),
+  SMTP_SECURE: z.string().optional(),
 
-  NEXT_PUBLIC_API_URL: z.string(),
+  CLIENT_URL: z.string(),
 
   COOKIE_SECRET: z.string(),
 });

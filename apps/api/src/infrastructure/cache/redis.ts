@@ -1,0 +1,53 @@
+import { createClient, type RedisClientType } from "redis";
+import { loadEnv } from "../../config/env/index.ts";
+
+class RedisService {
+    private client: RedisClientType;
+    private env: ReturnType<typeof loadEnv>;
+
+    constructor() {
+        this.env = loadEnv();
+
+        this.client = createClient({
+            url: this.env.REDIS_URL,
+        });
+
+        this.client.on("connect", () => {
+            console.log("🟡 Connecting to Redis...");
+        });
+
+        this.client.on("ready", () => {
+            console.log("✅ Redis connected");
+        });
+
+        this.client.on("error", (err) => {
+            console.error("❌ Redis error:", err);
+        });
+
+        this.client.on("reconnecting", () => {
+            console.log("🔄 Redis reconnecting...");
+        });
+
+        this.client.on("end", () => {
+            console.log("🔴 Redis disconnected");
+        });
+    }
+
+    async connect() {
+        if (!this.client.isOpen) {
+            await this.client.connect();
+        }
+    }
+
+    async disconnect() {
+        if (this.client.isOpen) {
+            await this.client.quit();
+        }
+    }
+
+    getClient(): RedisClientType {
+        return this.client;
+    }
+}
+
+export const redis = new RedisService();

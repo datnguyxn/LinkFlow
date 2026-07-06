@@ -18,6 +18,9 @@ import {
 }
   from './plugins/index.ts';
 import { prismaPlugin } from './infrastructure/database/index.ts';
+import { rabbitMQPlugin } from "./infrastructure/queue/index.ts";
+import { redisPlugin } from "./infrastructure/cache/index.ts";
+import { registerWorkers } from './bootstrap/workers.ts';
 
 const env = loadEnv();
 
@@ -27,6 +30,11 @@ export async function buildApp() {
   const app = Fastify({
     logger: createLogger(process.env.NODE_ENV === env.NODE_ENV),
   });
+
+  await app.register(rabbitMQPlugin);
+  await app.register(redisPlugin);
+
+  await registerWorkers();
 
   await app.register(swaggerPlugin);
   await app.register(corsPlugin);

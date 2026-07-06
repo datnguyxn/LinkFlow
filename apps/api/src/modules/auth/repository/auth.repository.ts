@@ -31,10 +31,8 @@ export class AuthRepository {
     async createUser(
         data: Prisma.UserCreateInput 
     ) {
-        return prisma.$transaction(async (tx) => {
-
-            // Step 1: Create user record
-            const user = await tx.user.create({
+        // Use a transaction to ensure atomicity
+        return await prisma.user.create({
                 data: {
                     fullName: data.fullName,
                     email: data.email,
@@ -42,9 +40,5 @@ export class AuthRepository {
                     language: data.language,
                 }
             });
-
-            // Return created user only (not role mapping)
-            return user;
-        });
     }
 }

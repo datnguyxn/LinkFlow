@@ -1,39 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-// =====================
-// MOCK MODULES ĐÚNG PATH
-// =====================
 vi.mock("../../../src/modules/auth/utils/password.util", () => ({
     hashPassword: vi.fn(),
 }));
 
-vi.mock("../../../src/modules/auth/repository/auth.repository", () => {
-    return {
-        AuthRepository: class {
-            findUserByEmail = vi.fn();
-            createUser = vi.fn();
-        }
-    };
-});
-
-vi.mock("../../../src/modules/auth/service/jwt.service", () => {
-    return {
-        JwtService: class {
-            generateTokens = vi.fn();
-        }
-    };
-});
-
-// =====================
-// IMPORT SAU MOCK
-// =====================
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
 import { hashPassword } from "../../../src/modules/auth/utils/password.util";
+import { ROLE } from "../../../src/common/constants";
 
 describe("AuthService", () => {
     let authService: AuthService;
+
     let authRepository: any;
+    let workspaceRepository: any;
+    let refreshTokenRepository: any;
     let jwtService: any;
+    let transactionService: any;
+    let authPublisher: any;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -43,129 +26,376 @@ describe("AuthService", () => {
             createUser: vi.fn(),
         };
 
-        jwtService = {
-            generateTokens: vi.fn(),
+        workspaceRepository = {
+            create: vi.fn(),
         };
 
-        authService = new AuthService() as any;
+        refreshTokenRepository = {
+            create: vi.fn(),
+        };
 
-        authService.authRepository = authRepository;
-        authService.jwtService = jwtService;
-    });
+        jwtService = {
+            generateTokens: vi.fn(),
+            hashRefreshToken: vi.fn(),
+        };
 
-    // =====================
-    // SUCCESS
-    // =====================
-    it("should register successfully", async () => {
-        authRepository.findUserByEmail.mockResolvedValue(null);
-        (hashPassword as any).mockResolvedValue("hashed-password");
+        transactionService = {
+            run: vi.fn(),
+        };
 
-        authRepository.createUser.mockResolvedValue({
-            id: "user-id",
-            email: "dat@gmail.com",
-            language: "en",
-        });
+        authPublisher = {
+            userRegistered: vi.fn(),
+        };
 
-        jwtService.generateTokens.mockReturnValue({
-            accessToken: "access-token",
-            refreshToken: "refresh-token",
-        });
-
-        const result = await authService.registerUser(
-            "dat@gmail.com",
-            "Password@123",
-            "Dat Nguyen"
+        authService = new AuthService(
+            authRepository,
+            workspaceRepository,
+            refreshTokenRepository,
+            jwtService,
+            transactionService,
+            authPublisher,
+            {
+                JWT_REFRESH_EXPIRES_MS: 604800000,
+            } as any,
         );
-
-        expect(result).toEqual({
-            accessToken: "access-token",
-            refreshToken: "refresh-token",
-        });
     });
 
-    // =====================
-    // EMAIL EXISTS
-    // =====================
-    it("should throw ConflictError when email already exists", async () => {
-        authRepository.findUserByEmail.mockResolvedValue({
-            id: "1",
-            email: "dat@gmail.com",
-        });
+    describe("registerUser", () => {
 
-        await expect(
-            authService.registerUser(
+        it("should register successfully", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockResolvedValue("hashed-password");
+
+            transactionService.run.mockImplementation(async (callback: any) => {
+
+                const tx = {};
+
+                authRepository.createUser.mockResolvedValue({
+                    id: "user-id",
+                    email: "dat@gmail.com",
+                    fullName: "Dat Nguyen",
+                    language: "en",
+                });
+
+                workspaceRepository.create.mockResolvedValue({
+                    id: "workspace-id",
+                });
+
+                return callback(tx);
+
+            });
+
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockResolvedValue({});
+
+            authPublisher.userRegistered.mockResolvedValue(undefined);
+
+            const result = await authService.registerUser(
                 "dat@gmail.com",
                 "Password@123",
-                "Dat"
-            )
-        ).rejects.toMatchObject({
-            code: "USER_ALREADY_EXISTS",
-            statusCode: 409,
-        });
-        expect(authRepository.createUser).not.toHaveBeenCalled();
-        expect(jwtService.generateTokens).not.toHaveBeenCalled();
-    });
+                "Dat Nguyen",
+            );
 
-    // =====================
-    // HASH FAIL
-    // =====================
-    it("should throw if hash password failed", async () => {
-        authRepository.findUserByEmail.mockResolvedValue(null);
+            expect(authRepository.findUserByEmail)
+                .toHaveBeenCalledWith("dat@gmail.com");
 
-        (hashPassword as any).mockRejectedValue(new Error("Hash failed"));
+            expect(hashPassword)
+                .toHaveBeenCalledWith("Password@123");
 
-        await expect(
-            authService.registerUser(
-                "dat@gmail.com",
-                "Password@123",
-                "Dat"
-            )
-        ).rejects.toThrow("Hash failed");
-    });
+            expect(authRepository.createUser)
+                .toHaveBeenCalledWith({
+                    email: "dat@gmail.com",
+                    passwordHash: "hashed-password",
+                    fullName: "Dat Nguyen",
+                    language: "en",
+                });
 
-    // =====================
-    // REPO FAIL
-    // =====================
-    it("should throw if repository failed", async () => {
-        authRepository.findUserByEmail.mockResolvedValue(null);
-        (hashPassword as any).mockResolvedValue("hashed-password");
+            expect(workspaceRepository.create)
+                .toHaveBeenCalledWith(
+                    expect.anything(),
+                    {
+                        name: "Dat Nguyen",
+                        ownerId: "user-id",
+                    },
+                );
 
-        authRepository.createUser.mockRejectedValue(
-            new Error("Database Error")
-        );
+            expect(jwtService.generateTokens)
+                .toHaveBeenCalledWith({
+                    id: "user-id",
+                    email: "dat@gmail.com",
+                    role: ROLE.OWNER,
+                    language: "en",
+                });
 
-        await expect(
-            authService.registerUser(
-                "dat@gmail.com",
-                "Password@123",
-                "Dat"
-            )
-        ).rejects.toThrow("Database Error");
-    });
+            expect(jwtService.hashRefreshToken)
+                .toHaveBeenCalledWith("refresh-token");
 
-    // =====================
-    // JWT FAIL
-    // =====================
-    it("should throw if jwt generation failed", async () => {
-        authRepository.findUserByEmail.mockResolvedValue(null);
-        (hashPassword as any).mockResolvedValue("hashed-password");
+            expect(refreshTokenRepository.create)
+                .toHaveBeenCalled();
 
-        authRepository.createUser.mockResolvedValue({
-            id: "user-id",
-            email: "dat@gmail.com",
-            language: "en",
+            expect(authPublisher.userRegistered)
+                .toHaveBeenCalled();
+
+            expect(result).toEqual({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
         });
 
-        jwtService.generateTokens.mockImplementation(() => {
-            throw new Error("JWT Error");
+        it("should throw USER_ALREADY_EXISTS", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue({
+                id: "1",
+                email: "dat@gmail.com",
+            });
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 409,
+                code: "USER_ALREADY_EXISTS",
+            });
+
+            expect(hashPassword).not.toHaveBeenCalled();
+            expect(transactionService.run).not.toHaveBeenCalled();
+            expect(jwtService.generateTokens).not.toHaveBeenCalled();
         });
 
-        await expect(
-            authService.registerUser(
-                "dat@gmail.com",
-                "Password@123",
-                "Dat"
-            )
-        ).rejects.toThrow("JWT Error");
+        it("should throw if hash password failed", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockRejectedValue(
+                new Error("Hash failed"),
+            );
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toThrow("Hash failed");
+
+            expect(transactionService.run).not.toHaveBeenCalled();
+        });
+
+        it("should throw if transaction failed", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockResolvedValue(
+                "hashed-password",
+            );
+
+            transactionService.run.mockRejectedValue(
+                new Error("Database Error"),
+            );
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toThrow("Database Error");
+
+        });
+
+        it("should throw if jwt generation failed", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockResolvedValue(
+                "hashed-password",
+            );
+
+            transactionService.run.mockImplementation(async (callback: any) => {
+
+                authRepository.createUser.mockResolvedValue({
+                    id: "user-id",
+                    email: "dat@gmail.com",
+                    fullName: "Dat",
+                    language: "en",
+                });
+
+                workspaceRepository.create.mockResolvedValue({
+                    id: "workspace-id",
+                });
+
+                return callback({});
+
+            });
+
+            jwtService.generateTokens.mockImplementation(() => {
+                throw new Error("JWT Error");
+            });
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toThrow("JWT Error");
+
+        });
+
+        it("should throw if hash refresh token failed", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockResolvedValue(
+                "hashed-password",
+            );
+
+            transactionService.run.mockImplementation(async (callback: any) => {
+
+                authRepository.createUser.mockResolvedValue({
+                    id: "user-id",
+                    email: "dat@gmail.com",
+                    fullName: "Dat",
+                    language: "en",
+                });
+
+                workspaceRepository.create.mockResolvedValue({
+                    id: "workspace-id",
+                });
+
+                return callback({});
+
+            });
+
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
+            jwtService.hashRefreshToken.mockRejectedValue(
+                new Error("Hash Refresh Error"),
+            );
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toThrow("Hash Refresh Error");
+
+        });
+
+        it("should throw if refresh token repository failed", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockResolvedValue(
+                "hashed-password",
+            );
+
+            transactionService.run.mockImplementation(async (callback: any) => {
+
+                authRepository.createUser.mockResolvedValue({
+                    id: "user-id",
+                    email: "dat@gmail.com",
+                    fullName: "Dat",
+                    language: "en",
+                });
+
+                workspaceRepository.create.mockResolvedValue({
+                    id: "workspace-id",
+                });
+
+                return callback({});
+
+            });
+
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockRejectedValue(
+                new Error("Refresh Token Error"),
+            );
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toThrow("Refresh Token Error");
+
+        });
+
+        it("should throw if publisher failed", async () => {
+
+            authRepository.findUserByEmail.mockResolvedValue(null);
+
+            (hashPassword as any).mockResolvedValue(
+                "hashed-password",
+            );
+
+            transactionService.run.mockImplementation(async (callback: any) => {
+
+                authRepository.createUser.mockResolvedValue({
+                    id: "user-id",
+                    email: "dat@gmail.com",
+                    fullName: "Dat",
+                    language: "en",
+                });
+
+                workspaceRepository.create.mockResolvedValue({
+                    id: "workspace-id",
+                });
+
+                return callback({});
+
+            });
+
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockResolvedValue({});
+
+            authPublisher.userRegistered.mockRejectedValue(
+                new Error("RabbitMQ Error"),
+            );
+
+            await expect(
+                authService.registerUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                    "Dat",
+                ),
+            ).rejects.toThrow("RabbitMQ Error");
+
+        });
     });
 });
