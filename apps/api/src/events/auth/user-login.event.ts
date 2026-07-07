@@ -1,7 +1,6 @@
-export interface UserRegisteredEvent {
+export interface UserLoginEvent {
     userId: string;
     email: string;
     fullName: string;
-    verifyToken: string;
     ipAddress?: string;
 }

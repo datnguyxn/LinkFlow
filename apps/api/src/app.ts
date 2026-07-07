@@ -27,6 +27,7 @@ export async function buildApp() {
 
   const app = Fastify({
     logger: createLogger(process.env.NODE_ENV === config.NODE_ENV),
+    trustProxy: true,
   });
 
   await app.register(rabbitMQPlugin);

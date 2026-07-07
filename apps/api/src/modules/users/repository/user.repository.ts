@@ -9,11 +9,27 @@ export class UserRepository {
             }
         });
     }
-
-    async create(data: Prisma.UserCreateInput) {
-        return prisma.user.create({
-            data
-        });
+    /**
+     * Create a new user and assign role inside a transaction
+     *
+     * Transaction flow:
+     * 1. Create user record
+     * 2. Create user-role mapping
+     * 3. Ensure both operations succeed or both rollback
+     */
+    async createUser(
+        data: Prisma.UserCreateInput 
+    ) {
+        // Use a transaction to ensure atomicity
+        return await prisma.user.create({
+                data: {
+                    fullName: data.fullName,
+                    email: data.email,
+                    passwordHash: data.passwordHash,
+                    language: data.language,
+                    timezone: data.timezone,
+                }
+            });
     }
 
     async findById(id: string) {

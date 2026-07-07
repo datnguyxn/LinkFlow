@@ -20,6 +20,7 @@ export const RABBITMQ_QUEUE = {
     EMAIL_USER_REGISTERED: "email.user.registered",
 
     AUDIT_USER_REGISTERED: "audit.user.registered",
+    AUDIT_USER_LOGIN: "audit.user.login",
 
     NOTIFICATION_USER_REGISTERED: "notification.user.registered",
 

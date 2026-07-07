@@ -1,0 +1,1 @@
+export * from "./repository/email-verification.repository.ts";

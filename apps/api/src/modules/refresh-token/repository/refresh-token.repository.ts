@@ -2,12 +2,14 @@ import { prisma } from "../../../infrastructure/database/index.ts";
 import { Prisma } from "@prisma/client";
 
 export class RefreshTokenRepository {
-    async create(data: {token: Prisma.RefreshTokenCreateInput, userId: string}) {
+    async create(data: {token: Prisma.RefreshTokenCreateInput, userId: string, ipAddress?: string, userAgent?: string}) {
         return prisma.refreshToken.create({
             data: {
                 tokenHash: data.token.tokenHash,
                 userId: data.userId,
-                expiresAt: data.token.expiresAt
+                expiresAt: data.token.expiresAt,
+                ipAddress: data.ipAddress,
+                userAgent: data.userAgent,
             }
         });
     }
@@ -38,7 +40,8 @@ export class RefreshTokenRepository {
                 userId
             },
             data: {
-                revoked: true
+                revoked: true,
+                revokedAt: new Date()
             }
         });
     }

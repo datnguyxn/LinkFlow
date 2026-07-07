@@ -6,3 +6,4 @@ export * from "./route.constant.ts";
 export * from "./status.constant.ts";
 export * from "./cookie.constant.ts";
 export * from "./rabbitmq.constant.ts";
+export * from "./audit.constant.ts";

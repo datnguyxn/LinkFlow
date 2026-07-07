@@ -1,7 +1,7 @@
 import type { MailService } from "../infrastructure/mail/interfaces/mail.service.ts";
 import { consumer } from "../infrastructure/queue/index.ts";
 import type { UserRegisteredEvent } from "../events/auth/user-registered.event.ts";
-import { RABBITMQ_QUEUE } from "../common/constants/rabbitmq.constant.ts";
+import { RABBITMQ_EXCHANGE, RABBITMQ_QUEUE, RABBITMQ_ROUTING_KEY } from "../common/constants/rabbitmq.constant.ts";
 
 export class EmailWorker {
 
@@ -12,6 +12,8 @@ export class EmailWorker {
     async start() {
 
         await consumer.consume<UserRegisteredEvent>(
+            RABBITMQ_EXCHANGE.AUTH,
+            RABBITMQ_ROUTING_KEY.USER_REGISTERED,
             RABBITMQ_QUEUE.EMAIL_USER_REGISTERED,
 
             async (event) => {

@@ -11,7 +11,6 @@ class RedisService {
         });
 
         this.client.on("connect", () => {
-            console.log("🟡 Connecting to Redis...");
         });
 
         this.client.on("ready", () => {

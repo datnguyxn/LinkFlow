@@ -1,15 +1,17 @@
-import { AuthRepository } from '../repository/auth.repository.ts';
-import { WorkspaceRepository } from '../../workspace/repository/workspace.repository.ts';
-import { RefreshTokenRepository } from '../../refresh-token/repository/refresh-token.repository.ts';
+import { UserRepository } from './../../users/index.ts';
+import { WorkspaceRepository } from '../../workspace/index.ts';
+import { RefreshTokenRepository } from '../../refresh-token/index.ts';
+import { EmailVerificationRepository } from '../../email-verification/index.ts';
 
 import type { AuthResponse } from '../types/auth.type.ts';
-import { hashPassword } from '../utils/password.util.ts';
+import { hashPassword, comparePassword } from '../utils/password.util.ts';
 import { JwtService } from './jwt.service.ts';
-import { HTTP_STATUS, ROLE } from '../../../common/constants/index.ts';
-import { AppError } from '../../../common/errors/index.ts';
+import { ROLE } from '../../../common/constants/index.ts';
+import { ConflictError, UnauthorizedError } from '../../../common/errors/index.ts';
 import { TransactionService } from '../../../infrastructure/database/index.ts';
 import { config } from '../../../config/env/index.ts';
 import type { UserRegisteredEvent } from '../../../events/auth/user-registered.event.ts';
+import type { UserLoginEvent } from '../../../events/auth/user-login.event.ts';
 import { randomUUID } from 'crypto';
 import { AuthPublisher } from '../publishers/auth.publisher.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
@@ -21,13 +23,14 @@ import { Publisher } from '../../../infrastructure/queue/index.ts';
  */
 export class AuthService {
     constructor(
-        private authRepository = new AuthRepository(),
+        private userRepository = new UserRepository(),
         private workspaceRepository = new WorkspaceRepository(),
         private refreshTokenRepository = new RefreshTokenRepository(),
         private jwtService = new JwtService(),
         private transactionService = new TransactionService(),
+        private emailVerificationRepository = new EmailVerificationRepository(),
         private authPublisher = new AuthPublisher(new Publisher()),
-    ) {}
+    ) { }
 
     /**
      * Register a new user
@@ -40,18 +43,20 @@ export class AuthService {
     async registerUser(
         email: string,
         password: string,
-        fullName: string
-    ): Promise < AuthResponse | null > {
+        fullName: string,
+        ipAddress?: string,
+        userAgent?: string
+    ): Promise<AuthResponse | null> {
 
         console.log("Registering user:", { email, fullName }); // Debug log
 
         // Check duplicate email
-        const existingUser = await this.authRepository.findUserByEmail(email);
+        const existingUser = await this.userRepository.findByEmail(email);
 
         console.log("Existing user check:", existingUser); // Debug log
 
-        if(existingUser) {
-            throw new AppError(HTTP_STATUS.CONFLICT, "User already exists", "USER_ALREADY_EXISTS");
+        if (existingUser) {
+            throw new ConflictError("User already exists", "USER_ALREADY_EXISTS");
         }
 
         // Hash raw password before saving to DB
@@ -61,11 +66,12 @@ export class AuthService {
         const result = await this.transactionService.run(async (tx) => {
 
             // 1. Create user
-            const newUser = await this.authRepository.createUser({
+            const newUser = await this.userRepository.createUser({
                 email,
                 passwordHash: hashedPassword,
                 fullName,
-                language: 'en', // default language
+                language: 'en', // default language,
+                timezone: 'UTC', // default timezone
             });
 
             // 2. Create default workspace for the new user
@@ -74,7 +80,14 @@ export class AuthService {
                 ownerId: newUser.id,
             });
 
-            return { newUser, workspace };
+            // 3. Generate a verification token for email confirmation
+            const verifyToken = randomUUID(); // Generate a unique verification token
+            await this.emailVerificationRepository.create(tx, {
+                userId: newUser.id,
+                verifyToken: verifyToken
+            });
+
+            return { newUser, workspace, verifyToken };
         });
 
         // Generate JWT tokens for authentication
@@ -96,17 +109,19 @@ export class AuthService {
                         id: result.newUser.id,
                     },
                 },
-            }
+            },
+            ipAddress: ipAddress,
+            userAgent: userAgent,
         });
 
-        const verifyToken = randomUUID(); // Generate a unique verification token
 
         // Publish user registered event to RabbitMQ
         const event: UserRegisteredEvent = {
             userId: result.newUser.id,
             email: result.newUser.email,
             fullName: result.newUser.fullName || "",
-            verifyToken: verifyToken, // Using the generated verification token
+            verifyToken: result.verifyToken, // Using the generated verification token
+            ipAddress: ipAddress, // You can set this if you have access to the request IP
         };
 
         await this.authPublisher.userRegistered(event);
@@ -123,6 +138,71 @@ export class AuthService {
      * Used for authentication / profile lookup
      */
     async getCurrentUserByEmail(email: string) {
-            return await this.authRepository.findUserByEmail(email);
-        }
+        return await this.userRepository.findByEmail(email);
     }
+
+    /**
+     * Login user with email and password
+     * - Validate credentials
+     * - Generate access & refresh tokens
+     */
+    async loginUser(
+        email: string,
+        password: string,
+        ipAddress?: string,
+        userAgent?: string
+    ): Promise<AuthResponse | null> {
+        // Find user by email
+        const user = await this.userRepository.findByEmail(email);
+
+        if (!user) {
+            throw new UnauthorizedError("request.validationFailed", "INVALID_CREDENTIALS");
+        }
+
+        // Validate password
+        const isPasswordValid = await comparePassword(password, user.passwordHash || "");
+        if (!isPasswordValid) {
+            throw new UnauthorizedError("request.validationFailed", "INVALID_CREDENTIALS");
+        }
+
+        // Generate JWT tokens for authentication
+        const tokens = this.jwtService.generateTokens({
+            id: user.id,
+            email: user.email,
+            role: ROLE.OWNER, // Assuming role is OWNER for simplicity; adjust as needed,
+            language: user.language || 'en', // default language
+        });
+
+        // Save refresh token
+        await this.refreshTokenRepository.create({
+            userId: user.id,
+            token: {
+                tokenHash: await this.jwtService.hashRefreshToken(tokens.refreshToken),
+                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
+                user: {
+                    connect: {
+                        id: user.id,
+                    },
+                },
+            },
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+        });
+
+        // Publish user login event to RabbitMQ
+        const event: UserLoginEvent = {
+            userId: user.id,
+            email: user.email,
+            fullName: user.fullName || "",
+            ipAddress: ipAddress, // You can set this if you have access to the request IP
+        };
+
+        await this.authPublisher.userLoggedIn(event);
+
+        // Return tokens to the controller for response
+        return {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+        };
+    }
+}

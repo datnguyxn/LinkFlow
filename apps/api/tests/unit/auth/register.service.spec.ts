@@ -11,18 +11,19 @@ import { ROLE } from "../../../src/common/constants/role.constant";
 describe("AuthService", () => {
     let authService: AuthService;
 
-    let authRepository: any;
+    let userRepository: any;
     let workspaceRepository: any;
     let refreshTokenRepository: any;
     let jwtService: any;
     let transactionService: any;
+    let emailVerificationRepository: any;
     let authPublisher: any;
 
     beforeEach(() => {
         vi.clearAllMocks();
 
-        authRepository = {
-            findUserByEmail: vi.fn(),
+        userRepository = {
+            findByEmail: vi.fn(),
             createUser: vi.fn(),
         };
 
@@ -43,16 +44,21 @@ describe("AuthService", () => {
             run: vi.fn(),
         };
 
+        emailVerificationRepository = {
+            create: vi.fn(),
+        };
+
         authPublisher = {
             userRegistered: vi.fn(),
         };
 
         authService = new AuthService(
-            authRepository,
+            userRepository,
             workspaceRepository,
             refreshTokenRepository,
             jwtService,
             transactionService,
+            emailVerificationRepository,
             authPublisher
         );
     });
@@ -61,7 +67,7 @@ describe("AuthService", () => {
 
         it("should register successfully", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockResolvedValue("hashed-password");
 
@@ -69,15 +75,20 @@ describe("AuthService", () => {
 
                 const tx = {};
 
-                authRepository.createUser.mockResolvedValue({
+                userRepository.createUser.mockResolvedValue({
                     id: "user-id",
                     email: "dat@gmail.com",
                     fullName: "Dat Nguyen",
                     language: "en",
+                    timezone: "UTC",
                 });
 
                 workspaceRepository.create.mockResolvedValue({
                     id: "workspace-id",
+                });
+
+                emailVerificationRepository.create.mockResolvedValue({
+                    id: "email-verification-id",
                 });
 
                 return callback(tx);
@@ -103,18 +114,19 @@ describe("AuthService", () => {
                 "Dat Nguyen",
             );
 
-            expect(authRepository.findUserByEmail)
+            expect(userRepository.findByEmail)
                 .toHaveBeenCalledWith("dat@gmail.com");
 
             expect(hashPassword)
                 .toHaveBeenCalledWith("Password@123");
 
-            expect(authRepository.createUser)
+            expect(userRepository.createUser)
                 .toHaveBeenCalledWith({
                     email: "dat@gmail.com",
                     passwordHash: "hashed-password",
                     fullName: "Dat Nguyen",
                     language: "en",
+                    timezone: "UTC",
                 });
 
             expect(workspaceRepository.create)
@@ -152,7 +164,7 @@ describe("AuthService", () => {
 
         it("should throw USER_ALREADY_EXISTS", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue({
+            userRepository.findByEmail.mockResolvedValue({
                 id: "1",
                 email: "dat@gmail.com",
             });
@@ -175,7 +187,7 @@ describe("AuthService", () => {
 
         it("should throw if hash password failed", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockRejectedValue(
                 new Error("Hash failed"),
@@ -194,7 +206,7 @@ describe("AuthService", () => {
 
         it("should throw if transaction failed", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockResolvedValue(
                 "hashed-password",
@@ -216,7 +228,7 @@ describe("AuthService", () => {
 
         it("should throw if jwt generation failed", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockResolvedValue(
                 "hashed-password",
@@ -224,15 +236,20 @@ describe("AuthService", () => {
 
             transactionService.run.mockImplementation(async (callback: any) => {
 
-                authRepository.createUser.mockResolvedValue({
+                userRepository.createUser.mockResolvedValue({
                     id: "user-id",
                     email: "dat@gmail.com",
                     fullName: "Dat",
                     language: "en",
+                    timezone: "UTC",
                 });
 
                 workspaceRepository.create.mockResolvedValue({
                     id: "workspace-id",
+                });
+
+                emailVerificationRepository.create.mockResolvedValue({
+                    id: "email-verification-id",
                 });
 
                 return callback({});
@@ -255,7 +272,7 @@ describe("AuthService", () => {
 
         it("should throw if hash refresh token failed", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockResolvedValue(
                 "hashed-password",
@@ -263,15 +280,20 @@ describe("AuthService", () => {
 
             transactionService.run.mockImplementation(async (callback: any) => {
 
-                authRepository.createUser.mockResolvedValue({
+                userRepository.createUser.mockResolvedValue({
                     id: "user-id",
                     email: "dat@gmail.com",
                     fullName: "Dat",
                     language: "en",
+                    timezone: "UTC",
                 });
 
                 workspaceRepository.create.mockResolvedValue({
                     id: "workspace-id",
+                });
+
+                emailVerificationRepository.create.mockResolvedValue({
+                    id: "email-verification-id",
                 });
 
                 return callback({});
@@ -299,7 +321,7 @@ describe("AuthService", () => {
 
         it("should throw if refresh token repository failed", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockResolvedValue(
                 "hashed-password",
@@ -307,15 +329,20 @@ describe("AuthService", () => {
 
             transactionService.run.mockImplementation(async (callback: any) => {
 
-                authRepository.createUser.mockResolvedValue({
+                userRepository.createUser.mockResolvedValue({
                     id: "user-id",
                     email: "dat@gmail.com",
                     fullName: "Dat",
                     language: "en",
+                    timezone: "UTC",
                 });
 
                 workspaceRepository.create.mockResolvedValue({
                     id: "workspace-id",
+                });
+
+                emailVerificationRepository.create.mockResolvedValue({
+                    id: "email-verification-id",
                 });
 
                 return callback({});
@@ -347,7 +374,7 @@ describe("AuthService", () => {
 
         it("should throw if publisher failed", async () => {
 
-            authRepository.findUserByEmail.mockResolvedValue(null);
+            userRepository.findByEmail.mockResolvedValue(null);
 
             (hashPassword as any).mockResolvedValue(
                 "hashed-password",
@@ -355,15 +382,20 @@ describe("AuthService", () => {
 
             transactionService.run.mockImplementation(async (callback: any) => {
 
-                authRepository.createUser.mockResolvedValue({
+                userRepository.createUser.mockResolvedValue({
                     id: "user-id",
                     email: "dat@gmail.com",
                     fullName: "Dat",
                     language: "en",
+                    timezone: "UTC",
                 });
 
                 workspaceRepository.create.mockResolvedValue({
                     id: "workspace-id",
+                });
+
+                emailVerificationRepository.create.mockResolvedValue({
+                    id: "email-verification-id",
                 });
 
                 return callback({});
