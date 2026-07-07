@@ -32,6 +32,8 @@ model User {
 
   language String?
 
+  role UserRole @default(USER)
+
   timezone String?
 
   lastLoginAt DateTime? @map("last_login_at")
@@ -413,6 +415,8 @@ model ApiKey {
 
   keyHash String @map("key_hash")
 
+  role UserRole @default(USER)
+
   lastUsedAt DateTime? @map("last_used_at")
 
   expiresAt DateTime? @map("expires_at")
@@ -533,4 +537,9 @@ enum NotificationType {
 enum OAuthProvider {
   GOOGLE
   GITHUB
+}
+
+enum UserRole {
+  ADMIN
+  USER
 }

@@ -6,8 +6,8 @@ vi.mock("../../../src/modules/auth/utils/password.util", () => ({
 }));
 
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
-import { hashPassword, comparePassword } from "../../../src/modules/auth/utils/password.util";
-import { ROLE } from "../../../src/common/constants/role.constant";
+import { comparePassword } from "../../../src/modules/auth/utils/password.util";
+import { UserRole } from "@prisma/client"
 
 describe("AuthService", () => {
     let authService: AuthService;
@@ -73,7 +73,7 @@ describe("AuthService", () => {
                 passwordHash: "hashed-password",
                 fullName: "Dat Nguyen",
                 language: "en",
-                role: ROLE.OWNER,
+                role: UserRole.USER
             });
 
             (comparePassword as any).mockResolvedValue(true);
@@ -171,7 +171,7 @@ describe("AuthService", () => {
             email: "dat@gmail.com",
             passwordHash: "hashed-password",
             language: "en",
-            role: ROLE.OWNER,
+            role: UserRole.USER,
         });
 
         (comparePassword as any).mockResolvedValue(true);
@@ -196,7 +196,7 @@ describe("AuthService", () => {
             email: "dat@gmail.com",
             passwordHash: "hashed-password",
             language: "en",
-            role: ROLE.OWNER,
+            role: UserRole.USER,
         });
 
         (comparePassword as any).mockResolvedValue(true);
@@ -225,8 +225,7 @@ describe("AuthService", () => {
             id: "user-id",
             email: "dat@gmail.com",
             passwordHash: "hashed-password",
-            language: "en",
-            role: ROLE.OWNER,
+            language: "en"
         });
 
         (comparePassword as any).mockResolvedValue(true);
@@ -260,7 +259,7 @@ describe("AuthService", () => {
             email: "dat@gmail.com",
             passwordHash: "hashed-password",
             language: "en",
-            role: ROLE.OWNER,
+            role: UserRole.USER,
         });
 
         (comparePassword as any).mockResolvedValue(true);

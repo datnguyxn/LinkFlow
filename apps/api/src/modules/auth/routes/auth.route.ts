@@ -64,4 +64,24 @@ export const authRoutes = async (app: FastifyInstance) => {
         },
         controller.loginUser.bind(controller) // Bind controller context
     );
+
+    /**
+     * GET /refresh-token
+     *
+     * Features:
+     * - Refresh access token using refresh token from cookies
+     * - Rate limiting to prevent abuse
+     */
+    app.get(
+        "/refresh-token",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+        },
+        controller.refreshToken.bind(controller) // Bind controller context
+    );
 };

@@ -1,13 +1,13 @@
 # LinkFlow Backend
 
-Backend service for LinkFlow built with **Node.js**, **Express.js**, **TypeScript**, and **PostgreSQL**.
+Backend service for LinkFlow built with **Node.js**, **Fastify**, **TypeScript**, and **PostgreSQL**.
 
 ---
 
 ## 🚀 Tech Stack
 
 - Node.js
-- Express.js
+- Fastify
 - TypeScript
 - PostgreSQL
 - Redis
@@ -288,7 +288,7 @@ Password: password123
 ## 📌 API Base URL
 
 ```
-http://localhost:3000/api/v1
+http://localhost:8080/api/v1
 ```
 
 Example

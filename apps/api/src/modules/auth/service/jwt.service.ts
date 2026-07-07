@@ -1,7 +1,7 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { config } from "../../../config/env/index.ts";
 import type { AuthToken, JwtPayload } from "../types/auth.type.ts";
-import { HTTP_STATUS } from "../../../common/constants/index.ts";
+import { HTTP_STATUS, ERROR_CODE } from "../../../common/constants/index.ts";
 import { AppError } from "../../../common/errors/index.ts";
 
 export class JwtService {
@@ -37,21 +37,21 @@ export class JwtService {
         });
     }
 
-    verifyAccessToken(token: string): JwtPayload | null {
+    verifyAccessToken(token: string): JwtPayload {
         try {
             return jwt.verify(token, config.JWT_ACCESS_SECRET) as JwtPayload;
         } catch (error) {
             console.error("Access token verification failed:", error);
-            throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid access token", "INVALID_ACCESS_TOKEN");
+            throw new AppError(HTTP_STATUS.UNAUTHORIZED, "auth.middleware.invalidToken", ERROR_CODE.INVALID_TOKEN);
         }
     }
 
-    verifyRefreshToken(token: string): JwtPayload | null {
+    verifyRefreshToken(token: string): JwtPayload {
         try {
             return jwt.verify(token, config.JWT_REFRESH_SECRET) as JwtPayload;
         } catch (error) {
             console.error("Refresh token verification failed:", error);
-            throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid refresh token", "INVALID_REFRESH_TOKEN");
+            throw new AppError(HTTP_STATUS.UNAUTHORIZED, "auth.middleware.invalidRefreshToken", ERROR_CODE.INVALID_REFRESH_TOKEN);
         }
     }
 }

@@ -22,7 +22,18 @@
         "invalidPassword": "Invalid password",
         "invalidUsername": "Invalid username",
         "invalidCredentials": "Invalid email or password",
-        "userNotFound": "User not found"
+        "userNotFound": "User not found",
+        "refreshSuccess": "Refresh token successful",
+        "middleware": {
+            "unauthorized": "Unauthorized",
+            "forbidden": "Forbidden",
+            "invalidToken": "Invalid token",
+            "tokenExpired": "Token has expired",
+            "missingToken": "Missing token",
+            "invalidRefreshToken": "Invalid refresh token",
+            "refreshTokenExpired": "Refresh token has expired",
+            "missingRefreshToken": "Missing refresh token"
+        }
     }, 
     "request": {
         "invalidRequest": "Invalid request",

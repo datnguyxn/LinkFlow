@@ -1,6 +1,7 @@
 import "fastify";
 import { PrismaClient } from "@prisma/client";
 import { TFunction } from "i18next";
+import { JwtPayload } from "../modules/auth/types/auth.type.ts";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -18,7 +19,10 @@ declare module "fastify" {
       id: string;
       email: string;
       language: string;
-      role: string;
     };
   }
+
+  interface FastifyRequest {
+        user?: JwtPayload;
+    }
 }

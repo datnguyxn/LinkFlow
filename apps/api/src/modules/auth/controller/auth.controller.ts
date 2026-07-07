@@ -1,10 +1,11 @@
 import { AuthService } from '../service/auth.service.ts';
 import { ResponseHandler } from "../../../common/responses/handler.response.js";
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { HTTP_STATUS, cookieOptions } from "../../../common/constants/index.ts";
+import { ERROR_CODE, HTTP_STATUS, cookieOptions } from "../../../common/constants/index.ts";
 import type { AuthResponse } from "../types/auth.type.ts";
 import type { RegisterBody } from "../validator/register.validator.ts";
 import type { LoginBody } from '../validator/login.validator.ts';
+import { UnauthorizedError } from '../../../common/errors/index.ts';
 
 /**
  * AuthController handles incoming HTTP requests related to authentication.
@@ -81,8 +82,12 @@ export class AuthController {
         // Extract validated input from request body
         const { email, password } = request.body;
 
+        const ipAddress = request.ip;
+
+        const userAgent = request.headers["user-agent"];
+
         // Call service layer to handle business logic
-        const data = await this.authService.loginUser(email, password, request.ip);
+        const data = await this.authService.loginUser(email, password, ipAddress, userAgent);
 
         // Handle case: invalid credentials
         if (data === null) {
@@ -105,6 +110,44 @@ export class AuthController {
             reply,
             data,
             request.t("auth.loginSuccess"),
+            HTTP_STATUS.OK
+        );
+    }
+
+    async refreshToken(
+        request: FastifyRequest,
+        reply: FastifyReply
+    ) {
+        // Extract refresh token from cookies
+        const refreshToken = request.cookies.refreshToken;
+
+        // Handle case: missing refresh token
+        if (!refreshToken) {
+            throw new UnauthorizedError(
+                "auth.middleware.missingRefreshToken",
+                ERROR_CODE.MISSING_REFRESH_TOKEN
+            );
+        }
+
+        const ipAddress = request.ip;
+
+        const userAgent = request.headers["user-agent"];
+
+        // Call service layer to handle business logic
+        const data = await this.authService.refresh(refreshToken, ipAddress, userAgent);
+
+        // Set new refresh token in HTTP-only cookie for security
+        reply.setCookie(
+            "refreshToken",
+            data.refreshToken,
+            cookieOptions,
+        );
+
+        // Successful token refresh
+        return ResponseHandler.success<AuthResponse>(
+            reply,
+            data,
+            request.t("auth.refreshSuccess"),
             HTTP_STATUS.OK
         );
     }

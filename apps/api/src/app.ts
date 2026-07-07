@@ -14,7 +14,7 @@ import {
   jwtPlugin,
   rateLimitPlugin,
   multipartPlugin,
-  errorPlugin
+  errorPlugin,
 }
   from './plugins/index.ts';
 import { prismaPlugin } from './infrastructure/database/index.ts';

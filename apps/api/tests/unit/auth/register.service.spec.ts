@@ -6,7 +6,7 @@ vi.mock("../../../src/modules/auth/utils/password.util", () => ({
 
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
 import { hashPassword } from "../../../src/modules/auth/utils/password.util";
-import { ROLE } from "../../../src/common/constants/role.constant";
+import { UserRole } from "@prisma/client"
 
 describe("AuthService", () => {
     let authService: AuthService;
@@ -81,6 +81,7 @@ describe("AuthService", () => {
                     fullName: "Dat Nguyen",
                     language: "en",
                     timezone: "UTC",
+                    role: UserRole.USER,
                 });
 
                 workspaceRepository.create.mockResolvedValue({
@@ -142,7 +143,7 @@ describe("AuthService", () => {
                 .toHaveBeenCalledWith({
                     id: "user-id",
                     email: "dat@gmail.com",
-                    role: ROLE.OWNER,
+                    role: UserRole.USER,
                     language: "en",
                 });
 
@@ -242,6 +243,7 @@ describe("AuthService", () => {
                     fullName: "Dat",
                     language: "en",
                     timezone: "UTC",
+                    role: UserRole.USER,
                 });
 
                 workspaceRepository.create.mockResolvedValue({
@@ -286,6 +288,7 @@ describe("AuthService", () => {
                     fullName: "Dat",
                     language: "en",
                     timezone: "UTC",
+                    role: UserRole.USER,
                 });
 
                 workspaceRepository.create.mockResolvedValue({
@@ -335,6 +338,7 @@ describe("AuthService", () => {
                     fullName: "Dat",
                     language: "en",
                     timezone: "UTC",
+                    role: UserRole.USER,
                 });
 
                 workspaceRepository.create.mockResolvedValue({
@@ -388,6 +392,7 @@ describe("AuthService", () => {
                     fullName: "Dat",
                     language: "en",
                     timezone: "UTC",
+                    role: UserRole.USER,
                 });
 
                 workspaceRepository.create.mockResolvedValue({

@@ -1,7 +1,6 @@
 import { prisma } from "../../../infrastructure/database/index.ts";
-import { Prisma } from "@prisma/client";
+import { Prisma, WorkspaceRole } from "@prisma/client";
 import { generateWorkspaceSlug } from "../../../utils/slug.util.ts";
-import { ROLE } from "../../../common/constants/index.ts";
 
 export class WorkspaceRepository {
     async create(transaction: Prisma.TransactionClient, data: {
@@ -17,7 +16,7 @@ export class WorkspaceRepository {
                 members: {
                     create: {
                         userId: data.ownerId,
-                        role: ROLE.OWNER,
+                        role: WorkspaceRole.OWNER,
                         joinedAt: new Date()
                     },
                 },
@@ -67,5 +66,16 @@ export class WorkspaceRepository {
                 id
             }
         });
+    }
+
+    async findRoleByUserId(workspaceId: string, userId: string) {
+        const member = await prisma.workspaceMember.findFirst({
+            where: {
+                workspaceId,
+                userId
+            }
+        });
+
+        return member?.role || null;
     }
 }

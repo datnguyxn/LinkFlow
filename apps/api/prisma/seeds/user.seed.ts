@@ -1,4 +1,4 @@
-import { PrismaClient, UserStatus } from "@prisma/client";
+import { PrismaClient, UserStatus, UserRole } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -28,6 +28,7 @@ export async function seedAdminUser() {
             status: UserStatus.ACTIVE,
             emailVerified: true,
             theme: false,
+            role: UserRole.ADMIN,
             language: 'en',
             timezone: 'UTC',
         },

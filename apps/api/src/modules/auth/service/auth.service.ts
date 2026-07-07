@@ -6,7 +6,7 @@ import { EmailVerificationRepository } from '../../email-verification/index.ts';
 import type { AuthResponse } from '../types/auth.type.ts';
 import { hashPassword, comparePassword } from '../utils/password.util.ts';
 import { JwtService } from './jwt.service.ts';
-import { ROLE } from '../../../common/constants/index.ts';
+import { ERROR_CODE, LANGUAGE } from '../../../common/constants/index.ts';
 import { ConflictError, UnauthorizedError } from '../../../common/errors/index.ts';
 import { TransactionService } from '../../../infrastructure/database/index.ts';
 import { config } from '../../../config/env/index.ts';
@@ -70,7 +70,7 @@ export class AuthService {
                 email,
                 passwordHash: hashedPassword,
                 fullName,
-                language: 'en', // default language,
+                language: LANGUAGE.EN, // default language,
                 timezone: 'UTC', // default timezone
             });
 
@@ -94,8 +94,8 @@ export class AuthService {
         const tokens = this.jwtService.generateTokens({
             id: result.newUser.id,
             email: result.newUser.email,
-            role: ROLE.OWNER,
-            language: result.newUser.language || 'en', // default language
+            role: result.newUser.role || 'USER', // default role
+            language: result.newUser.language || LANGUAGE.EN, // default language
         });
 
         // Save refresh token
@@ -156,21 +156,21 @@ export class AuthService {
         const user = await this.userRepository.findByEmail(email);
 
         if (!user) {
-            throw new UnauthorizedError("request.validationFailed", "INVALID_CREDENTIALS");
+            throw new UnauthorizedError("request.validationFailed", ERROR_CODE.INVALID_CREDENTIALS);
         }
 
         // Validate password
         const isPasswordValid = await comparePassword(password, user.passwordHash || "");
         if (!isPasswordValid) {
-            throw new UnauthorizedError("request.validationFailed", "INVALID_CREDENTIALS");
+            throw new UnauthorizedError("request.validationFailed", ERROR_CODE.INVALID_CREDENTIALS);
         }
 
         // Generate JWT tokens for authentication
         const tokens = this.jwtService.generateTokens({
             id: user.id,
             email: user.email,
-            role: ROLE.OWNER, // Assuming role is OWNER for simplicity; adjust as needed,
             language: user.language || 'en', // default language
+            role: user.role || 'USER', // default role
         });
 
         // Save refresh token
@@ -204,5 +204,95 @@ export class AuthService {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
         };
+    }
+
+    async refresh(refreshToken: string, ipAddress?: string, userAgent?: string): Promise<AuthResponse> {
+
+        // Verify JWT
+        const payload =
+            this.jwtService.verifyRefreshToken(refreshToken);
+
+        // Hash token
+        const tokenHash =
+            await this.jwtService.hashRefreshToken(refreshToken);
+
+        // Find refresh token
+        const storedToken =
+            await this.refreshTokenRepository.findByTokenHash(
+                tokenHash,
+            );
+
+        if (!storedToken) {
+            throw new UnauthorizedError(
+                "auth.middleware.INVALID_REFRESH_TOKEN",
+                ERROR_CODE.INVALID_REFRESH_TOKEN,
+            );
+        }
+
+        // Check revoked
+        if (storedToken.revoked) {
+            throw new UnauthorizedError(
+                "auth.middleware.INVALID_REFRESH_TOKEN",
+                ERROR_CODE.INVALID_REFRESH_TOKEN,
+            );
+        }
+
+        // Check expired
+        if (storedToken.expiresAt < new Date()) {
+            throw new UnauthorizedError(
+                "auth.middleware.REFRESH_TOKEN_EXPIRED",
+                ERROR_CODE.REFRESH_TOKEN_EXPIRED,
+            );
+        }
+
+        // Find user
+        const user =
+            await this.userRepository.findById(payload.id);
+
+        if (!user) {
+            throw new UnauthorizedError(
+                "auth.middleware.INVALID_REFRESH_TOKEN",
+                ERROR_CODE.INVALID_REFRESH_TOKEN,
+            );
+        }
+
+        // Generate new tokens
+        const tokens =
+            this.jwtService.generateTokens({
+                id: user.id,
+                email: user.email,
+                language: user.language || LANGUAGE.EN, // default language
+                role: user.role || 'USER', // default role  
+            });
+
+        // Hash new refresh token
+        const newRefreshTokenHash =
+            await this.jwtService.hashRefreshToken(
+                tokens.refreshToken,
+            );
+
+        // Save new refresh token
+        await this.refreshTokenRepository.create({
+            userId: user.id,
+            token: {
+                tokenHash: newRefreshTokenHash,
+                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
+                user: {
+                    connect: {
+                        id: user.id,
+                    },
+                },
+            },
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+        });
+
+        // Revoke old token
+        await this.refreshTokenRepository.revoke(
+            storedToken.id,
+        );
+
+        return tokens;
+
     }
 }

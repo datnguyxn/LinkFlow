@@ -22,7 +22,18 @@
         "invalidPassword": "Mật khẩu không hợp lệ",
         "invalidUsername": "Tên người dùng không hợp lệ",
         "invalidCredentials": "Email hoặc mật khẩu không hợp lệ",
-        "userNotFound": "Người dùng không tồn tại"
+        "userNotFound": "Người dùng không tồn tại",
+        "refreshSuccess": "Làm mới refresh token thành công",
+        "middleware": {
+            "unauthorized": "Chưa được ủy quyền",
+            "forbidden": "Không được phép truy cập",
+            "invalidToken": "Token không hợp lệ",
+            "tokenExpired": "Token đã hết hạn",
+            "missingToken": "Thiếu token",
+            "invalidRefreshToken": "Token làm mới không hợp lệ",
+            "refreshTokenExpired": "Refresh token đã hết hạn",
+            "missingRefreshToken": "Thiếu refresh token"
+        }
     },
     "request": {
         "invalidRequest": "Yêu cầu không hợp lệ",

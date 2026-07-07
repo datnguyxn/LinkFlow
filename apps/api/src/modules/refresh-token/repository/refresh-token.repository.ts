@@ -23,13 +23,22 @@ export class RefreshTokenRepository {
         });
     }
 
+    async findByTokenHash(tokenHash: string) {
+        return prisma.refreshToken.findFirst({
+            where: {
+                tokenHash
+            }
+        });
+    }
+
     async revoke(id: string) {
         return prisma.refreshToken.update({
             where: {
                 id
             },
             data: {
-                revoked: true
+                revoked: true,
+                revokedAt: new Date()
             }
         });
     }
