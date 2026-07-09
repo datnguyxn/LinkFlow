@@ -2,9 +2,9 @@
   "name": "@linkflow/worker",
   "version": "1.0.0",
   "description": "",
-  "main": "server.ts",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "tsx watch server.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsup",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",

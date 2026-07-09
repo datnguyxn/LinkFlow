@@ -1,13 +1,33 @@
-import { Button } from '@/components/ui/button';
+import Navbar from '@/components/layouts/Navbar';
 
-export default function Home() {
+import Hero from '@/components/sections/Hero';
+import Features from '@/components/sections/Features';
+import Analytics from '@/components/sections/Analytics';
+import Statistics from '@/components/sections/Statistics';
+import Testimonials from '@/components/sections/Testimonials';
+import Pricing from '@/components/sections/Pricing';
+import FAQ from '@/components/sections/FAQ';
+import CTA from '@/components/sections/CTA';
+import Footer from '@/components/layouts/Footer';
+
+export default function HomePage() {
   return (
-    <main className="min-h-screen">
-      <section className="container mx-auto py-24">
-        <h1 className="text-6xl font-bold">LinkFlow</h1>
+    <>
+      <Navbar />
 
-        <p className="mt-4 text-muted-foreground">Modern URL Shortener Platform</p>
-      </section>
-    </main>
+      <main>
+        <Hero />
+        <Features />
+        <Analytics />
+        <Statistics />
+
+        <Testimonials />
+        <Pricing />
+        <FAQ />
+        <CTA />
+      </main>
+
+      <Footer />
+    </>
   );
 }
