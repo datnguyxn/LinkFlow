@@ -7,7 +7,8 @@ vi.mock("../../../src/utils/password.util", () => ({
 
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
 import { comparePassword } from "../../../src/utils/password.util";
-import { UserRole } from "@prisma/client"
+import { UserRole, UserStatus } from "@prisma/client"
+import { ERROR_CODE } from "../../../src/common/constants";
 
 describe("AuthService", () => {
     let authService: AuthService;
@@ -66,16 +67,23 @@ describe("AuthService", () => {
 
     describe("loginUser", () => {
 
-        it("should login successfully", async () => {
+        const activeUser = {
+            id: "user-id",
+            email: "dat@gmail.com",
+            passwordHash: "hashed-password",
+            fullName: "Dat Nguyen",
+            language: "en",
+            role: UserRole.USER,
+            emailVerified: true,
+            status: UserStatus.ACTIVE,
+        };
 
-            userRepository.findByEmail.mockResolvedValue({
-                id: "user-id",
-                email: "dat@gmail.com",
-                passwordHash: "hashed-password",
-                fullName: "Dat Nguyen",
-                language: "en",
-                role: UserRole.USER
-            });
+        beforeEach(() => {
+            vi.clearAllMocks();
+        });
+
+        it("should login successfully", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
 
             (comparePassword as any).mockResolvedValue(true);
 
@@ -89,6 +97,8 @@ describe("AuthService", () => {
             );
 
             refreshTokenRepository.create.mockResolvedValue({});
+
+            userRepository.updateLastLogin.mockResolvedValue(undefined);
 
             authPublisher.userLoggedIn.mockResolvedValue(undefined);
 
@@ -107,190 +117,319 @@ describe("AuthService", () => {
                 );
 
             expect(jwtService.generateTokens)
-                .toHaveBeenCalled();
+                .toHaveBeenCalledWith({
+                    id: activeUser.id,
+                    email: activeUser.email,
+                    language: "en",
+                    role: UserRole.USER,
+                });
 
             expect(jwtService.hashRefreshToken)
                 .toHaveBeenCalledWith("refresh-token");
 
             expect(refreshTokenRepository.create)
-                .toHaveBeenCalled();
+                .toHaveBeenCalledWith({
+                    userId: activeUser.id,
+                    token: expect.objectContaining({
+                        tokenHash: "hashed-refresh-token",
+                        expiresAt: expect.any(Date),
+                        user: {
+                            connect: {
+                                id: activeUser.id,
+                            },
+                        },
+                    }),
+                    ipAddress: undefined,
+                    userAgent: undefined,
+                });
 
             expect(userRepository.updateLastLogin)
-                .toHaveBeenCalledWith("user-id");
+                .toHaveBeenCalledWith(activeUser.id);
 
             expect(authPublisher.userLoggedIn)
-                .toHaveBeenCalled();
+                .toHaveBeenCalledWith({
+                    userId: activeUser.id,
+                    email: activeUser.email,
+                    fullName: activeUser.fullName,
+                    ipAddress: undefined,
+                });
 
             expect(result).toEqual({
                 accessToken: "access-token",
                 refreshToken: "refresh-token",
             });
-
-        });
-    });
-
-    it("should throw USER_NOT_FOUND", async () => {
-
-        userRepository.findByEmail.mockResolvedValue(null);
-
-        await expect(
-            authService.loginUser(
-                "dat@gmail.com",
-                "Password@123",
-            ),
-        ).rejects.toMatchObject({
-            statusCode: 401,
-            code: "INVALID_CREDENTIALS",
         });
 
-        expect(comparePassword)
-            .not.toHaveBeenCalled();
+        it("should throw INVALID_CREDENTIALS when user does not exist", async () => {
+            userRepository.findByEmail.mockResolvedValue(null);
 
-    });
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 401,
+                code: ERROR_CODE.INVALID_CREDENTIALS,
+            });
 
-    it("should throw INVALID_CREDENTIALS", async () => {
-
-        userRepository.findByEmail.mockResolvedValue({
-            passwordHash: "hashed-password",
+            expect(comparePassword).not.toHaveBeenCalled();
         });
 
-        (comparePassword as any).mockResolvedValue(false);
+        it("should throw when email is not verified", async () => {
+            userRepository.findByEmail.mockResolvedValue({
+                ...activeUser,
+                emailVerified: false,
+            });
 
-        await expect(
-            authService.loginUser(
-                "dat@gmail.com",
-                "WrongPassword",
-            ),
-        ).rejects.toMatchObject({
-            statusCode: 401,
-            code: "INVALID_CREDENTIALS",
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 401,
+                code: ERROR_CODE.INVALID_CREDENTIALS,
+            });
+
+            expect(comparePassword).not.toHaveBeenCalled();
         });
 
-    });
+        it("should throw when user is inactive", async () => {
+            userRepository.findByEmail.mockResolvedValue({
+                ...activeUser,
+                status: UserStatus.INACTIVE,
+            });
 
-    it("should throw if jwt generation failed", async () => {
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 403,
+                code: ERROR_CODE.USER_INACTIVE,
+            });
 
-        userRepository.findByEmail.mockResolvedValue({
-            id: "user-id",
-            email: "dat@gmail.com",
-            passwordHash: "hashed-password",
-            language: "en",
-            role: UserRole.USER,
+            expect(comparePassword).not.toHaveBeenCalled();
         });
 
-        (comparePassword as any).mockResolvedValue(true);
+        it("should throw when user is suspended", async () => {
+            userRepository.findByEmail.mockResolvedValue({
+                ...activeUser,
+                status: UserStatus.SUSPENDED,
+            });
 
-        jwtService.generateTokens.mockImplementation(() => {
-            throw new Error("JWT Error");
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 403,
+                code: ERROR_CODE.USER_SUSPENDED,
+            });
+
+            expect(comparePassword).not.toHaveBeenCalled();
         });
 
-        await expect(
-            authService.loginUser(
-                "dat@gmail.com",
-                "Password@123",
-            ),
-        ).rejects.toThrow("JWT Error");
+        it("should throw when user is deleted", async () => {
+            userRepository.findByEmail.mockResolvedValue({
+                ...activeUser,
+                status: UserStatus.DELETED,
+            });
 
-    });
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 403,
+                code: ERROR_CODE.USER_DELETED,
+            });
 
-    it("should throw if hash refresh token failed", async () => {
-
-        userRepository.findByEmail.mockResolvedValue({
-            id: "user-id",
-            email: "dat@gmail.com",
-            passwordHash: "hashed-password",
-            language: "en",
-            role: UserRole.USER,
+            expect(comparePassword).not.toHaveBeenCalled();
         });
 
-        (comparePassword as any).mockResolvedValue(true);
+        it("should throw when user status is unavailable", async () => {
+            userRepository.findByEmail.mockResolvedValue({
+                ...activeUser,
+                status: "UNKNOWN",
+            });
 
-        jwtService.generateTokens.mockReturnValue({
-            accessToken: "access-token",
-            refreshToken: "refresh-token",
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 403,
+                code: ERROR_CODE.USER_UNAVAILABLE,
+            });
+
+            expect(comparePassword).not.toHaveBeenCalled();
         });
 
-        jwtService.hashRefreshToken.mockRejectedValue(
-            new Error("Hash Refresh Error"),
-        );
+        it("should throw INVALID_CREDENTIALS when password is incorrect", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
 
-        await expect(
-            authService.loginUser(
-                "dat@gmail.com",
-                "Password@123",
-            ),
-        ).rejects.toThrow("Hash Refresh Error");
+            (comparePassword as any).mockResolvedValue(false);
 
-    });   
-    
-    it("should throw if refresh token repository failed", async () => {
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "WrongPassword",
+                ),
+            ).rejects.toMatchObject({
+                statusCode: 401,
+                code: ERROR_CODE.INVALID_CREDENTIALS,
+            });
 
-        userRepository.findByEmail.mockResolvedValue({
-            id: "user-id",
-            email: "dat@gmail.com",
-            passwordHash: "hashed-password",
-            language: "en"
+            expect(jwtService.generateTokens).not.toHaveBeenCalled();
+
+            expect(refreshTokenRepository.create).not.toHaveBeenCalled();
+
+            expect(authPublisher.userLoggedIn).not.toHaveBeenCalled();
         });
 
-        (comparePassword as any).mockResolvedValue(true);
+        it("should throw if jwt generation failed", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
 
-        jwtService.generateTokens.mockReturnValue({
-            accessToken: "access-token",
-            refreshToken: "refresh-token",
+            (comparePassword as any).mockResolvedValue(true);
+
+            jwtService.generateTokens.mockImplementation(() => {
+                throw new Error("JWT Error");
+            });
+
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toThrow("JWT Error");
+
+            expect(refreshTokenRepository.create).not.toHaveBeenCalled();
+
+            expect(authPublisher.userLoggedIn).not.toHaveBeenCalled();
         });
 
-        jwtService.hashRefreshToken.mockResolvedValue(
-            "hashed-refresh-token",
-        );
+        it("should throw if hash refresh token failed", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
 
-        refreshTokenRepository.create.mockRejectedValue(
-            new Error("Refresh Token Error"),
-        );
+            (comparePassword as any).mockResolvedValue(true);
 
-        await expect(
-            authService.loginUser(
-                "dat@gmail.com",
-                "Password@123",
-            ),
-        ).rejects.toThrow("Refresh Token Error");
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
 
-    });
+            jwtService.hashRefreshToken.mockRejectedValue(
+                new Error("Hash Refresh Error"),
+            );
 
-    it("should throw if publisher failed", async () => {
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toThrow("Hash Refresh Error");
 
-        userRepository.findByEmail.mockResolvedValue({
-            id: "user-id",
-            email: "dat@gmail.com",
-            passwordHash: "hashed-password",
-            language: "en",
-            role: UserRole.USER,
+            expect(refreshTokenRepository.create).not.toHaveBeenCalled();
+
+            expect(authPublisher.userLoggedIn).not.toHaveBeenCalled();
         });
 
-        (comparePassword as any).mockResolvedValue(true);
+        it("should throw if refresh token repository failed", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
 
-        jwtService.generateTokens.mockReturnValue({
-            accessToken: "access-token",
-            refreshToken: "refresh-token",
+            (comparePassword as any).mockResolvedValue(true);
+
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockRejectedValue(
+                new Error("Refresh Token Error"),
+            );
+
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toThrow("Refresh Token Error");
+
+            expect(userRepository.updateLastLogin).not.toHaveBeenCalled();
+
+            expect(authPublisher.userLoggedIn).not.toHaveBeenCalled();
         });
 
-        jwtService.hashRefreshToken.mockResolvedValue(
-            "hashed-refresh-token",
-        );
+        it("should throw if update last login failed", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
 
-        refreshTokenRepository.create.mockResolvedValue({});
+            (comparePassword as any).mockResolvedValue(true);
 
-        userRepository.updateLastLogin.mockResolvedValue(undefined);
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
 
-        authPublisher.userLoggedIn.mockRejectedValue(
-            new Error("RabbitMQ Error"),
-        );
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
 
-        await expect(
-            authService.loginUser(
-                "dat@gmail.com",
-                "Password@123",
-            ),
-        ).rejects.toThrow("RabbitMQ Error");
+            refreshTokenRepository.create.mockResolvedValue({});
 
+            userRepository.updateLastLogin.mockRejectedValue(
+                new Error("Update Last Login Error"),
+            );
+
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toThrow("Update Last Login Error");
+
+            expect(authPublisher.userLoggedIn).not.toHaveBeenCalled();
+        });
+
+        it("should throw if publisher failed", async () => {
+            userRepository.findByEmail.mockResolvedValue(activeUser);
+
+            (comparePassword as any).mockResolvedValue(true);
+
+            jwtService.generateTokens.mockReturnValue({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+            });
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockResolvedValue({});
+
+            userRepository.updateLastLogin.mockResolvedValue(undefined);
+
+            authPublisher.userLoggedIn.mockRejectedValue(
+                new Error("RabbitMQ Error"),
+            );
+
+            await expect(
+                authService.loginUser(
+                    "dat@gmail.com",
+                    "Password@123",
+                ),
+            ).rejects.toThrow("RabbitMQ Error");
+
+            expect(authPublisher.userLoggedIn).toHaveBeenCalledTimes(1);
+        });
     });
 });

@@ -6,6 +6,6 @@ export async function authGuard(
     request: FastifyRequest
 ) {
     if (!request.user) {
-        throw new UnauthorizedError(request.t("auth.auth.unauthorized"), ERROR_CODE.UNAUTHORIZED);
+        throw new UnauthorizedError(request.t("auth.middleware.unauthorized"), ERROR_CODE.UNAUTHORIZED);
     }
 }

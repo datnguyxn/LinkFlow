@@ -34,6 +34,13 @@
             "invalidRefreshToken": "Invalid refresh token",
             "refreshTokenExpired": "Refresh token has expired",
             "missingRefreshToken": "Missing refresh token"
+        },
+        "login": {
+            "emailNotVerified": "Email not verified. Please check your inbox for the verification email.",
+            "auth.login.userInactive": "User account is inactive. Please contact support.",
+            "auth.login.userSuspended": "User account is banned. Please contact support.",
+            "auth.login.userDeleted": "User account has been deleted.",
+            "auth.login.userUnavailable": "User account is unavailable. Please contact support."
         }
     }, 
     "request": {

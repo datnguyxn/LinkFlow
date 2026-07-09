@@ -34,6 +34,13 @@
             "invalidRefreshToken": "Token làm mới không hợp lệ",
             "refreshTokenExpired": "Refresh token đã hết hạn",
             "missingRefreshToken": "Thiếu refresh token"
+        },
+        "login": {
+            "emailNotVerified": "Email chưa được xác minh. Vui lòng kiểm tra hộp thư đến của bạn để nhận email xác minh.",
+            "auth.login.userInactive": "Tài khoản người dùng đang không hoạt động. Vui lòng liên hệ hỗ trợ.",
+            "auth.login.userSuspended": "Tài khoản người dùng đã bị cấm. Vui lòng liên hệ hỗ trợ.",
+            "auth.login.userDeleted": "Tài khoản người dùng đã bị xóa.",
+            "auth.login.userUnavailable": "Tài khoản người dùng không khả dụng. Vui lòng liên hệ hỗ trợ."
         }
     },
     "request": {

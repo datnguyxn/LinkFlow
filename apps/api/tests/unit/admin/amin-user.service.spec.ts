@@ -388,6 +388,7 @@ describe("AdminUserService", () => {
             expect(adminUserPublisher.userAction).toHaveBeenCalledTimes(1);
         });
     });
+    
     describe("changeRole", () => {
         const userId = "user-1";
         const adminId = "admin-1";

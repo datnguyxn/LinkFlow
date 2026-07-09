@@ -90,10 +90,21 @@ export class UserRepository {
 
         const [users, totalItems] = await prisma.$transaction([
             prisma.user.findMany({
-                skip, 
-                take
+                skip,
+                take,
+                where: {
+                    email: {
+                        not: "admin@linkflow.dev",
+                    },
+                },
             }),
-            prisma.user.count(),
+            prisma.user.count({
+                where: {
+                    email: {
+                        not: "admin@linkflow.dev",
+                    },
+                },
+            }),
         ]);
 
         return {
@@ -108,13 +119,13 @@ export class UserRepository {
      * @returns The updated user object with the new last login timestamp
      */
     async updateLastLogin(userId: string) {
-    return prisma.user.update({
-        where: {
-            id: userId,
-        },
-        data: {
-            lastLoginAt: new Date(),
-        },
-    });
-}
+        return prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                lastLoginAt: new Date(),
+            },
+        });
+    }
 }

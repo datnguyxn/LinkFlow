@@ -7,13 +7,14 @@ import type { AuthResponse } from '../types/auth.type.ts';
 import { hashPassword, comparePassword } from '../../../utils/password.util.ts';
 import { JwtService } from './jwt.service.ts';
 import { ERROR_CODE, LANGUAGE } from '../../../common/constants/index.ts';
-import { ConflictError, UnauthorizedError } from '../../../common/errors/index.ts';
+import { ConflictError, ForbiddenError, UnauthorizedError } from '../../../common/errors/index.ts';
 import { TransactionService } from '../../../infrastructure/database/index.ts';
 import { config } from '../../../config/env/index.ts';
 import type { UserRegisteredEvent, UserLoginEvent, UserLogoutEvent } from '../../../events/auth/index.ts';
 import { randomUUID } from 'crypto';
 import { AuthPublisher } from '../../../publishers/auth/auth.publisher.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
+import { UserStatus } from '@prisma/client';
 
 /**
  * AuthService handles business logic related to authentication.
@@ -177,7 +178,41 @@ export class AuthService {
 
         if (!user) {
             throw new UnauthorizedError("request.validationFailed", ERROR_CODE.INVALID_CREDENTIALS);
+        } else if (!user.emailVerified) {
+            throw new UnauthorizedError("auth.login.emailNotVerified", ERROR_CODE.INVALID_CREDENTIALS);
         }
+
+        // Check user status
+        switch (user.status) {
+            case UserStatus.ACTIVE:
+                // Continue login flow
+                break;
+
+            case UserStatus.INACTIVE:
+                throw new ForbiddenError(
+                    "auth.login.userInactive",
+                    ERROR_CODE.USER_INACTIVE,
+                );
+
+            case UserStatus.SUSPENDED:
+                throw new ForbiddenError(
+                    "auth.login.userSuspended",
+                    ERROR_CODE.USER_SUSPENDED,
+                );
+
+            case UserStatus.DELETED:
+                throw new ForbiddenError(
+                    "auth.login.userDeleted",
+                    ERROR_CODE.USER_DELETED,
+                );
+
+            default:
+                throw new ForbiddenError(
+                    "auth.login.userUnavailable",
+                    ERROR_CODE.USER_UNAVAILABLE,
+                );
+        }
+
 
         // Validate password
         const isPasswordValid = await comparePassword(password, user.passwordHash || "");

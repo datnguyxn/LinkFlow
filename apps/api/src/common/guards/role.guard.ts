@@ -7,11 +7,11 @@ export function roleGuard(...roles: string[]) {
         request: FastifyRequest
     ) => {
         if (!request.user) {
-            throw new ForbiddenError(request.t("auth.auth.forbidden"), ERROR_CODE.FORBIDDEN);
+            throw new ForbiddenError(request.t("auth.middleware.forbidden"), ERROR_CODE.FORBIDDEN);
         }
 
         if (!roles.includes(request.user.role)) {
-            throw new ForbiddenError(request.t("auth.auth.forbidden"), ERROR_CODE.FORBIDDEN);
+            throw new ForbiddenError(request.t("auth.middleware.forbidden"), ERROR_CODE.FORBIDDEN);
         }
     };
 }
