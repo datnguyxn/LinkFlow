@@ -62,7 +62,10 @@ export class UserRepository {
             where: {
                 id
             },
-            data
+            data: {
+                ...data,
+                updatedAt: new Date() // Update the updatedAt timestamp
+            }
         });
     }
 

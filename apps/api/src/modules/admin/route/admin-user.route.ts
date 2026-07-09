@@ -3,6 +3,16 @@ import { roleGuard } from "../../../common/guards/index.ts";
 import { UserRole } from "@prisma/client";
 import { authMiddleware } from "../../../common/middleware/index.ts";
 import { AdminUserController } from "../controller/admin-user.controller.ts";
+import {
+    getAllUsersSchema,
+    getUserSchema,
+    banUserSchema,
+    unbanUserSchema,
+    changeRoleSchema,
+    deleteUserSchema,
+    restoreUserSchema
+} from "../../../swaggers/index.ts";
+
 
 const controller = new AdminUserController();
 
@@ -26,24 +36,24 @@ export const adminUserRoutes = async (app: FastifyInstance) => {
     );
 
     // Bind controller context for fetching all users
-    app.get("/", controller.getAllUsers.bind(controller));
+    app.get("/", { schema: getAllUsersSchema }, controller.getAllUsers.bind(controller));
 
     // Bind controller context for fetching a specific user by ID
-    app.get("/:id", controller.getUserById.bind(controller));
+    app.get("/:id", { schema: getUserSchema }, controller.getUserById.bind(controller));
 
     // Bind controller context for banning a specific user by ID
-    app.patch("/:id/ban", controller.banUser.bind(controller));
+    app.patch("/:id/ban", { schema: banUserSchema }, controller.banUser.bind(controller));
 
     // Bind controller context for unbanning a specific user by ID
-    app.patch("/:id/unban", controller.unbanUser.bind(controller));
+    app.patch("/:id/unban", { schema: unbanUserSchema }, controller.unbanUser.bind(controller));
 
     // Bind controller context for changing a specific user's role by ID
-    app.patch("/:id/role", controller.changeRole.bind(controller));
+    app.patch("/:id/role", { schema: changeRoleSchema }, controller.changeRole.bind(controller));
 
     // Bind controller context for deleting a specific user by ID
-    app.delete("/:id", controller.deleteUser.bind(controller));
+    app.delete("/:id", { schema: deleteUserSchema }, controller.deleteUser.bind(controller));
 
     // Bind controller context for restoring a specific user by ID
-    app.patch("/:id/restore", controller.restoreUser.bind(controller));
+    app.patch("/:id/restore", { schema: restoreUserSchema }, controller.restoreUser.bind(controller));
 
 };
