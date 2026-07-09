@@ -1,36 +1,34 @@
-import { emailLayout } from "./layout.template.ts";
+import { emailButton } from "./partials/button.ts";
+import { emailLayout } from "./layouts/layout.ts";
 
-export function verifyEmailTemplate(data: {
-    fullName: string;
-    verifyUrl: string;
-}) {
+export function verifyEmailTemplate(
+    name: string,
+    url: string,
+) {
 
     return emailLayout(`
 
-<h2>Hello ${data.fullName},</h2>
+<h2>Hello ${name},</h2>
+
+<br>
 
 <p>
-Thank you for registering your LinkFlow account.
+
+Welcome to LinkFlow!
+
+Please verify your email address to activate your account.
+
 </p>
 
-<p>
-
-Please click the button below to verify your email.
-
-</p>
-
-<a
-class="button"
-href="${data.verifyUrl}"
->
-
-Verify Email
-
-</a>
+${emailButton(
+    "Verify Email",
+    url,
+)}
 
 <p>
 
-If you didn't create this account, you can safely ignore this email.
+This verification link will expire in
+<strong>10 minutes</strong>.
 
 </p>
 

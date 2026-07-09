@@ -12,6 +12,7 @@ export const AUDIT_ACTION = {
 } as const;
 
 export const AUDIT_RESOURCE = {
+    ADMIN: "ADMIN",
     USER: "USER",
     WORKSPACE: "WORKSPACE",
     URL: "URL",

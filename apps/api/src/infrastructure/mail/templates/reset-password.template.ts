@@ -1,4 +1,4 @@
-import { emailLayout } from "./layout.template.ts";
+import { emailLayout } from "./layouts/layout.ts";
 
 export function resetPasswordTemplate(data: {
     fullName: string;

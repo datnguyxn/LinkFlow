@@ -4,4 +4,5 @@ export const ROUTE = {
     USERS: "/users",
     URLS: "/urls",
     ANALYTICS: "/analytics",
+    ADMIN: "/admin",
 } as const;

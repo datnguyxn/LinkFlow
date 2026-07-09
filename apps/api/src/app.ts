@@ -15,6 +15,7 @@ import {
   rateLimitPlugin,
   multipartPlugin,
   errorPlugin,
+  staticPlugin
 }
   from './plugins/index.ts';
 import { prismaPlugin } from './infrastructure/database/index.ts';
@@ -46,7 +47,7 @@ export async function buildApp() {
   await app.register(rateLimitPlugin);
   await app.register(multipartPlugin);
   await app.register(errorPlugin);
-
+  await app.register(staticPlugin);
 
   await app.register(languagePlugin);
 

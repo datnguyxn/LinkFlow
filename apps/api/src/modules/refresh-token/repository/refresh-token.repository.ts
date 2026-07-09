@@ -1,9 +1,18 @@
 import { prisma } from "../../../infrastructure/database/index.ts";
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 export class RefreshTokenRepository {
-    async create(data: {token: Prisma.RefreshTokenCreateInput, userId: string, ipAddress?: string, userAgent?: string}) {
-        return prisma.refreshToken.create({
+    async create(
+        data: 
+        { 
+            token: Prisma.RefreshTokenCreateInput, 
+            userId: string, 
+            ipAddress?: string, 
+            userAgent?: string 
+        }, 
+        db: Prisma.TransactionClient | PrismaClient = prisma
+    ) {
+        return db.refreshToken.create({
             data: {
                 tokenHash: data.token.tokenHash,
                 userId: data.userId,
@@ -14,8 +23,12 @@ export class RefreshTokenRepository {
         });
     }
 
-    async findByUserIdAndRevoked(userId: string, revoked: boolean) {
-        return prisma.refreshToken.findMany({
+    async findByUserIdAndRevoked(
+        userId: string, 
+        revoked: boolean, 
+        db: Prisma.TransactionClient | PrismaClient = prisma
+    ) {
+        return db.refreshToken.findMany({
             where: {
                 userId,
                 revoked
@@ -43,8 +56,11 @@ export class RefreshTokenRepository {
         });
     }
 
-    async revokeAllByUserId(userId: string) {
-        return prisma.refreshToken.updateMany({
+    async revokeAllByUserId(
+        userId: string, 
+        db: Prisma.TransactionClient | PrismaClient = prisma
+    ) {
+        return db.refreshToken.updateMany({
             where: {
                 userId
             },

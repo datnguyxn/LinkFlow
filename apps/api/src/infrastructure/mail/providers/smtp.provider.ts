@@ -6,12 +6,14 @@ import type {
     SendUrlExpirationReminder,
     SendVerificationEmail,
     SendWorkspaceInvitationEmail,
+    UserActionTemplateProps
 } from "../interfaces/mail.service.ts";
 
 import { config } from "../../../config/env/index.ts";
 
 import { verifyEmailTemplate } from "../templates/verify-email.template.ts";
 import { resetPasswordTemplate } from "../templates/reset-password.template.ts";
+import { userActionTemplate } from "../templates/user-action.template.ts";
 
 export class SmtpProvider implements MailService {
 
@@ -46,13 +48,13 @@ export class SmtpProvider implements MailService {
 
             subject: "Verify your email",
 
-            html: verifyEmailTemplate({
+            html: verifyEmailTemplate(
 
-                fullName: data.fullName,
+                data.fullName,
 
                 verifyUrl,
 
-            }),
+            ),
 
         });
 
@@ -102,6 +104,24 @@ export class SmtpProvider implements MailService {
         console.log(data);
 
         // TODO
+
+    }
+
+    async sendUserActionEmail(
+        data: UserActionTemplateProps
+    ): Promise<void> {
+
+        await this.transporter.sendMail({
+
+            from: `"LinkFlow" <${config.SMTP_FROM}>`,
+
+            to: data.email,
+
+            subject: `Your LinkFlow account has been updated: ${data.action}`,
+
+            html: userActionTemplate(data),
+
+        });
 
     }
 

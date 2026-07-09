@@ -2,8 +2,11 @@ import { AuthController } from "../controller/auth.controller.ts";
 import type { FastifyInstance } from "fastify";
 import { validate } from "../../../utils/validator.util.ts";
 import { registerSchema, type RegisterBody } from "../validator/register.validator.ts";
-import { registerSwagger, loginSwagger } from "../../../swaggers/index.ts";
+import { registerSwagger, loginSwagger, refreshTokenSwagger, logoutSwagger } from "../../../swaggers/index.ts";
 import { loginSchema, type LoginBody } from "../validator/login.validator.ts";
+import { authMiddleware } from "../../../common/middleware/index.ts";
+import { authGuard, roleGuard } from "../../../common/guards/index.ts";
+import { UserRole } from "@prisma/client"
 
 // Initialize controller instance
 const controller = new AuthController();
@@ -81,7 +84,34 @@ export const authRoutes = async (app: FastifyInstance) => {
                     timeWindow: "1 minute", // Per minute
                 },
             },
+            schema: refreshTokenSwagger // Swagger documentation for this route
         },
         controller.refreshToken.bind(controller) // Bind controller context
+    );
+
+    /**
+     * GET /logout
+     *
+     * Features:
+     * - Logout user by revoking refresh token
+     * - Rate limiting to prevent abuse
+     */
+    app.get(
+        "/logout",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+            preHandler: [
+                authMiddleware, // Ensure user is authenticated before logout
+                authGuard,
+                roleGuard(UserRole.USER, UserRole.ADMIN)
+            ], 
+            schema: logoutSwagger // Swagger documentation for this route
+        },
+        controller.logoutUser.bind(controller) // Bind controller context
     );
 };

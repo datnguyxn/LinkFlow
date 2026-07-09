@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-vi.mock("../../../src/modules/auth/utils/password.util", () => ({
+vi.mock("../../../src/utils/password.util", () => ({
     hashPassword: vi.fn(),
     comparePassword: vi.fn(),
 }));
 
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
-import { comparePassword } from "../../../src/modules/auth/utils/password.util";
+import { comparePassword } from "../../../src/utils/password.util";
 import { UserRole } from "@prisma/client"
 
 describe("AuthService", () => {
@@ -25,6 +25,7 @@ describe("AuthService", () => {
         userRepository = {
             findByEmail: vi.fn(),
             createUser: vi.fn(),
+            updateLastLogin: vi.fn(),
         };
 
         workspaceRepository = {
@@ -113,6 +114,9 @@ describe("AuthService", () => {
 
             expect(refreshTokenRepository.create)
                 .toHaveBeenCalled();
+
+            expect(userRepository.updateLastLogin)
+                .toHaveBeenCalledWith("user-id");
 
             expect(authPublisher.userLoggedIn)
                 .toHaveBeenCalled();
@@ -274,6 +278,8 @@ describe("AuthService", () => {
         );
 
         refreshTokenRepository.create.mockResolvedValue({});
+
+        userRepository.updateLastLogin.mockResolvedValue(undefined);
 
         authPublisher.userLoggedIn.mockRejectedValue(
             new Error("RabbitMQ Error"),

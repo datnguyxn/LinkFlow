@@ -24,6 +24,7 @@
         "invalidCredentials": "Email hoặc mật khẩu không hợp lệ",
         "userNotFound": "Người dùng không tồn tại",
         "refreshSuccess": "Làm mới refresh token thành công",
+        "logoutSuccess": "Đăng xuất thành công",
         "middleware": {
             "unauthorized": "Chưa được ủy quyền",
             "forbidden": "Không được phép truy cập",
@@ -40,5 +41,12 @@
         "manyRequests": "Quá nhiều yêu cầu, vui lòng thử lại sau",
         "retryLater": "Thử lại sau sau {{after}} giây",
         "validationFailed": "Xác thực thất bại"
+    },
+    "user": {
+        "usersFetchedSuccessfully": "Lấy danh sách người dùng thành công",
+        "userNotFound": "Người dùng không tồn tại",
+        "userUpdatedSuccessfully": "Người dùng được cập nhật thành công",
+        "userDeletedSuccessfully": "Người dùng được xóa thành công",
+        "oldPasswordIncorrect": "Mật khẩu cũ không chính xác"
     }
 }

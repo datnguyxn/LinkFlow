@@ -24,6 +24,14 @@ export interface SendUrlExpirationReminder {
     expiredAt: Date;
 }
 
+export interface UserActionTemplateProps {
+    email: string;
+    fullName: string;
+    action: string;
+    reason?: string;
+    actionTime: Date;
+}
+
 export interface MailService {
 
     sendVerificationEmail(
@@ -42,4 +50,7 @@ export interface MailService {
         data: SendUrlExpirationReminder
     ): Promise<void>;
 
+    sendUserActionEmail(
+        data: UserActionTemplateProps
+    ): Promise<void>;
 }

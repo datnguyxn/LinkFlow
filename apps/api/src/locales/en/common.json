@@ -24,6 +24,7 @@
         "invalidCredentials": "Invalid email or password",
         "userNotFound": "User not found",
         "refreshSuccess": "Refresh token successful",
+        "logoutSuccess": "Logout successful",
         "middleware": {
             "unauthorized": "Unauthorized",
             "forbidden": "Forbidden",
@@ -40,5 +41,12 @@
         "manyRequests": "Too many requests, please try again later",
         "retryLater": "Retry after {{after}} seconds",
         "validationFailed": "Validation failed"
+    },
+    "user": {
+        "usersFetchedSuccessfully": "Users fetched successfully",
+        "userNotFound": "User not found",
+        "userUpdatedSuccessfully": "User updated successfully",
+        "userDeletedSuccessfully": "User deleted successfully",
+        "oldPasswordIncorrect": "Old password is incorrect"
     }
 }

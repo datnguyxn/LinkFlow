@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-vi.mock("../../../src/modules/auth/utils/password.util", () => ({
+vi.mock("../../../src/utils/password.util", () => ({
     hashPassword: vi.fn(),
 }));
 
 import { AuthService } from "../../../src/modules/auth/service/auth.service";
-import { hashPassword } from "../../../src/modules/auth/utils/password.util";
+import { hashPassword } from "../../../src/utils/password.util";
 import { UserRole } from "@prisma/client"
 
 describe("AuthService", () => {

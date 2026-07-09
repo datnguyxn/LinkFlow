@@ -128,7 +128,8 @@ export class AuthController {
                 ERROR_CODE.MISSING_REFRESH_TOKEN
             );
         }
-
+        
+        // Get ip address and user agent for logging or additional security checks
         const ipAddress = request.ip;
 
         const userAgent = request.headers["user-agent"];
@@ -148,6 +149,41 @@ export class AuthController {
             reply,
             data,
             request.t("auth.refreshSuccess"),
+            HTTP_STATUS.OK
+        );
+    }
+
+    async logoutUser(
+        request: FastifyRequest,
+        reply: FastifyReply
+    ) {
+        // Extract refresh token from cookies
+        const refreshToken = request.cookies.refreshToken;
+
+        console.log("Logout request received. Refresh token:", refreshToken);
+
+        // Handle case: missing refresh token
+        if (!refreshToken) {
+            throw new UnauthorizedError(
+                "auth.middleware.missingRefreshToken",
+                ERROR_CODE.MISSING_REFRESH_TOKEN
+            );
+        }
+
+        // Get ip address for logging or additional security checks
+        const ipAddress = request.ip;
+
+        // Call service layer to handle business logic for logout
+        await this.authService.logout(refreshToken, ipAddress);
+
+        // Clear the refresh token cookie on logout
+        reply.clearCookie("refreshToken", cookieOptions);
+
+        // Successful logout
+        return ResponseHandler.success(
+            reply,
+            null,
+            request.t("auth.logoutSuccess"),
             HTTP_STATUS.OK
         );
     }

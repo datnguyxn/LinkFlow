@@ -4,16 +4,15 @@ import { RefreshTokenRepository } from '../../refresh-token/index.ts';
 import { EmailVerificationRepository } from '../../email-verification/index.ts';
 
 import type { AuthResponse } from '../types/auth.type.ts';
-import { hashPassword, comparePassword } from '../utils/password.util.ts';
+import { hashPassword, comparePassword } from '../../../utils/password.util.ts';
 import { JwtService } from './jwt.service.ts';
 import { ERROR_CODE, LANGUAGE } from '../../../common/constants/index.ts';
 import { ConflictError, UnauthorizedError } from '../../../common/errors/index.ts';
 import { TransactionService } from '../../../infrastructure/database/index.ts';
 import { config } from '../../../config/env/index.ts';
-import type { UserRegisteredEvent } from '../../../events/auth/user-registered.event.ts';
-import type { UserLoginEvent } from '../../../events/auth/user-login.event.ts';
+import type { UserRegisteredEvent, UserLoginEvent, UserLogoutEvent } from '../../../events/auth/index.ts';
 import { randomUUID } from 'crypto';
-import { AuthPublisher } from '../publishers/auth.publisher.ts';
+import { AuthPublisher } from '../../../publishers/auth/auth.publisher.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
 
 /**
@@ -34,11 +33,19 @@ export class AuthService {
 
     /**
      * Register a new user
-     * - Check if user already exists
-     * - Hash password
-     * - Assign default role
-     * - Create user
-     * - Generate access & refresh tokens
+     * - Checks for duplicate email
+     * - Hashes password
+     * - Creates user and default workspace in a transaction
+     * - Generates JWT tokens
+     * - Publishes user registered event to RabbitMQ
+     * 
+     * @param email - User's email
+     * @param password - User's password
+     * @param fullName - User's full name
+     * @param ipAddress - Optional IP address of the request
+     * @param userAgent - Optional user agent of the request
+     * @returns AuthResponse containing access and refresh tokens
+     * @throws ConflictError if the email is already registered
      */
     async registerUser(
         email: string,
@@ -136,6 +143,9 @@ export class AuthService {
     /**
      * Get user information by email
      * Used for authentication / profile lookup
+     * 
+     * @param email - User's email
+     * @returns User object or null if not found
      */
     async getCurrentUserByEmail(email: string) {
         return await this.userRepository.findByEmail(email);
@@ -145,6 +155,16 @@ export class AuthService {
      * Login user with email and password
      * - Validate credentials
      * - Generate access & refresh tokens
+     * - Save refresh token in DB
+     * - Publish user login event to RabbitMQ
+     * @param email - User's email
+     * @param password - User's password
+     * @param ipAddress - Optional IP address of the request
+     * @param userAgent - Optional user agent of the request
+     * @returns AuthResponse containing access and refresh tokens or null if login fails
+     * @throws UnauthorizedError if credentials are invalid
+     * @throws ConflictError if the user is not found
+     * @throws Error for any unexpected issues during login
      */
     async loginUser(
         email: string,
@@ -189,6 +209,9 @@ export class AuthService {
             userAgent: userAgent,
         });
 
+        // Update last login timestamp
+        await this.userRepository.updateLastLogin(user.id);
+
         // Publish user login event to RabbitMQ
         const event: UserLoginEvent = {
             userId: user.id,
@@ -206,6 +229,19 @@ export class AuthService {
         };
     }
 
+    /**
+     * Refresh access and refresh tokens using a valid refresh token
+     * - Verify the provided refresh token
+     * - Check if the token is revoked or expired
+     * - Generate new access and refresh tokens
+     * - Save the new refresh token and revoke the old one
+     * - Publish user logout event for the old token (optional)
+     * 
+     * @param refreshToken 
+     * @param ipAddress 
+     * @param userAgent 
+     * @returns 
+     */
     async refresh(refreshToken: string, ipAddress?: string, userAgent?: string): Promise<AuthResponse> {
 
         // Verify JWT
@@ -295,4 +331,50 @@ export class AuthService {
         return tokens;
 
     }
+
+    /**
+     * Logout user by revoking the refresh token
+     * - Hash the provided refresh token
+     * - Find the token in the database
+     * - Revoke the token to prevent further use
+     * - Publish user logout event to RabbitMQ (optional)
+     * 
+     * @param refreshToken - The refresh token to revoke
+     * @param ipAddress - Optional IP address of the request
+     * @returns void
+     * @throws UnauthorizedError if the token is invalid or not found
+     * @throws Error for any unexpected issues during logout
+     */
+    async logout(refreshToken: string, ipAddress: string): Promise<void> {
+        // Hash token
+        const tokenHash =
+            await this.jwtService.hashRefreshToken(refreshToken);
+
+        // Find refresh token
+        const storedToken =
+            await this.refreshTokenRepository.findByTokenHash(
+                tokenHash,
+            );
+
+        if (!storedToken) {
+            throw new UnauthorizedError(
+                "auth.middleware.INVALID_REFRESH_TOKEN",
+                ERROR_CODE.INVALID_REFRESH_TOKEN,
+            );
+        }
+
+        // Revoke the refresh token
+        await this.refreshTokenRepository.revoke(
+            storedToken.id,
+        );
+
+        // Publish user logout event to RabbitMQ (optional)
+        const event : UserLogoutEvent = {
+            userId: storedToken.userId,
+            ipAddress: ipAddress,
+        };
+
+        await this.authPublisher.userLoggedOut(event);
+
+    }  
 }

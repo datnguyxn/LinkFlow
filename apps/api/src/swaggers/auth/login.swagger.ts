@@ -1,4 +1,5 @@
 import type { FastifySchema } from "fastify";
+import { Type } from "@sinclair/typebox";
 
 export const loginSwagger: FastifySchema = {
     tags: ["Authentication"],
@@ -13,15 +14,16 @@ export const loginSwagger: FastifySchema = {
         required: ["email", "password"],
 
         properties: {
-            email: {
-                type: "string",
+            email: Type.String({
+                description: "The email address of the user",
                 format: "email"
-            },
+            }),
 
-            password: {
-                type: "string",
-                format: "password"
-            }
+            password: Type.String({
+                description: "The password for the user account",
+                minLength: 8,
+                maxLength: 100
+            })
         }
     },
 
@@ -32,31 +34,17 @@ export const loginSwagger: FastifySchema = {
             type: "object",
 
             properties: {
-                success: {
-                    type: "boolean"
-                },
-
-                statusCode: {
-                    type: "integer"
-                },
-
-                message: {
-                    type: "string"
-                },
-
-                data: {
-                    type: "object",
-
-                    properties: {
-                        accessToken: {
-                            type: "string"
-                        },
-
-                        refreshToken: {
-                            type: "string"
-                        }
-                    }
-                }
+                success: Type.Boolean(),
+                statusCode: Type.Number(),
+                message: Type.String(),
+                data: Type.Object({
+                    accessToken: Type.String(),
+                    refreshToken: Type.String(),
+                }),
+                meta: Type.Object({
+                    timestamp: Type.String(),
+                    requestId: Type.String(),
+                })
             }
         },
 
@@ -66,39 +54,18 @@ export const loginSwagger: FastifySchema = {
             type: "object",
 
             properties: {
-                success: {
-                    type: "boolean"
-                },
-
-                statusCode: {
-                    type: "integer"
-                },
-
-                message: {
-                    type: "string"
-                },
-
-                errors: {
-                    type: "array",
-
-                    items: {
-                        type: "object",
-
-                        properties: {
-                            field: {
-                                type: "string"
-                            },
-
-                            message: {
-                                type: "string"
-                            },
-
-                            code: {
-                                type: "string"
-                            }
-                        }
-                    }
-                }
+                success: Type.Boolean(),
+                statusCode: Type.Number(),
+                message: Type.String(),
+                errors: Type.Array(Type.Object({
+                    field: Type.String(),
+                    message: Type.String(),
+                    code: Type.String(),
+                })),
+                meta: Type.Object({
+                    timestamp: Type.String(),
+                    requestId: Type.String(),
+                })
             }
         }
     }
