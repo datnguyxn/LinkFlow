@@ -131,4 +131,18 @@ export class UserRepository {
             },
         });
     }
+
+    /**
+     * Create a new OAuth user in the database.
+     * @param data - The data for the new OAuth user.
+     * @param tx - Optional transaction client for database operations.
+     * @returns The created OAuth user.
+     */
+    async createOAuthUser(data: Prisma.UserCreateInput, tx?: Prisma.TransactionClient) {
+        const db = tx ?? prisma;
+
+        return db.user.create({
+            data,
+        });
+    }
 }

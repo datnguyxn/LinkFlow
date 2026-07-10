@@ -128,3 +128,8 @@ storybook-static/
 *.key
 *.crt
 /generated/prisma
+
+# =========================
+# Visual Studio Code
+# =========================
+.vscode/

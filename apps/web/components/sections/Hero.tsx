@@ -105,7 +105,13 @@ export default function Hero() {
               className="
               absolute
               -bottom-8
-              -left-8
+              -left-3
+
+              sm:-bottom-6
+              sm:-left-6
+
+              lg:-bottom-8
+              lg:-left-8
               overflow-hidden
               rounded-[30px]
               border
@@ -119,7 +125,7 @@ export default function Hero() {
               before:from-white/60
               before:to-transparent
               before:pointer-events-none
-              p-4"
+              p-3"
               animate={{
                 y: [12, -12, 12],
                 rotate: [0.8, -0.8, 0.8],
@@ -131,17 +137,17 @@ export default function Hero() {
                 ease: "easeInOut",
               }}
             >
-              <div className="flex items-center gap-4">
-                <div className="rounded-2xl bg-blue-500 p-4 text-white">
+              <div className="flex items-center gap-2">
+                <div className="rounded-2xl bg-blue-500 p-3 text-white">
                   <Sparkles className="h-6 w-6" />
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold">
+                  <h5 className="text-lg font-bold">
                     284k
-                  </h3>
+                  </h5>
 
-                  <p className="text-slate-500">
+                  <p className="text-slate-500 dark:text-slate-300">
                     Clicks today
                   </p>
                 </div>

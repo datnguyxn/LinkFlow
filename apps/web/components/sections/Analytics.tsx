@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import Container from "../common/Container";
 import SectionTitle from "../common/SectionTitle";
 import StatCard from "../common/StatCard";
+import AnalyticsChartCard from "@/components/common/AnalyticsChartCard";
+
+import { overview } from "@/constants/analytics";
 
 export default function Analytics() {
   return (
@@ -20,47 +23,8 @@ export default function Analytics() {
         />
 
         <div className="grid gap-8 lg:grid-cols-2">
-          <motion.div
-            initial={{
-              opacity: 0,
-              x: -50,
-            }}
-            whileInView={{
-              opacity: 1,
-              x: 0,
-            }}
-            viewport={{
-              once: true,
-            }}
-            transition={{
-              duration: 0.6,
-            }}
-            className="
-            rounded-3xl
-            border
-            bg-white
-            p-8
-            shadow-lg
-          "
-          >
-            <div className="mb-8 flex items-end gap-3">
-              <div className="h-28 w-10 rounded bg-blue-500" />
-              <div className="h-40 w-10 rounded bg-sky-500" />
-              <div className="h-20 w-10 rounded bg-cyan-500" />
-              <div className="h-48 w-10 rounded bg-indigo-500" />
-              <div className="h-32 w-10 rounded bg-violet-500" />
-              <div className="h-56 w-10 rounded bg-blue-600" />
-            </div>
-
-            <h3 className="text-xl font-bold dark:text-black">
-              Weekly Clicks
-            </h3>
-
-            <p className="mt-2 text-slate-500">
-              Your links continue growing every day.
-            </p>
-          </motion.div>
-
+          <AnalyticsChartCard data={overview} />
+        
           <motion.div
             initial={{
               opacity: 0,

@@ -12,12 +12,14 @@ export default function StatCard({
   return (
     <div
       className="
-      rounded-2xl
-      border
-      bg-white
-      p-6
-      shadow-sm
-      dark:bg-slate-100
+        rounded-2xl
+        border
+        bg-white
+        p-6
+        shadow-sm
+        transition
+        hover:shadow-lg
+        dark:bg-slate-100
       
     "
     >

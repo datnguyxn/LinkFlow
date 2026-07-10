@@ -14,7 +14,7 @@ import type { UserRegisteredEvent, UserLoginEvent, UserLogoutEvent } from '../..
 import { randomUUID } from 'crypto';
 import { AuthPublisher } from '../../../publishers/auth/auth.publisher.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
-import { UserStatus } from '@prisma/client';
+import { UserStatus, type User } from '@prisma/client';
 
 /**
  * AuthService handles business logic related to authentication.
@@ -172,7 +172,7 @@ export class AuthService {
         password: string,
         ipAddress?: string,
         userAgent?: string
-    ): Promise<AuthResponse | null> {
+    ): Promise<AuthResponse> {
         // Find user by email
         const user = await this.userRepository.findByEmail(email);
 
@@ -182,36 +182,7 @@ export class AuthService {
             throw new UnauthorizedError("auth.login.emailNotVerified", ERROR_CODE.INVALID_CREDENTIALS);
         }
 
-        // Check user status
-        switch (user.status) {
-            case UserStatus.ACTIVE:
-                // Continue login flow
-                break;
-
-            case UserStatus.INACTIVE:
-                throw new ForbiddenError(
-                    "auth.login.userInactive",
-                    ERROR_CODE.USER_INACTIVE,
-                );
-
-            case UserStatus.SUSPENDED:
-                throw new ForbiddenError(
-                    "auth.login.userSuspended",
-                    ERROR_CODE.USER_SUSPENDED,
-                );
-
-            case UserStatus.DELETED:
-                throw new ForbiddenError(
-                    "auth.login.userDeleted",
-                    ERROR_CODE.USER_DELETED,
-                );
-
-            default:
-                throw new ForbiddenError(
-                    "auth.login.userUnavailable",
-                    ERROR_CODE.USER_UNAVAILABLE,
-                );
-        }
+        this.checkUserStatus(user);
 
 
         // Validate password
@@ -220,48 +191,8 @@ export class AuthService {
             throw new UnauthorizedError("request.validationFailed", ERROR_CODE.INVALID_CREDENTIALS);
         }
 
-        // Generate JWT tokens for authentication
-        const tokens = this.jwtService.generateTokens({
-            id: user.id,
-            email: user.email,
-            language: user.language || 'en', // default language
-            role: user.role || 'USER', // default role
-        });
-
-        // Save refresh token
-        await this.refreshTokenRepository.create({
-            userId: user.id,
-            token: {
-                tokenHash: await this.jwtService.hashRefreshToken(tokens.refreshToken),
-                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
-                user: {
-                    connect: {
-                        id: user.id,
-                    },
-                },
-            },
-            ipAddress: ipAddress,
-            userAgent: userAgent,
-        });
-
-        // Update last login timestamp
-        await this.userRepository.updateLastLogin(user.id);
-
-        // Publish user login event to RabbitMQ
-        const event: UserLoginEvent = {
-            userId: user.id,
-            email: user.email,
-            fullName: user.fullName || "",
-            ipAddress: ipAddress, // You can set this if you have access to the request IP
-        };
-
-        await this.authPublisher.userLoggedIn(event);
-
-        // Return tokens to the controller for response
-        return {
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-        };
+        // Complete login process
+        return await this.completeLogin(user, ipAddress, userAgent);
     }
 
     /**
@@ -403,13 +334,103 @@ export class AuthService {
             storedToken.id,
         );
 
-        // Publish user logout event to RabbitMQ (optional)
-        const event : UserLogoutEvent = {
+        // Create a user logout event to publish to RabbitMQ
+        const event: UserLogoutEvent = {
             userId: storedToken.userId,
             ipAddress: ipAddress,
         };
 
+        // Publish the logout event to notify other services or components
         await this.authPublisher.userLoggedOut(event);
 
-    }  
+    }
+
+    private checkUserStatus(user: { status: UserStatus }) {
+        // Check user status
+        switch (user.status) {
+            case UserStatus.ACTIVE:
+                // Continue login flow
+                return;
+
+            case UserStatus.INACTIVE:
+                throw new ForbiddenError(
+                    "auth.login.userInactive",
+                    ERROR_CODE.USER_INACTIVE,
+                );
+
+            case UserStatus.SUSPENDED:
+                throw new ForbiddenError(
+                    "auth.login.userSuspended",
+                    ERROR_CODE.USER_SUSPENDED,
+                );
+
+            case UserStatus.DELETED:
+                throw new ForbiddenError(
+                    "auth.login.userDeleted",
+                    ERROR_CODE.USER_DELETED,
+                );
+
+            default:
+                throw new ForbiddenError(
+                    "auth.login.userUnavailable",
+                    ERROR_CODE.USER_UNAVAILABLE,
+                );
+        }
+    }
+
+    /**
+     * Complete the login process for a user
+     * - Generate access and refresh tokens
+     * - Save the refresh token in the database
+     * - Update the user's last login timestamp
+     * - Publish a user login event to RabbitMQ
+     * @param user - The user object for whom the login is being completed
+     * @param ipAddress - Optional IP address of the request
+     * @param userAgent - Optional user agent of the request
+     * @returns A promise that resolves to an AuthResponse containing access and refresh tokens
+     */
+    async completeLogin(user: User, ipAddress?: string, userAgent?: string): Promise<AuthResponse> {
+        // Generate JWT tokens for authentication
+        const tokens = this.jwtService.generateTokens({
+            id: user.id,
+            email: user.email,
+            language: user.language || 'en', // default language
+            role: user.role || 'USER', // default role
+        });
+
+        // Save refresh token
+        await this.refreshTokenRepository.create({
+            userId: user.id,
+            token: {
+                tokenHash: await this.jwtService.hashRefreshToken(tokens.refreshToken),
+                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
+                user: {
+                    connect: {
+                        id: user.id,
+                    },
+                },
+            },
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+        });
+
+        // Update last login timestamp
+        await this.userRepository.updateLastLogin(user.id);
+
+        // Publish user login event to RabbitMQ
+        const event: UserLoginEvent = {
+            userId: user.id,
+            email: user.email,
+            fullName: user.fullName || "",
+            ipAddress: ipAddress, // You can set this if you have access to the request IP
+        };
+
+        await this.authPublisher.userLoggedIn(event);
+
+        // Return tokens to the controller for response
+        return {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+        };
+    }
 }

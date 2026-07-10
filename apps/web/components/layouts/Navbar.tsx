@@ -6,8 +6,16 @@ import { useState } from 'react';
 
 import Container from '../common/Container';
 import Logo from '../common/Logo';
-import ThemeToggle from '../common/ThemeToggle';
 import LanguageSwitcher from '../common/LanguageSwitcher';
+
+import dynamic from "next/dynamic";
+
+const ThemeToggle = dynamic(
+  () => import("@/components/common/ThemeToggle"),
+  {
+    ssr: false,
+  }
+);
 
 const menus = [
   {
@@ -99,10 +107,10 @@ export default function Navbar() {
       </Container>
 
       {open && (
-        <div className="border-t bg-white md:hidden">
+        <div className="border-t md:hidden">
           <Container className="flex flex-col py-5">
             {menus.map((item) => (
-              <Link key={item.title} href={item.href} className="py-3">
+              <Link key={item.title} href={item.href} className="py-3 mt-5 text-sm text-slate-600 transition hover:text-black">
                 {item.title}
               </Link>
             ))}

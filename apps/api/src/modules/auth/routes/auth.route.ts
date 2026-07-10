@@ -109,9 +109,51 @@ export const authRoutes = async (app: FastifyInstance) => {
                 authMiddleware, // Ensure user is authenticated before logout
                 authGuard,
                 roleGuard(UserRole.USER, UserRole.ADMIN)
-            ], 
+            ],
             schema: logoutSwagger // Swagger documentation for this route
         },
         controller.logoutUser.bind(controller) // Bind controller context
+    );
+
+    /**
+     * GET /google
+     *
+     * Features:
+     * - Initiates Google OAuth 2.0 login flow
+     * - Rate limiting to prevent abuse
+     */
+    app.get(
+        "/google",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+        },
+        controller.loginWithGoogle.bind(controller),
+    );
+
+    /**
+     * GET /google/callback
+     *
+     * Features:
+     * - Handles Google OAuth 2.0 callback
+     * - Exchanges authorization code for tokens
+     * - Logs in or registers the user
+     * - Rate limiting to prevent abuse
+     */
+    app.get(
+        "/google/callback",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+        },
+        controller.googleCallback.bind(controller),
     );
 };

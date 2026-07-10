@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon } from 'lucide-react';
 
 interface Props {
   title: string;
@@ -6,23 +6,23 @@ interface Props {
   icon: LucideIcon;
 }
 
-export default function FeatureCard({
-  title,
-  description,
-  icon: Icon,
-}: Props) {
+export default function FeatureCard({ title, description, icon: Icon }: Props) {
   return (
     <div
       className="
       rounded-2xl
       border
+      border-slate-200
       bg-white
       p-6
-      transition-all
       duration-300
+      shadow-xl
+      transition
       hover:-translate-y-2
       hover:shadow-xl
-      dark:bg-slate-100
+      dark:border-slate-700
+      dark:bg-slate-900
+      dark:shadow-none
     "
     >
       <div
@@ -41,13 +41,9 @@ export default function FeatureCard({
         <Icon size={22} />
       </div>
 
-      <h3 className="font-bold dark:text-black">
-        {title}
-      </h3>
+      <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>
 
-      <p className="mt-2 text-sm text-slate-500">
-        {description}
-      </p>
+      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
     </div>
   );
 }

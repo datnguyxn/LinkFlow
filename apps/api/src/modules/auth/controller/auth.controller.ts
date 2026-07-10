@@ -6,6 +6,8 @@ import type { AuthResponse } from "../types/auth.type.ts";
 import type { RegisterBody } from "../validator/register.validator.ts";
 import type { LoginBody } from '../validator/login.validator.ts';
 import { UnauthorizedError } from '../../../common/errors/index.ts';
+import { OAuthService } from '../service/oauth.service.ts';
+import type { GoogleCallbackQuery } from '../types/google.type.ts';
 
 /**
  * AuthController handles incoming HTTP requests related to authentication.
@@ -14,10 +16,12 @@ import { UnauthorizedError } from '../../../common/errors/index.ts';
 
 export class AuthController {
     private authService: AuthService;
+    private oauthService: OAuthService;
 
     constructor() {
         // Initialize service layer
         this.authService = new AuthService();
+        this.oauthService = new OAuthService();
     }
 
     /**
@@ -27,6 +31,10 @@ export class AuthController {
      * 2. Call service to register user
      * 3. Return error if user already exists
      * 4. Return success response with tokens
+     * 
+     * @param request - FastifyRequest containing the registration data
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to an AuthResponse or an error response
      */
     async registerUser(
         request: FastifyRequest<{ Body: RegisterBody }>,
@@ -74,6 +82,10 @@ export class AuthController {
      * 2. Call service to login user
      * 3. Return error if credentials are invalid
      * 4. Return success response with tokens
+     * 
+     * @param request - FastifyRequest containing the login data
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to an AuthResponse or an error response
      */
     async loginUser(
         request: FastifyRequest<{ Body: LoginBody }>,
@@ -114,6 +126,18 @@ export class AuthController {
         );
     }
 
+    /**
+     * Handle refresh token request
+     * Flow:
+     * 1. Extract refresh token from cookies
+     * 2. Call service to refresh tokens
+     * 3. Return error if refresh token is missing or invalid
+     * 4. Return success response with new tokens
+     * 
+     * @param request - FastifyRequest containing the refresh token in cookies
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to an AuthResponse or an error response
+     */
     async refreshToken(
         request: FastifyRequest,
         reply: FastifyReply
@@ -128,7 +152,7 @@ export class AuthController {
                 ERROR_CODE.MISSING_REFRESH_TOKEN
             );
         }
-        
+
         // Get ip address and user agent for logging or additional security checks
         const ipAddress = request.ip;
 
@@ -153,6 +177,18 @@ export class AuthController {
         );
     }
 
+    /**
+     * Handle user logout request
+     * Flow:
+     * 1. Extract refresh token from cookies
+     * 2. Call service to logout user
+     * 3. Clear refresh token cookie
+     * 4. Return success response
+     * 
+     * @param request - FastifyRequest containing the refresh token in cookies
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to a success response or an error response
+     */
     async logoutUser(
         request: FastifyRequest,
         reply: FastifyReply
@@ -187,4 +223,85 @@ export class AuthController {
             HTTP_STATUS.OK
         );
     }
+
+    /**
+     * Handle Google OAuth login request
+     * Flow:
+     * 1. Extract authorization code from query parameters
+     * 2. Call service to exchange code for tokens and get user info
+     * 3. Return error if code is missing or invalid
+     * 4. Return success response with tokens
+     * 
+     * @param request - FastifyRequest containing the authorization code in query parameters
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to an AuthResponse or an error response
+     */
+    async loginWithGoogle(
+        request: FastifyRequest<{ Querystring: { code: string } }>,
+        reply: FastifyReply
+    ) {
+
+        // Generate Google OAuth authorization URL and state
+        const { url, state } =
+            this.oauthService.getGoogleAuthorizationUrl();
+
+        // Set the state in a secure, HTTP-only cookie to prevent CSRF attacks
+        reply.setCookie(
+            "oauth_state",
+            state,
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: 300, // 5 phút
+            },
+        );
+
+        // Redirect the user to Google's OAuth 2.0 authorization endpoint
+        return reply.redirect(url);
+    }
+
+    /**
+     * Handle Google OAuth callback request
+     * Flow:
+     * 1. Extract authorization code from query parameters
+     * 2. Call service to exchange code for tokens and get user info
+     * 3. Return error if code is missing or invalid
+     * 4. Set refresh token in cookie and redirect to dashboard
+     * 
+     * @param request - FastifyRequest containing the authorization code in query parameters
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to a redirect response or an error response
+     */
+    async googleCallback(
+    request: FastifyRequest<{
+        Querystring: GoogleCallbackQuery;
+    }>,
+    reply: FastifyReply,
+) {
+
+    // Extract the authorization code from the query parameters
+    const { code } = request.query;
+
+    // Handle case: missing authorization code
+    const tokens =
+        await this.oauthService.loginWithGoogle(
+            code,
+            request.ip,
+            request.headers["user-agent"],
+        );
+
+    // Set the refresh token in a secure, HTTP-only cookie for security
+    reply.setCookie(
+        "refreshToken",
+        tokens.refreshToken,
+        cookieOptions,
+    );
+
+    // Redirect the user to the dashboard after successful login
+    return reply.redirect(
+        "http://localhost:3000/dashboard",
+    );
+}
 }
