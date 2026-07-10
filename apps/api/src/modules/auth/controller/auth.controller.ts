@@ -8,6 +8,7 @@ import type { LoginBody } from '../validator/login.validator.ts';
 import { UnauthorizedError } from '../../../common/errors/index.ts';
 import { OAuthService } from '../service/oauth.service.ts';
 import type { GoogleCallbackQuery } from '../types/google.type.ts';
+import { config } from '../../../config/env/index.ts';
 
 /**
  * AuthController handles incoming HTTP requests related to authentication.
@@ -301,7 +302,7 @@ export class AuthController {
 
     // Redirect the user to the dashboard after successful login
     return reply.redirect(
-        "http://localhost:3000/dashboard",
+        `${config.CLIENT_URL}/dashboard`,
     );
 }
 }
