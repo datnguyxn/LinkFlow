@@ -60,7 +60,6 @@ minio-data/
 # Uploads
 # =========================
 uploads/
-storage/
 
 # =========================
 # Temporary Files
