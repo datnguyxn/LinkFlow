@@ -12,7 +12,7 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 
 import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/button';
 import { loginWithGoogle } from '@/lib/apis/ auth.api';
 
 export default function LoginForm() {
