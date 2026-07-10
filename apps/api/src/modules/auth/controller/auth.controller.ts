@@ -93,14 +93,18 @@ export class AuthController {
         reply: FastifyReply
     ) {
         // Extract validated input from request body
-        const { email, password } = request.body;
+        const { email, password, rememberMe } = request.body;
 
         const ipAddress = request.ip;
 
         const userAgent = request.headers["user-agent"];
 
         // Call service layer to handle business logic
-        const data = await this.authService.loginUser(email, password, ipAddress, userAgent);
+        const data = await this.authService.loginUser(email, password, {
+            rememberMe,
+            ipAddress,
+            userAgent
+        });
 
         // Handle case: invalid credentials
         if (data === null) {
@@ -161,6 +165,20 @@ export class AuthController {
 
         // Call service layer to handle business logic
         const data = await this.authService.refresh(refreshToken, ipAddress, userAgent);
+
+        if (!data) {
+            return ResponseHandler.error(
+                reply,
+                HTTP_STATUS.UNAUTHORIZED,
+                request.t("auth.refreshFailed")
+            );
+        }
+
+        reply.setCookie(
+            "refreshToken",
+            data.refreshToken,
+            cookieOptions,
+        );
 
         // Set new refresh token in HTTP-only cookie for security
         reply.setCookie(
@@ -276,33 +294,87 @@ export class AuthController {
      * @returns A promise that resolves to a redirect response or an error response
      */
     async googleCallback(
-    request: FastifyRequest<{
-        Querystring: GoogleCallbackQuery;
-    }>,
-    reply: FastifyReply,
-) {
+        request: FastifyRequest<{
+            Querystring: GoogleCallbackQuery;
+        }>,
+        reply: FastifyReply,
+    ) {
 
-    // Extract the authorization code from the query parameters
-    const { code } = request.query;
+        // Extract the authorization code from the query parameters
+        const { code } = request.query;
 
-    // Handle case: missing authorization code
-    const tokens =
-        await this.oauthService.loginWithGoogle(
-            code,
-            request.ip,
-            request.headers["user-agent"],
+        // Handle case: missing authorization code
+        const tokens =
+            await this.oauthService.loginWithGoogle(
+                code,
+                {
+                    rememberMe: request.query.rememberMe,
+                    ipAddress: request.ip,
+                    userAgent: request.headers["user-agent"],
+                }
+            );
+
+        // Set the refresh token in a secure, HTTP-only cookie for security
+        reply.setCookie(
+            "refreshToken",
+            tokens.refreshToken,
+            cookieOptions,
         );
 
-    // Set the refresh token in a secure, HTTP-only cookie for security
-    reply.setCookie(
-        "refreshToken",
-        tokens.refreshToken,
-        cookieOptions,
-    );
+        // Redirect the user to the dashboard after successful login
+        return reply.redirect(
+            `${config.CLIENT_URL}/oauth/success`,
+        );
+    }
 
-    // Redirect the user to the dashboard after successful login
-    return reply.redirect(
-        `${config.CLIENT_URL}/dashboard`,
-    );
-}
+    /**
+     * Handle token exchange request
+     * Flow:
+     * 1. Extract refresh token from cookies
+     * 2. Call service to exchange refresh token for new access token
+     * 3. Return error if refresh token is missing or invalid
+     * 4. Return success response with new access token
+     * 
+     * @param request - FastifyRequest containing the refresh token in cookies
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to an AuthResponse or an error response
+     */
+    async exchange(
+        request: FastifyRequest,
+        reply: FastifyReply
+    ) {
+
+        // Extract refresh token from cookies
+        const refreshToken =
+            request.cookies.refreshToken;
+
+        // Handle case: missing refresh token
+        if (!refreshToken) {
+            throw new UnauthorizedError(
+                "auth.middleware.missingRefreshToken",
+                ERROR_CODE.MISSING_REFRESH_TOKEN
+            );
+        }
+
+        // Call service layer to handle business logic for token exchange
+        const result = await this.authService.exchange(refreshToken);
+
+        // Handle case: invalid or expired refresh token
+        if (!result) {
+            return ResponseHandler.error(
+                reply,
+                HTTP_STATUS.UNAUTHORIZED,
+                request.t("auth.exchangeFailed")
+            );
+        }
+
+        // Set new refresh token in HTTP-only cookie for security
+        return ResponseHandler.success(
+            reply,
+            result,
+            request.t("auth.exchangeSuccess"),
+            HTTP_STATUS.OK
+        );
+
+    }
 }

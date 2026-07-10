@@ -98,6 +98,8 @@ model RefreshToken {
 
   ipAddress String?
 
+  rememberMe Boolean @default(false)
+
   expiresAt DateTime @map("expires_at")
 
   revoked Boolean @default(false)

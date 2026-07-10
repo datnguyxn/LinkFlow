@@ -13,7 +13,7 @@ import { FcGoogle } from 'react-icons/fc';
 
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/button';
-import { loginWithGoogle } from '@/lib/apis/ auth.api';
+import { loginWithGoogle } from '@/lib/apis/auth.api';
 
 export default function LoginForm() {
   const [show, setShow] = useState(false);

@@ -13,18 +13,34 @@ export const refreshTokenSwagger: FastifySchema = {
             success: Type.Boolean(),
             statusCode: Type.Number(),
             message: Type.String(),
-            data: Type.Null(),
+            data: Type.Object({
+                accessToken: Type.String(),
+                refreshToken: Type.String(),
+            }),
             meta: Type.Object({
                 timestamp: Type.String(),
                 requestId: Type.String(),
             }),
         }),
 
-        401: Type.Object({
-            success: Type.Boolean(),
-            statusCode: Type.Number(),
-            message: Type.String(),
-            errorCode: Type.String(),
-        }),
-    },
+        401:
+        {
+            description: "Unauthorized - User is not authenticated",
+            type: "object",
+            properties: {
+                success: Type.Boolean(),
+                statusCode: Type.Number(),
+                message: Type.String(),
+                errors: Type.Array(Type.Object({
+                    field: Type.Optional(Type.String()),
+                    message: Type.String(),
+                    code: Type.String(),
+                })),
+                meta: Type.Object({
+                    timestamp: Type.String(),
+                    requestId: Type.String(),
+                }),
+            },
+        },
+    }
 };

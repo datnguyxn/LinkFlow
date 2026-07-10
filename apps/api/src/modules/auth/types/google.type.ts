@@ -21,4 +21,5 @@ export interface GoogleUserInfo {
 export interface GoogleCallbackQuery {
     code: string;
     state?: string;
+    rememberMe?: boolean; // Optional boolean to indicate if the user wants to stay logged in
 }

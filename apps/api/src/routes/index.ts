@@ -10,10 +10,10 @@ export async function routes(fastify: FastifyInstance) {
   });
 
   fastify.register(adminUserRoutes, {
-        prefix: `${ROUTE.ADMIN}${ROUTE.USERS}`,
+        prefix: ROUTE.ADMIN_USERS,
   });
 
   fastify.register(userRoutes, {
-    prefix: ROUTE.USERS,
+    prefix: ROUTE.USER,
   });
 }

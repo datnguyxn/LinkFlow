@@ -28,6 +28,12 @@ export const loginSchema = z.object({
         .regex(/[a-z]/, { message: 'auth.passwordMissingLowercase' })
         .regex(/[0-9]/, { message: 'auth.passwordMissingNumber' })
         .regex(/[^A-Za-z0-9]/, { message: 'auth.passwordMissingSpecialCharacter' }),
+    
+    /**
+     * Remember me option
+     * Optional boolean to indicate if the user wants to stay logged in
+     */
+    rememberMe: z.boolean().default(false)
 });
 
 /**

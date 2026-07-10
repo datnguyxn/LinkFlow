@@ -9,6 +9,7 @@ import { AuthService } from "../../../src/modules/auth/service/auth.service";
 import { comparePassword } from "../../../src/utils/password.util";
 import { UserRole, UserStatus } from "@prisma/client"
 import { ERROR_CODE } from "../../../src/common/constants";
+import { config } from "../../../src/config/env";
 
 describe("AuthService", () => {
     let authService: AuthService;
@@ -38,7 +39,8 @@ describe("AuthService", () => {
         };
 
         jwtService = {
-            generateTokens: vi.fn(),
+            generateAccessToken: vi.fn(),
+            generateRefreshToken: vi.fn(),
             hashRefreshToken: vi.fn(),
         };
 
@@ -82,18 +84,28 @@ describe("AuthService", () => {
         });
 
         it("should login successfully", async () => {
+
             userRepository.findByEmail.mockResolvedValue(activeUser);
 
             (comparePassword as any).mockResolvedValue(true);
 
-            vi.spyOn(authService, "completeLogin").mockResolvedValue({
-                accessToken: "access-token",
-                refreshToken: "refresh-token",
-            });
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            const completeLoginSpy =
+                vi.spyOn(authService, "completeLogin")
+                    .mockResolvedValue({
+                        accessToken: "access-token",
+                        refreshToken: "refresh-token",
+                    });
 
             const result = await authService.loginUser(
                 "dat@gmail.com",
                 "Password@123",
+                options,
             );
 
             expect(userRepository.findByEmail)
@@ -105,17 +117,17 @@ describe("AuthService", () => {
                     "hashed-password",
                 );
 
-            expect(authService.completeLogin)
+            expect(completeLoginSpy)
                 .toHaveBeenCalledWith(
                     activeUser,
-                    undefined,
-                    undefined,
+                    options,
                 );
 
             expect(result).toEqual({
                 accessToken: "access-token",
                 refreshToken: "refresh-token",
             });
+
         });
 
         it("should throw INVALID_CREDENTIALS when user does not exist", async () => {
@@ -125,6 +137,7 @@ describe("AuthService", () => {
                 authService.loginUser(
                     "dat@gmail.com",
                     "Password@123",
+                    {}
                 ),
             ).rejects.toMatchObject({
                 statusCode: 401,
@@ -261,10 +274,20 @@ describe("AuthService", () => {
         });
 
         it("should complete login successfully", async () => {
-            jwtService.generateTokens.mockReturnValue({
-                accessToken: "access-token",
-                refreshToken: "refresh-token",
-            });
+
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
 
             jwtService.hashRefreshToken.mockResolvedValue(
                 "hashed-refresh-token",
@@ -272,25 +295,42 @@ describe("AuthService", () => {
 
             refreshTokenRepository.create.mockResolvedValue({});
 
-            userRepository.updateLastLogin.mockResolvedValue(undefined);
+            userRepository.updateLastLogin.mockResolvedValue(
+                undefined,
+            );
 
-            authPublisher.userLoggedIn.mockResolvedValue(undefined);
+            authPublisher.userLoggedIn.mockResolvedValue(
+                undefined,
+            );
 
             const result = await authService.completeLogin(
                 user,
-                "127.0.0.1",
-                "Chrome",
+                options,
             );
 
-            expect(jwtService.generateTokens).toHaveBeenCalledWith({
-                id: user.id,
-                email: user.email,
-                language: "en",
-                role: UserRole.USER,
-            });
+            expect(jwtService.generateAccessToken)
+                .toHaveBeenCalledWith({
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    language: "en",
+                });
+
+            expect(jwtService.generateRefreshToken)
+                .toHaveBeenCalledWith(
+                    {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role,
+                        language: "en",
+                    },
+                    expect.anything(),
+                );
 
             expect(jwtService.hashRefreshToken)
-                .toHaveBeenCalledWith("refresh-token");
+                .toHaveBeenCalledWith(
+                    "refresh-token",
+                );
 
             expect(refreshTokenRepository.create)
                 .toHaveBeenCalledWith({
@@ -306,6 +346,7 @@ describe("AuthService", () => {
                     }),
                     ipAddress: "127.0.0.1",
                     userAgent: "Chrome",
+                    rememberMe: true,
                 });
 
             expect(userRepository.updateLastLogin)
@@ -323,15 +364,87 @@ describe("AuthService", () => {
                 accessToken: "access-token",
                 refreshToken: "refresh-token",
             });
+
+        });
+
+        it("should generate remember refresh token when rememberMe is true", async () => {
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockResolvedValue({});
+
+            userRepository.updateLastLogin.mockResolvedValue(undefined);
+
+            authPublisher.userLoggedIn.mockResolvedValue(undefined);
+
+            await authService.completeLogin(user, {
+                rememberMe: true,
+            });
+
+            expect(jwtService.generateRefreshToken)
+                .toHaveBeenCalledWith(
+                    expect.any(Object),
+                    config.JWT_REFRESH_REMEMBER_EXPIRES_MS,
+                );
+
+        });
+
+        it("should generate normal refresh token when rememberMe is false", async () => {
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
+
+            jwtService.hashRefreshToken.mockResolvedValue(
+                "hashed-refresh-token",
+            );
+
+            refreshTokenRepository.create.mockResolvedValue({});
+
+            userRepository.updateLastLogin.mockResolvedValue(undefined);
+
+            authPublisher.userLoggedIn.mockResolvedValue(undefined);
+
+            await authService.completeLogin(user, {
+                rememberMe: false,
+            });
+
+            expect(jwtService.generateRefreshToken)
+                .toHaveBeenCalledWith(
+                    expect.any(Object),
+                    config.JWT_REFRESH_EXPIRES_MS,
+                );
+
         });
 
         it("should throw if jwt generation failed", async () => {
-            jwtService.generateTokens.mockImplementation(() => {
-                throw new Error("JWT Error");
-            });
+
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            jwtService.generateAccessToken.mockRejectedValue(
+                new Error("JWT Error"),
+            );
 
             await expect(
-                authService.completeLogin(user),
+                authService.completeLogin(user, options),
             ).rejects.toThrow("JWT Error");
 
             expect(refreshTokenRepository.create)
@@ -339,17 +452,27 @@ describe("AuthService", () => {
         });
 
         it("should throw if hash refresh token failed", async () => {
-            jwtService.generateTokens.mockReturnValue({
-                accessToken: "access-token",
-                refreshToken: "refresh-token",
-            });
+
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
 
             jwtService.hashRefreshToken.mockRejectedValue(
                 new Error("Hash Refresh Error"),
             );
 
             await expect(
-                authService.completeLogin(user),
+                authService.completeLogin(user, options),
             ).rejects.toThrow("Hash Refresh Error");
 
             expect(refreshTokenRepository.create)
@@ -357,10 +480,20 @@ describe("AuthService", () => {
         });
 
         it("should throw if refresh token repository failed", async () => {
-            jwtService.generateTokens.mockReturnValue({
-                accessToken: "access-token",
-                refreshToken: "refresh-token",
-            });
+
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
 
             jwtService.hashRefreshToken.mockResolvedValue(
                 "hashed-refresh-token",
@@ -371,7 +504,7 @@ describe("AuthService", () => {
             );
 
             await expect(
-                authService.completeLogin(user),
+                authService.completeLogin(user, options),
             ).rejects.toThrow("Refresh Token Error");
 
             expect(userRepository.updateLastLogin)
@@ -379,10 +512,20 @@ describe("AuthService", () => {
         });
 
         it("should throw if update last login failed", async () => {
-            jwtService.generateTokens.mockReturnValue({
-                accessToken: "access-token",
-                refreshToken: "refresh-token",
-            });
+
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
 
             jwtService.hashRefreshToken.mockResolvedValue(
                 "hashed-refresh-token",
@@ -395,7 +538,7 @@ describe("AuthService", () => {
             );
 
             await expect(
-                authService.completeLogin(user),
+                authService.completeLogin(user, options),
             ).rejects.toThrow("Update Last Login Error");
 
             expect(authPublisher.userLoggedIn)
@@ -403,10 +546,20 @@ describe("AuthService", () => {
         });
 
         it("should throw if publisher failed", async () => {
-            jwtService.generateTokens.mockReturnValue({
-                accessToken: "access-token",
-                refreshToken: "refresh-token",
-            });
+
+            const options = {
+                rememberMe: true,
+                ipAddress: "127.0.0.1",
+                userAgent: "Chrome",
+            };
+
+            jwtService.generateAccessToken.mockResolvedValue(
+                "access-token",
+            );
+
+            jwtService.generateRefreshToken.mockReturnValue(
+                "refresh-token",
+            );
 
             jwtService.hashRefreshToken.mockResolvedValue(
                 "hashed-refresh-token",
@@ -423,7 +576,7 @@ describe("AuthService", () => {
             );
 
             await expect(
-                authService.completeLogin(user),
+                authService.completeLogin(user, options),
             ).rejects.toThrow("RabbitMQ Error");
         });
     });

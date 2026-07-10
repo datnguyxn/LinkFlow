@@ -9,6 +9,7 @@ import type { OAuthProfile } from "../types/oauth.type.ts";
 import type { User } from "@prisma/client";
 import { oauthConfig } from "../../../config/oauth.config.ts";
 import crypto from "node:crypto";
+import type { LoginOptions } from "../types/login-option.type.ts";
 
 /**
  * OAuthService handles OAuth authentication flows for different providers.
@@ -33,14 +34,14 @@ export class OAuthService {
      * - The authorization code is exchanged for an access token and user info.    
      * 
      * @param code - The authorization code received from Google's OAuth 2.0 authorization server.
+     * @param rememberMe - Optional boolean to indicate if the user wants to stay logged in.
      * @param ipAddress - Optional IP address of the user for logging purposes.
      * @param userAgent - Optional user agent string of the user's browser for logging purposes.
      * @returns A promise that resolves to an AuthResponse containing access and refresh tokens.
      */
     async loginWithGoogle(
         code: string,
-        ipAddress?: string,
-        userAgent?: string,
+        options: LoginOptions
     ): Promise<AuthResponse> {
 
         // Exchange authorization code
@@ -60,8 +61,7 @@ export class OAuthService {
         // Complete login
         return this.authService.completeLogin(
             user,
-            ipAddress,
-            userAgent,
+            options
         );
     }
 

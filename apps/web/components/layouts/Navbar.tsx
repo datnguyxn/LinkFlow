@@ -8,14 +8,12 @@ import Container from '../common/Container';
 import Logo from '../common/Logo';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 
-import dynamic from "next/dynamic";
+import dynamic from 'next/dynamic';
+import { useAuth } from '@/hooks/useAuth';
 
-const ThemeToggle = dynamic(
-  () => import("@/components/common/ThemeToggle"),
-  {
-    ssr: false,
-  }
-);
+const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
+  ssr: false,
+});
 
 const menus = [
   {
@@ -38,6 +36,7 @@ const menus = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <header
@@ -65,40 +64,49 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden gap-3 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <LanguageSwitcher />
 
           <ThemeToggle />
 
-          <Link
-            href="/login"
-            className="
-            px-5
-            py-2.5
-            text-sm
-            font-semibold
-            text-black
-            transition"
-          >
-            Sign in
-          </Link>
+          {user ? (
+            <>
+              <div className="flex items-center gap-3">
+                <img
+                  src={user.avatarUrl ?? '/images/default-avatar.png'}
+                  alt={user.fullName}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
 
-          <Link
-            href="/register"
-            className="
-            rounded-xl
-            bg-blue-600
-            px-5
-            py-2.5
-            text-sm
-            font-semibold
-            text-white
-            transition
-            hover:bg-blue-700
-          "
-          >
-            Get Started
-          </Link>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {user.fullName}
+                </span>
+              </div>
+
+              <button
+                onClick={logout}
+                className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium transition hover:bg-slate-200 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="px-5 py-2.5 text-sm font-semibold text-black transition hover:text-blue-600 dark:text-white"
+              >
+                Sign in
+              </Link>
+
+              <Link
+                href="/register"
+                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         <button onClick={() => setOpen(!open)} className="md:hidden">
@@ -110,7 +118,11 @@ export default function Navbar() {
         <div className="border-t md:hidden">
           <Container className="flex flex-col py-5">
             {menus.map((item) => (
-              <Link key={item.title} href={item.href} className="py-3 mt-5 text-sm text-slate-600 transition hover:text-black">
+              <Link
+                key={item.title}
+                href={item.href}
+                className="py-3 mt-5 text-sm text-slate-600 transition hover:text-black"
+              >
                 {item.title}
               </Link>
             ))}

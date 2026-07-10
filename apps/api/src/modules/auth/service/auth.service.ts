@@ -15,6 +15,7 @@ import { randomUUID } from 'crypto';
 import { AuthPublisher } from '../../../publishers/auth/auth.publisher.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
 import { UserStatus, type User } from '@prisma/client';
+import type { LoginOptions } from '../types/login-option.type.ts';
 
 /**
  * AuthService handles business logic related to authentication.
@@ -170,8 +171,7 @@ export class AuthService {
     async loginUser(
         email: string,
         password: string,
-        ipAddress?: string,
-        userAgent?: string
+        options: LoginOptions
     ): Promise<AuthResponse> {
         // Find user by email
         const user = await this.userRepository.findByEmail(email);
@@ -192,7 +192,7 @@ export class AuthService {
         }
 
         // Complete login process
-        return await this.completeLogin(user, ipAddress, userAgent);
+        return await this.completeLogin(user, options);
     }
 
     /**
@@ -389,29 +389,46 @@ export class AuthService {
      * @param userAgent - Optional user agent of the request
      * @returns A promise that resolves to an AuthResponse containing access and refresh tokens
      */
-    async completeLogin(user: User, ipAddress?: string, userAgent?: string): Promise<AuthResponse> {
-        // Generate JWT tokens for authentication
-        const tokens = this.jwtService.generateTokens({
+    async completeLogin(
+        user: User,
+        options: LoginOptions): Promise<AuthResponse> {
+        // Generate access token
+        const accessToken = await this.jwtService.generateAccessToken({
             id: user.id,
             email: user.email,
-            language: user.language || 'en', // default language
-            role: user.role || 'USER', // default role
+            role: user.role,
+            language: user.language || LANGUAGE.EN, // default language
         });
 
+        // Generate refresh token
+        const refreshExpiresIn = options.rememberMe
+            ? config.JWT_REFRESH_REMEMBER_EXPIRES_MS
+            : config.JWT_REFRESH_EXPIRES_MS;
+
+        const refreshToken = this.jwtService.generateRefreshToken(
+            {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                language: user.language || LANGUAGE.EN, // default language
+            },
+            refreshExpiresIn,
+        );
         // Save refresh token
         await this.refreshTokenRepository.create({
             userId: user.id,
             token: {
-                tokenHash: await this.jwtService.hashRefreshToken(tokens.refreshToken),
-                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
+                tokenHash: await this.jwtService.hashRefreshToken(refreshToken),
+                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '86400000')), // default 1 day
                 user: {
                     connect: {
                         id: user.id,
                     },
                 },
             },
-            ipAddress: ipAddress,
-            userAgent: userAgent,
+            ipAddress: options.ipAddress,
+            userAgent: options.userAgent,
+            rememberMe: options.rememberMe
         });
 
         // Update last login timestamp
@@ -422,15 +439,58 @@ export class AuthService {
             userId: user.id,
             email: user.email,
             fullName: user.fullName || "",
-            ipAddress: ipAddress, // You can set this if you have access to the request IP
+            ipAddress: options.ipAddress, // You can set this if you have access to the request IP
         };
 
         await this.authPublisher.userLoggedIn(event);
 
         // Return tokens to the controller for response
         return {
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+        };
+    }
+
+    /**
+     * Exchange a valid refresh token for a new access token
+     * - Verify the provided refresh token
+     * - Check if the token is revoked or expired
+     * - Generate a new access token
+     * @param refreshToken - The refresh token to exchange
+     * @returns An object containing the new access token and user information
+     * @throws UnauthorizedError if the refresh token is invalid or the user is not found
+     */
+    async exchange(refreshToken: string) {
+
+        // Verify the refresh token and get the payload
+        const payload =
+            await this.jwtService.verifyRefreshToken(refreshToken);
+
+        // Hash the refresh token to find it in the database
+        const user =
+            await this.userRepository.findById(payload.id);
+
+        // Check if user exists
+        if (!user) {
+            throw new UnauthorizedError(
+                "auth.middleware.INVALID_REFRESH_TOKEN",
+                ERROR_CODE.INVALID_REFRESH_TOKEN,
+            );
+        }
+
+        // Check user status
+        const accessToken =
+            this.jwtService.generateAccessToken({
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                language: user.language || LANGUAGE.EN, // default language
+            });
+
+        // Return the new access token and user information
+        return {
+            accessToken,
+            user,
         };
     }
 }

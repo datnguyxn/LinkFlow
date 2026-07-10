@@ -8,7 +8,8 @@ export class RefreshTokenRepository {
             token: Prisma.RefreshTokenCreateInput, 
             userId: string, 
             ipAddress?: string, 
-            userAgent?: string 
+            userAgent?: string,
+            rememberMe?: boolean
         }, 
         db: Prisma.TransactionClient | PrismaClient = prisma
     ) {
@@ -19,6 +20,7 @@ export class RefreshTokenRepository {
                 expiresAt: data.token.expiresAt,
                 ipAddress: data.ipAddress,
                 userAgent: data.userAgent,
+                rememberMe: data.rememberMe
             }
         });
     }

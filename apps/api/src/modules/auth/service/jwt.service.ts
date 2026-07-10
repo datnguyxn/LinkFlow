@@ -12,16 +12,16 @@ export class JwtService {
         });
     }
 
-    generateRefreshToken(payload: JwtPayload): string {
+    generateRefreshToken(payload: JwtPayload, expiresIn: SignOptions["expiresIn"]): string {
         return jwt.sign(payload, config.JWT_REFRESH_SECRET, {
-            expiresIn: config.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"],
+            expiresIn: expiresIn as SignOptions["expiresIn"],
         });
     }
 
     generateTokens(payload: JwtPayload): AuthToken {
         return {
             accessToken: this.generateAccessToken(payload),
-            refreshToken: this.generateRefreshToken(payload),
+            refreshToken: this.generateRefreshToken(payload, config.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"]),
         };
     }
 

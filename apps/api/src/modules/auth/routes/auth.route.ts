@@ -132,7 +132,7 @@ export const authRoutes = async (app: FastifyInstance) => {
                 },
             },
         },
-        controller.loginWithGoogle.bind(controller),
+        controller.loginWithGoogle.bind(controller) // Bind controller context,
     );
 
     /**
@@ -154,6 +154,26 @@ export const authRoutes = async (app: FastifyInstance) => {
                 },
             },
         },
-        controller.googleCallback.bind(controller),
+        controller.googleCallback.bind(controller) // Bind controller context,
+    );
+
+    /**
+     * GET /exchange
+     *
+     * Features:
+     * - Exchanges refresh token for new access token
+     * - Rate limiting to prevent abuse
+     */
+    app.get(
+        "/exchange",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+        },
+        controller.exchange.bind(controller) // Bind controller context,
     );
 };

@@ -93,8 +93,11 @@ describe("OAuthService", () => {
 
             const result = await oauthService.loginWithGoogle(
                 "google-code",
-                "127.0.0.1",
-                "Chrome",
+                {
+                    ipAddress: "127.0.0.1",
+                    userAgent: "Chrome",
+                    rememberMe: true,
+                },
             );
 
             expect(googleProvider.exchangeCode)
@@ -115,8 +118,11 @@ describe("OAuthService", () => {
             expect(authService.completeLogin)
                 .toHaveBeenCalledWith(
                     user,
-                    "127.0.0.1",
-                    "Chrome",
+                    {
+                        ipAddress: "127.0.0.1",
+                        userAgent: "Chrome",
+                        rememberMe: true,
+                    },
                 );
 
             expect(result).toEqual({
@@ -147,6 +153,7 @@ describe("OAuthService", () => {
 
             const result = await oauthService.loginWithGoogle(
                 "google-code",
+                {},
             );
 
             expect(oauthRepository.findByProvider)
@@ -174,8 +181,7 @@ describe("OAuthService", () => {
             expect(authService.completeLogin)
                 .toHaveBeenCalledWith(
                     user,
-                    undefined,
-                    undefined,
+                    {},
                 );
 
             expect(result).toEqual({
@@ -215,6 +221,7 @@ describe("OAuthService", () => {
 
             const result = await oauthService.loginWithGoogle(
                 "google-code",
+                {},
             );
 
             expect(transactionService.run)
@@ -244,8 +251,7 @@ describe("OAuthService", () => {
             expect(authService.completeLogin)
                 .toHaveBeenCalledWith(
                     user,
-                    undefined,
-                    undefined,
+                    {},
                 );
 
             expect(result).toEqual({
@@ -284,7 +290,7 @@ describe("OAuthService", () => {
             );
 
             await expect(
-                oauthService.loginWithGoogle("google-code"),
+                oauthService.loginWithGoogle("google-code", {}),
             ).rejects.toThrow("Google UserInfo Error");
 
             expect(authService.completeLogin)
@@ -309,7 +315,7 @@ describe("OAuthService", () => {
             );
 
             await expect(
-                oauthService.loginWithGoogle("google-code"),
+                oauthService.loginWithGoogle("google-code", {}),
             ).rejects.toThrow("Create OAuth Error");
 
             expect(authService.completeLogin)
@@ -334,7 +340,7 @@ describe("OAuthService", () => {
             );
 
             await expect(
-                oauthService.loginWithGoogle("google-code"),
+                oauthService.loginWithGoogle("google-code", {}),
             ).rejects.toThrow("Transaction Error");
 
             expect(authService.completeLogin)
@@ -363,16 +369,22 @@ describe("OAuthService", () => {
             await expect(
                 oauthService.loginWithGoogle(
                     "google-code",
-                    "127.0.0.1",
-                    "Chrome",
+                    {
+                        ipAddress: "127.0.0.1",
+                        userAgent: "Chrome",
+                        rememberMe: true,
+                    },
                 ),
             ).rejects.toThrow("Complete Login Error");
 
             expect(authService.completeLogin)
                 .toHaveBeenCalledWith(
                     user,
-                    "127.0.0.1",
-                    "Chrome",
+                    {
+                        ipAddress: "127.0.0.1",
+                        userAgent: "Chrome",
+                        rememberMe: true,
+                    },
                 );
 
         });
