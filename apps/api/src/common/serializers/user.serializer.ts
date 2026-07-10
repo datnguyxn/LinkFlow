@@ -1,5 +1,6 @@
 import type { User } from "@prisma/client";
 import { DEFAULT_AVATAR_URL } from "../constants/default-avatar.constant.ts";
+import { config } from "../../config/env/index.ts";
 /**
  * UserSerializer is responsible for transforming user data into a format suitable for API responses.
  * It ensures that only relevant fields are exposed to the client.
@@ -15,7 +16,7 @@ export class UserSerializer {
         return {
             email: user.email,
             fullName: user.fullName,
-            avatarUrl: user.avatarUrl ?? DEFAULT_AVATAR_URL,
+            avatarUrl: user.avatarUrl ?? `${config.BASE_URL}:${config.PORT}${DEFAULT_AVATAR_URL}`,
             status: user.status,
             emailVerified: user.emailVerified,
             language: user.language,
