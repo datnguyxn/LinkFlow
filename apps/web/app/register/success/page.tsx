@@ -127,7 +127,7 @@ export default async function RegisterSuccessPage({
 
         <div className="mt-8 rounded-xl bg-slate-100 p-4 dark:bg-slate-800">
           <p className="text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
-            Didn't receive the email? Check your spam folder or click{" "}
+            Did not you receive the email? Check your spam folder or click{" "}
             <span className="font-semibold">
               Resend Verification Email
             </span>
