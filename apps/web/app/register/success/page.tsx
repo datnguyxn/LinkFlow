@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Mail, ArrowLeft, RefreshCw } from "lucide-react";
-import { appToast } from "@/lib/toast";
-import { authService } from "@/services/auth.service";
+import { ArrowLeft, Mail } from "lucide-react";
+
+import ResendVerificationButton from "./ResendVerificationButton";
 
 interface RegisterSuccessPageProps {
   searchParams?: Promise<{
@@ -15,19 +15,6 @@ export default async function RegisterSuccessPage({
   const params = await searchParams;
 
   const email = params?.email;
-
-    async function handleResendVerificationEmail() {
-    if (!email) {
-      return;
-    }
-
-    try {
-      await authService.resendVerificationEmail(email);
-      appToast.success("Verification email sent successfully.");
-    } catch (error) {
-      appToast.error("Failed to resend verification email.");
-    }
-  };
 
   return (
     <main
@@ -108,30 +95,7 @@ export default async function RegisterSuccessPage({
         </div>
 
         <div className="mt-8 space-y-3">
-          <button
-            className="
-            flex
-            w-full
-            items-center
-            justify-center
-            gap-2
-            rounded-xl
-            bg-blue-600
-            px-4
-            py-3
-            text-sm
-            font-semibold
-            text-white
-            transition
-            hover:bg-blue-700
-            cursor-pointer
-            "
-            type="button"
-            onClick={await handleResendVerificationEmail}
-          >
-            <RefreshCw className="h-4 w-4" />
-            Resend Verification Email
-          </button>
+          <ResendVerificationButton email={email} />
 
           <Link
             href="/login"
@@ -163,8 +127,11 @@ export default async function RegisterSuccessPage({
 
         <div className="mt-8 rounded-xl bg-slate-100 p-4 dark:bg-slate-800">
           <p className="text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
-            Did you not receive the email? Check your spam folder or click{" "}
-            <span className="font-semibold">Resend Verification Email</span>.
+            Didn't receive the email? Check your spam folder or click{" "}
+            <span className="font-semibold">
+              Resend Verification Email
+            </span>
+            .
           </p>
         </div>
       </div>

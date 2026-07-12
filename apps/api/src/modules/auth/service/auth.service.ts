@@ -587,9 +587,6 @@ export class AuthService {
             );
         }
 
-        // Check if the user's email is already verified
-        this.checkUserStatus(user);
-
         // Send a new verification email to the user
         await this.sendVerificationEmail(user, ipAddress);
     }
