@@ -46,31 +46,13 @@ export class AuthController {
 
         const ipAddress = request.ip;
 
-        const userAgent = request.headers["user-agent"];
-
         // Call service layer to handle business logic
-        const data = await this.authService.registerUser(email, password, fullName, ipAddress, userAgent);
-
-        // Handle case: user already exists or registration failed
-        if (data === null) {
-            return ResponseHandler.error(
-                reply,
-                HTTP_STATUS.BAD_REQUEST,
-                request.t("common.invalidCredentials")
-            );
-        }
-
-        // Set refresh token in HTTP-only cookie for security
-        reply.setCookie(
-            "refreshToken",
-            data.refreshToken,
-            cookieOptions,
-        );
+        await this.authService.registerUser(email, password, fullName, ipAddress);
 
         // Successful registration
-        return ResponseHandler.success<AuthResponse>(
+        return ResponseHandler.success(
             reply,
-            data,
+            null,
             request.t("auth.registerSuccess"),
             HTTP_STATUS.CREATED
         );
@@ -322,8 +304,47 @@ export class AuthController {
         );
 
         // Redirect the user to the dashboard after successful login
-        return reply.redirect(
-            `${config.CLIENT_URL}/oauth/success`,
+        // return reply.redirect(
+        //     `${config.CLIENT_URL}/oauth/success`,
+        // );
+        // reply.headers({
+        //     "Content-Security-Policy":
+        //         "default-src 'self'; script-src 'self' 'unsafe-inline'",
+        //     "Cross-Origin-Opener-Policy":
+        //         "unsafe-none",
+        // });
+
+        // const origin = new URL(config.CLIENT_URL).origin;
+
+        // return reply
+        //     .type("text/html")
+        //     .send(`
+        //             <!DOCTYPE html>
+        //             <html>
+        //             <body>
+        //             <script>
+        //             console.log("callback loaded");
+        //             console.log('window.opener =', window.opener);
+
+        //             if (window.opener) {
+        //                 console.log("Sending message to opener window");
+        //                 window.opener.postMessage(
+        //                     {
+        //                         type: "GOOGLE_LOGIN_SUCCESS"
+        //                     },
+        //                     "${origin}"
+        //             );}
+
+        //             console.log("Closing window");
+
+        //             //window.close();
+        //             </script>
+        //             </body>
+        //             </html>
+        //         `);
+
+         return reply.redirect(
+            `${config.CLIENT_URL}/oauth-popup.html`,
         );
     }
 
@@ -376,5 +397,94 @@ export class AuthController {
             HTTP_STATUS.OK
         );
 
+    }
+
+    /**
+     * Handle email verification request
+     * Flow:
+     * 1. Extract verification token from query parameters
+     * 2. Call service to verify email using the token
+     * 3. Return error if token is missing or invalid
+     * 4. Set refresh token in cookie and return success response
+     * 
+     * @param request - FastifyRequest containing the verification token in query parameters
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to an AuthResponse or an error response
+     */
+    async verifyEmail(
+        request: FastifyRequest<{ Querystring: { token: string } }>,
+        reply: FastifyReply
+    ) {
+        // Extract the verification token from the query parameters
+        const { token } = request.query;
+
+        // Handle case: missing verification token
+        if (!token) {
+            return ResponseHandler.error(
+                reply,
+                HTTP_STATUS.BAD_REQUEST,
+                request.t("auth.missingVerificationToken")
+            );
+        }
+
+        // Get ip address and user agent for logging or additional security checks
+        const ipAddress = request.ip;
+        const userAgent = request.headers["user-agent"];
+
+        // Call service layer to handle business logic for email verification
+        const data = await this.authService.verifyEmail(token, ipAddress, userAgent);
+
+        if (!data) {
+            return ResponseHandler.error(
+                reply,
+                HTTP_STATUS.BAD_REQUEST,
+                request.t("auth.verificationFailed")
+            );
+        }
+
+        // Set refresh token in HTTP-only cookie for security
+        reply.setCookie(
+            "refreshToken",
+            data.refreshToken,
+            cookieOptions,
+        );
+
+        // Successful email verification
+        return ResponseHandler.success<AuthResponse>(
+            reply,
+            data,
+            request.t("auth.verificationSuccess"),
+            HTTP_STATUS.OK
+        );
+    }
+
+    /**
+     * Handle resend verification email request
+     * Flow:
+     * 1. Extract email from request body
+     * 2. Call service to resend verification email
+     * 3. Return success response
+     * 
+     * @param request - FastifyRequest containing the email in the body
+     * @param reply - FastifyReply to send the response
+     * @returns A promise that resolves to a success response or an error response
+     */
+    async resendVerificationEmail(
+        request: FastifyRequest<{ Body: { email: string } }>,
+        reply: FastifyReply
+    ) {
+        // Extract email from request body
+        const { email } = request.body;
+
+        // Call service layer to handle business logic for resending verification email
+        await this.authService.resendVerificationEmail(email);
+
+        // Successful resend of verification email
+        return ResponseHandler.success(
+            reply,
+            null,
+            request.t("auth.verificationEmailSent"),
+            HTTP_STATUS.OK
+        );
     }
 }

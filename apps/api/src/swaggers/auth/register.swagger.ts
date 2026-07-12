@@ -1,5 +1,6 @@
 import type { FastifySchema } from "fastify";
 import { Type } from "@sinclair/typebox";
+import { createSwaggerResponse } from "../../common/swagger/swagger-response.ts";
 
 export const registerSwagger: FastifySchema = {
     tags: ["Authentication"],
@@ -31,43 +32,9 @@ export const registerSwagger: FastifySchema = {
         }
     },
 
-    response: {
-        201: Type.Object({
-            success: Type.Boolean(),
-            statusCode: Type.Number(),
-            message: Type.String(),
-            data: Type.Object({
-                accessToken: Type.String(),
-                refreshToken: Type.String(),
-            }),
-            meta: Type.Object({
-                timestamp: Type.String(),
-                requestId: Type.String(),
-            }),
-        }),
-        400: Type.Object({
-            success: Type.Boolean(),
-            statusCode: Type.Number(),
-            message: Type.String(),
-            errors: Type.Array(Type.Object({
-                field: Type.String(),
-                message: Type.String(),
-                code: Type.String(),
-            })),
-            meta: Type.Object({
-                timestamp: Type.String(),
-                requestId: Type.String(),
-            }),
-        }),
-        409: Type.Object({
-            success: Type.Boolean(),
-            statusCode: Type.Number(),
-            message: Type.String(),
-            errorCode: Type.String(),
-            meta: Type.Object({
-                timestamp: Type.String(),
-                requestId: Type.String(),
-            }),
-        }),
-    }
+    response: createSwaggerResponse(
+        201,
+        Type.Null(),
+        [400, 401, 403, 404, 500]
+    ),
 };

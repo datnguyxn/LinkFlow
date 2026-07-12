@@ -5,6 +5,7 @@
         "internalServerError": "Lỗi hệ thống."
     },
     "auth": {
+        "userAlreadyExists": "User already exists",
         "loginSuccess": "Đăng nhập thành công",
         "registerSuccess": "Đăng ký thành công",
         "emailExists": "Email đã tồn tại",
@@ -41,6 +42,10 @@
             "auth.login.userSuspended": "Tài khoản người dùng đã bị cấm. Vui lòng liên hệ hỗ trợ.",
             "auth.login.userDeleted": "Tài khoản người dùng đã bị xóa.",
             "auth.login.userUnavailable": "Tài khoản người dùng không khả dụng. Vui lòng liên hệ hỗ trợ."
+        },
+        "verifyEmail": {
+            "tokenExpired":"Token đã hết hạn",
+            "invalidToken":"Token không hợp lệ"
         }
     },
     "request": {

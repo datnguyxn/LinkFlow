@@ -53,93 +53,43 @@ export class AuthService {
         email: string,
         password: string,
         fullName: string,
-        ipAddress?: string,
-        userAgent?: string
-    ): Promise<AuthResponse | null> {
-
-        console.log("Registering user:", { email, fullName }); // Debug log
+        ipAddress?: string
+    ): Promise<void> {
 
         // Check duplicate email
         const existingUser = await this.userRepository.findByEmail(email);
 
-        console.log("Existing user check:", existingUser); // Debug log
-
+        // If user exists and is active or email is verified, throw conflict error
         if (existingUser) {
-            throw new ConflictError("User already exists", "USER_ALREADY_EXISTS");
+            if (
+                existingUser.emailVerified ||
+                existingUser.status === UserStatus.ACTIVE
+            ) {
+                throw new ConflictError(
+                    "auth.userAlreadyExists",
+                    ERROR_CODE.USER_ALREADY_EXISTS,
+                );
+            }
+
+            // If user exists but is inactive or email not verified, resend verification email
+            await this.sendVerificationEmail(existingUser, ipAddress);
+            return; // Exit early after resending verification email
         }
 
-        // Hash raw password before saving to DB
-        const hashedPassword = await hashPassword(password);
+        // Create a pending user with a verification token
+        const result = await this.createPendingUser(email, password, fullName);
 
-        // Create user with default role and workspace inside a transaction
-        const result = await this.transactionService.run(async (tx) => {
-
-            // 1. Create user
-            const newUser = await this.userRepository.createUser({
-                email,
-                passwordHash: hashedPassword,
-                fullName,
-                language: LANGUAGE.EN, // default language,
-                timezone: 'UTC', // default timezone
-            });
-
-            // 2. Create default workspace for the new user
-            const workspace = await this.workspaceRepository.create(tx, {
-                name: fullName,
-                ownerId: newUser.id,
-            });
-
-            // 3. Generate a verification token for email confirmation
-            const verifyToken = randomUUID(); // Generate a unique verification token
-            await this.emailVerificationRepository.create(tx, {
-                userId: newUser.id,
-                verifyToken: verifyToken
-            });
-
-            return { newUser, workspace, verifyToken };
-        });
-
-        // Generate JWT tokens for authentication
-        const tokens = this.jwtService.generateTokens({
-            id: result.newUser.id,
-            email: result.newUser.email,
-            role: result.newUser.role || 'USER', // default role
-            language: result.newUser.language || LANGUAGE.EN, // default language
-        });
-
-        // Save refresh token
-        await this.refreshTokenRepository.create({
-            userId: result.newUser.id,
-            token: {
-                tokenHash: await this.jwtService.hashRefreshToken(tokens.refreshToken),
-                expiresAt: new Date(Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000')), // default 7 days
-                user: {
-                    connect: {
-                        id: result.newUser.id,
-                    },
-                },
-            },
-            ipAddress: ipAddress,
-            userAgent: userAgent,
-        });
-
-
-        // Publish user registered event to RabbitMQ
+        // Create a user registered event to publish to RabbitMQ
         const event: UserRegisteredEvent = {
-            userId: result.newUser.id,
-            email: result.newUser.email,
-            fullName: result.newUser.fullName || "",
+            userId: result.user.id,
+            email: result.user.email,
+            fullName: result.user.fullName || "",
             verifyToken: result.verifyToken, // Using the generated verification token
             ipAddress: ipAddress, // You can set this if you have access to the request IP
         };
 
+        // Publish the user registered event to notify other services or components
         await this.authPublisher.userRegistered(event);
-
-        // Return tokens to the controller for response 
-        return {
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-        };
     }
 
     /**
@@ -492,5 +442,222 @@ export class AuthService {
             accessToken,
             user,
         };
+    }
+
+    /**
+     * Verify a user's email using a verification token
+     * - Check if the token exists and is valid
+     * - Update the user's status to ACTIVE and mark email as verified
+     * - Create a default workspace for the user
+     * - Delete the verification token after successful verification
+     * - Complete the login process and return authentication tokens
+     * @param verifyToken - The email verification token
+     * @param ipAddress - Optional IP address of the request
+     * @param userAgent - Optional user agent of the request
+     * @returns AuthResponse containing access and refresh tokens
+     * @throws UnauthorizedError if the token is invalid, expired, or the user is not found
+     */
+    async verifyEmail(verifyToken: string, ipAddress: string, userAgent: string | undefined): Promise<AuthResponse> {
+        // Find the verification token in the database
+        const verificationRecord = await this.emailVerificationRepository.findByToken(verifyToken);
+
+        if (!verificationRecord) {
+            throw new UnauthorizedError(
+                "auth.verifyEmail.invalidToken",
+                ERROR_CODE.INVALID_EMAIL_VERIFICATION_TOKEN,
+            );
+        }
+
+        // Check if the token has expired
+        if (verificationRecord.expiresAt < new Date()) {
+
+            await this.emailVerificationRepository.delete(verificationRecord.id);
+
+            throw new UnauthorizedError(
+                "auth.verifyEmail.tokenExpired",
+                ERROR_CODE.EMAIL_VERIFICATION_TOKEN_EXPIRED,
+            );
+        }
+
+        // Check if the user's email is already verified
+        const newUser = await this.userRepository.findById(verificationRecord.userId);
+
+        if (!newUser) {
+            throw new UnauthorizedError(
+                "user.userNotFound",
+                ERROR_CODE.USER_UNAVAILABLE,
+            );
+        }
+
+        await this.transactionService.run(async (tx) => {
+
+            // 1. Update user status to ACTIVE and mark email as verified
+            await this.userRepository.update(verificationRecord.userId,
+                {
+                    emailVerified: true,
+                    status: UserStatus.ACTIVE
+                },
+                tx
+            );
+
+            // 2. Create default workspace for the new user
+            await this.workspaceRepository.create(tx, {
+                name: newUser.fullName || "Default Workspace",
+                ownerId: newUser.id,
+            });
+
+            // 3. Delete the verification token after successful verification
+            await this.emailVerificationRepository.delete(verificationRecord.id);
+        });
+
+        return await this.completeLogin(newUser, {
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+            rememberMe: false
+        });
+    }
+
+    /**
+     * Resend the email verification token to the user
+     * - Generate a new verification token
+     * - Delete any existing tokens for the user
+     * - Create a new verification token in the database
+     * - Publish a user registered event to notify other services or components
+     * @param user - The user object for whom the verification email is being resent
+     * @param ipAddress - Optional IP address of the request
+     */
+    private async sendVerificationEmail(
+        user: User,
+        ipAddress?: string,
+    ) {
+
+        // Generate a new verification token
+        const verifyToken = randomUUID();
+
+        // Use a transaction to ensure that the deletion of old tokens and creation of the new token are atomic
+        await this.transactionService.run(async (tx) => {
+
+            // Delete any existing verification tokens for the user
+            await this.emailVerificationRepository.deleteByUserId(
+                user.id,
+                tx,
+            );
+
+            // Create a new verification token for the user
+            await this.emailVerificationRepository.create(
+                tx,
+                {
+                    userId: user.id,
+                    verifyToken,
+                },
+            );
+        });
+
+        // Publish a user registered event to notify other services or components
+        await this.authPublisher.userRegistered({
+            userId: user.id,
+            email: user.email,
+            fullName: user.fullName ?? "",
+            verifyToken,
+            ipAddress,
+        });
+    }
+
+    /**
+     * Resend the verification email to a user
+     * - Check if the user exists and is eligible for verification
+     * - Generate a new verification token and send the email
+     * @param email - The email address of the user to resend the verification email to
+     * @param ipAddress - Optional IP address of the request
+     * @throws ConflictError if the user is not found or not eligible for verification
+     */
+    async resendVerificationEmail(
+        email: string,
+        ipAddress?: string,
+    ): Promise<void> {
+
+        // Find the user by email
+        const user = await this.userRepository.findByEmail(email);
+
+        // Check if the user exists
+        if (!user) {
+            throw new ConflictError(
+                "auth.user.userNotFound",
+                ERROR_CODE.USER_UNAVAILABLE,
+            );
+        }
+
+        // Check if the user's email is already verified
+        this.checkUserStatus(user);
+
+        // Send a new verification email to the user
+        await this.sendVerificationEmail(user, ipAddress);
+    }
+
+    /**
+     * Create a pending user with a verification token
+     * - Hash the user's password 
+     * - Create the user in the database with a PENDING_VERIFICATION status
+     * - Generate a unique verification token and save it in the database
+     * - Return the created user and the verification token
+     * @param email - The email address of the new user
+     * @param password - The raw password of the new user
+     * @param fullName - The full name of the new user
+     * @returns An object containing the created user and the verification token
+     */
+    private async createPendingUser(
+        email: string,
+        password: string,
+        fullName: string,
+    ) {
+
+        // Hash the user's password before saving it to the database
+        const hashedPassword =
+            await hashPassword(password);
+
+        // Use a transaction to ensure that user creation and token generation are atomic
+        return this.transactionService.run(async (tx) => {
+
+            // Create the user in the database with a PENDING_VERIFICATION status
+            const user =
+                await this.userRepository.createUser(
+                    {
+                        email,
+                        passwordHash: hashedPassword,
+                        fullName,
+                        status: UserStatus.PENDING_VERIFICATION,
+                        language: LANGUAGE.EN,
+                        timezone: "UTC",
+                    },
+                    tx,
+                );
+
+            // Delete any existing verification tokens for this user to avoid duplicates
+            await this.emailVerificationRepository
+                .deleteByUserId(
+                    user.id,
+                    tx,
+                );
+
+            // Generate a unique verification token for email confirmation
+            const verifyToken =
+                randomUUID();
+
+            // Save the verification token in the database
+            await this.emailVerificationRepository
+                .create(
+                    tx,
+                    {
+                        userId: user.id,
+                        verifyToken,
+                    },
+                );
+
+            // Return the created user and the verification token to the caller
+            return {
+                user,
+                verifyToken,
+            };
+        });
     }
 }

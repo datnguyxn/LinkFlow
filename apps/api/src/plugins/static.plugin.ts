@@ -3,8 +3,12 @@ import fastifyStatic from "@fastify/static";
 import path from "node:path";
 
 export default fp(async (app) => {
+
+    
     await app.register(fastifyStatic, {
         root: path.join(process.cwd(), "public"),
-        prefix: "/public/",
+        prefix: "/",
     });
+    
+    console.log(path.join(process.cwd(), "public"));
 });

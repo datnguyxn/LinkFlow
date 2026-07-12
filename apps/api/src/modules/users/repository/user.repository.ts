@@ -24,14 +24,16 @@ export class UserRepository {
      * 3. Ensure both operations succeed or both rollback
      */
     async createUser(
-        data: Prisma.UserCreateInput
+        data: Prisma.UserCreateInput,
+        db: PrismaClient | Prisma.TransactionClient = prisma
     ) {
         // Use a transaction to ensure atomicity
-        return await prisma.user.create({
+        return await db.user.create({
             data: {
                 fullName: data.fullName,
                 email: data.email,
                 passwordHash: data.passwordHash,
+                status: data.status,
                 language: data.language,
                 timezone: data.timezone,
             }

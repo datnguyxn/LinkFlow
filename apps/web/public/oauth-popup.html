@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+const channel = new BroadcastChannel("linkflow-auth");
+
+channel.postMessage({
+    type: "GOOGLE_LOGIN_SUCCESS"
+});
+
+window.close();
+</script>
+</body>
+</html>

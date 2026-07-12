@@ -9,6 +9,7 @@ export default [
     languageOptions: {
       globals: {
         ...globals.node,
+        window: "readonly",
       },
     },
     rules: {

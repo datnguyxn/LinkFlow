@@ -1,5 +1,6 @@
 import type { FastifySchema } from "fastify";
 import { Type } from "@sinclair/typebox";
+import { createSwaggerResponse } from "../../../common/swagger/swagger-response.ts";
 
 export const deleteUserSchema: FastifySchema = {
     tags: ["Admin"],
@@ -21,62 +22,14 @@ export const deleteUserSchema: FastifySchema = {
         }
     },
 
-    response: {
-        200: {
-            description: "User deleted successfully",
-
-            type: "object",
-
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                data: Type.Object({}),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                })
-            }
-        },
-
-        400: {
-            description: "Validation failed",
-
-            type: "object",
-
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                errors: Type.Array(Type.Object({
-                    field: Type.String(),
-                    message: Type.String()
-                })),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                })
-            }
-        },
-
-        403: {
-            description: "Forbidden",
-
-            type: "object",
-
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                errors: Type.Array(Type.Object({
-                    field: Type.String(),
-                    message: Type.String()
-                })),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                })
-            }
-        }
-    }
+    response: createSwaggerResponse(
+        200,
+        Type.Object({
+            message: Type.String({
+                description: "Confirmation message indicating the user has been deleted",
+                example: "User has been successfully deleted."
+            })
+        }),
+        [400, 401, 403, 404, 500]
+    ),
 };

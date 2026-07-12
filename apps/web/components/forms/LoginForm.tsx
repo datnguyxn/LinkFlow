@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { appToast } from "@/lib/toast";
 
 import { loginSchema, type LoginForm } from '@/lib/auth.validator';
 
@@ -14,6 +15,9 @@ import { FcGoogle } from 'react-icons/fc';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/button';
 import { loginWithGoogle } from '@/lib/apis/auth.api';
+import { authService } from '@/services/auth.service';
+import { useRouter } from 'next/navigation';
+
 
 export default function LoginForm() {
   const [show, setShow] = useState(false);
@@ -24,18 +28,22 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-
-    defaultValues: {
-      email: '',
-      password: '',
-      remember: true,
-    },
   });
 
-  const onSubmit = async (data: LoginForm) => {
-    console.log(data);
+  const router = useRouter();
 
-    await new Promise((r) => setTimeout(r, 1500));
+  const onSubmit = async (data: LoginForm) => {
+    try {
+      const result = await authService.login(data.email, data.password, data.remember);
+
+      console.log('Login successful:', result);
+
+      appToast.success("Login successfully");
+
+      router.replace('/dashboard');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -56,7 +64,7 @@ export default function LoginForm() {
     >
       <button
         type="button"
-         onClick={loginWithGoogle}
+        onClick={loginWithGoogle}
         className="
         flex
         h-14

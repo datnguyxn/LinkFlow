@@ -1,12 +1,40 @@
 import { queryClient } from "@/lib/query-client";
-
 import { authApi } from "@/lib/apis/auth.api";
-
 import { tokenStorage } from "@/lib/storage/token.storage";
-
 import { useAuthStore } from "@/stores/auth.store";
+import { authEvents } from "@/events/auth.event";
+import { AUTH_EVENT, createAuthChannel } from "@/lib/auth-broadcast";
 
 class AuthService {
+
+    /**
+     * Register
+     */
+    async register(email: string, password: string, fullName: string) {
+        await authApi.register({
+            email,
+            password,
+            fullName,
+        });
+
+        // tokenStorage.setAccessToken(
+        //     response.data.data.accessToken,
+        // );
+
+        // const me = await authApi.me();
+
+        // useAuthStore
+        //     .getState()
+        //     .setUser(me.data.data);
+
+        // queryClient.setQueryData(
+        //     ["me"],
+        //     me.data.data,
+        // );
+
+        // return me.data.data;
+    }
+
     /**
      * Login
      */
@@ -91,23 +119,39 @@ class AuthService {
             .logout();
 
         queryClient.clear();
+
+        authEvents.emit("logout");
+
+        const channel = createAuthChannel();
+
+        channel?.postMessage({
+            type: AUTH_EVENT.LOGOUT,
+        });
+
+        channel?.close();
     }
 
     /**
      * App initialize
      */
     async initialize() {
-        const token =
-            tokenStorage.getAccessToken();
+        const authStore =
+            useAuthStore.getState();
 
-        if (!token) {
-            return;
-        }
+        authStore.setLoading(true);
 
         try {
+            let accessToken = tokenStorage.getAccessToken();
+
+            if (!accessToken) {
+                accessToken = await this.refresh();
+            }
+
             await this.me();
         } catch {
             await this.logout();
+        } finally {
+            authStore.setLoading(false);
         }
     }
 
@@ -129,6 +173,31 @@ class AuthService {
             );
 
         return response.data.data.user;
+    }
+
+    async verifyEmail(token: string) {
+
+        const response =
+            await authApi.verifyEmail(token);
+
+        tokenStorage.setAccessToken(
+            response.data.data.accessToken,
+        );
+
+        useAuthStore
+            .getState()
+            .setUser(
+                response.data.data.user,
+            );
+
+        return response.data.data.user;
+    }
+
+    async resendVerificationEmail(email: string) {
+        const response =
+            await authApi.resendVerificationEmail(email);
+
+        return response.data.data;
     }
 }
 

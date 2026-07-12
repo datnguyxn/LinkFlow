@@ -1,53 +1,113 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
-import { authService } from '@/services/auth.service';
+import { usePathname, useRouter } from 'next/navigation';
+
 import FullScreenLoader from '@/components/common/FullScreenLoader';
+import { authEvents } from '@/events/auth.event';
+import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/stores/auth.store';
+import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
 
-interface AuthProviderProps {
+interface Props {
   children: ReactNode;
 }
 
-interface AuthContextValue {
-  initialized: boolean;
+const AuthContext = createContext({});
+
+const guestRoutes = ['/', '/login', '/register', '/register/success', '/verify-email'];
+
+function isGuestRoute(pathname: string) {
+  return guestRoutes.some((route) => {
+    if (route === '/') {
+      return pathname === '/';
+    }
+
+    return pathname.startsWith(route);
+  });
 }
 
-const AuthContext = createContext<AuthContextValue>({
-  initialized: false,
-});
+export default function AuthProvider({ children }: Props) {
 
-export default function AuthProvider({ children }: AuthProviderProps) {
-  const [initialized, setInitialized] = useState(false);
+  const router = useRouter();
+
+  const pathname = usePathname();
+
+  const loading = useAuthStore((state) => state.loading);
 
   useEffect(() => {
-    let mounted = true;
+    const unsubscribe = authEvents.on('logout', () => {
+      router.replace('/login');
+    });
 
-    const initialize = async () => {
-      try {
-        await authService.initialize();
-      } finally {
-        if (mounted) {
-          setInitialized(true);
-        }
+    return unsubscribe;
+  }, [router]);
+
+  useEffect(() => {
+    if (isGuestRoute(pathname)) {
+      return;
+    }
+
+    authService.initialize();
+  }, [pathname]);
+
+  //   const listener = async (event: MessageEvent) => {
+  //     if (event.origin !== window.location.origin) {
+  //       return;
+  //     }
+
+  //     if (event.data.type !== 'GOOGLE_LOGIN_SUCCESS') {
+  //       return;
+  //     }
+
+  //     console.log('event.origin =', event.origin);
+  //     console.log('window.location.origin =', window.location.origin);
+
+  //     await authService.initialize();
+
+  //     router.replace('/dashboard');
+  //   };
+
+  //   window.addEventListener('message', listener);
+
+  //   return () => window.removeEventListener('message', listener);
+  // }, [router]);
+
+  useEffect(() => {
+    const channel = createAuthChannel();
+
+    if (!channel) {
+      return;
+    }
+
+    channel.onmessage = async (event) => {
+      switch (event.data?.type) {
+        case AUTH_EVENT.GOOGLE_LOGIN_SUCCESS:
+          try {
+            console.log('Received GOOGLE_LOGIN_SUCCESS event from BroadcastChannel');
+            await authService.exchangeGoogleLogin();
+            router.replace('/dashboard');
+          } catch {
+            router.replace('/login');
+          }
+          break;
+
+        case AUTH_EVENT.LOGOUT:
+          router.replace('/login');
+          break;
       }
     };
-
-    initialize();
-
     return () => {
-      mounted = false;
+      channel.close();
     };
-  }, []);
+  }, [router]);
 
-  /**
-   * Có thể thay bằng Skeleton hoặc SplashScreen
-   */
-  if (!initialized) {
-    return <FullScreenLoader />;
-  }
+  // if (!isGuestRoute(pathname) && loading) {
+  //   return <FullScreenLoader />;
+  // }
 
-  return <AuthContext.Provider value={{ initialized }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>;
 }
 
 export function useAuthContext() {

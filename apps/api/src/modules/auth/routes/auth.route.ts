@@ -4,9 +4,6 @@ import { validate } from "../../../utils/validator.util.ts";
 import { registerSchema, type RegisterBody } from "../validator/register.validator.ts";
 import { registerSwagger, loginSwagger, refreshTokenSwagger, logoutSwagger } from "../../../swaggers/index.ts";
 import { loginSchema, type LoginBody } from "../validator/login.validator.ts";
-import { authMiddleware } from "../../../common/middleware/index.ts";
-import { authGuard, roleGuard } from "../../../common/guards/index.ts";
-import { UserRole } from "@prisma/client"
 
 // Initialize controller instance
 const controller = new AuthController();
@@ -105,11 +102,6 @@ export const authRoutes = async (app: FastifyInstance) => {
                     timeWindow: "1 minute", // Per minute
                 },
             },
-            preHandler: [
-                authMiddleware, // Ensure user is authenticated before logout
-                authGuard,
-                roleGuard(UserRole.USER, UserRole.ADMIN)
-            ],
             schema: logoutSwagger // Swagger documentation for this route
         },
         controller.logoutUser.bind(controller) // Bind controller context
@@ -153,6 +145,14 @@ export const authRoutes = async (app: FastifyInstance) => {
                     timeWindow: "1 minute", // Per minute
                 },
             },
+            helmet: {
+                contentSecurityPolicy: {
+                    directives: {
+                        "script-src": ["'self'", "'unsafe-inline'"],
+                    },
+                },
+                crossOriginOpenerPolicy: false,
+            }
         },
         controller.googleCallback.bind(controller) // Bind controller context,
     );
@@ -176,4 +176,44 @@ export const authRoutes = async (app: FastifyInstance) => {
         },
         controller.exchange.bind(controller) // Bind controller context,
     );
+
+    /**
+     * GET /verify-email
+     *
+     * Features:
+     * - Verifies user's email using a token
+     * - Rate limiting to prevent abuse
+     */
+    app.get(
+        "/verify-email",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+        },
+        controller.verifyEmail.bind(controller) // Bind controller context,
+    )
+
+    /**
+     * POST /resend-verification-email
+     *
+     * Features:
+     * - Resends email verification link to the user
+     * - Rate limiting to prevent abuse
+     */
+    app.post(
+        "/resend-verification-email",
+        {
+            config: {
+                rateLimit: {
+                    max: 10,              // Maximum 10 requests
+                    timeWindow: "1 minute", // Per minute
+                },
+            },
+        },
+        controller.resendVerificationEmail.bind(controller) // Bind controller context,
+    )
 };

@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/providers/theme-provider';
 
 import AuthProvider from '@/providers/AuthProvider';
 import QueryProvider from '@/providers/QueryProvider';
+import AppToaster from '@/components/ui/Toaster';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,7 +41,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              {children}
+              <AppToaster />
+            </AuthProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

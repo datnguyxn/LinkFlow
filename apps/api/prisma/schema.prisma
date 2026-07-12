@@ -516,6 +516,7 @@ enum UserStatus {
   INACTIVE
   SUSPENDED
   DELETED
+  PENDING_VERIFICATION
 }
 
 enum WorkspaceRole {

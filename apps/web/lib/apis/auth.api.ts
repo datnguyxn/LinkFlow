@@ -1,8 +1,28 @@
 import { config } from "@/config";
 
+// auth.api.ts
 export function loginWithGoogle() {
-    window.location.href =
-        `${config.NEXT_PUBLIC_API_URL}/api/v1/auth/google`;
+  const width = 520;
+  const height = 700;
+
+  const left =
+    window.screenX +
+    (window.outerWidth - width) / 2;
+
+  const top =
+    window.screenY +
+    (window.outerHeight - height) / 2;
+
+  window.open(
+    `${config.NEXT_PUBLIC_API_URL}/api/v1/auth/google`,
+    "google-login",
+    `
+    width=${width},
+    height=${height},
+    left=${left},
+    top=${top}
+    `,
+  );
 }
 
 
@@ -44,16 +64,16 @@ export const authApi = {
      * Refresh Access Token
      */
     refreshToken() {
-        return api.post<RefreshResponse>(
-            `${PREFIX}/auth/refresh`,
-        );
+        return api.get<RefreshResponse>(
+            `${PREFIX}/auth/refresh-token`,
+    );
     },
 
     /**
      * Logout
      */
     logout() {
-        return api.post(`${PREFIX}/auth/logout`);
+        return api.get(`${PREFIX}/auth/logout`);
     },
 
     /**
@@ -71,4 +91,18 @@ export const authApi = {
     exchange() {
         return api.get(`${PREFIX}/auth/exchange`);
     },
+
+    /**
+     * Verify Email
+     */
+    verifyEmail(token: string) {
+        return api.get(`${PREFIX}/auth/verify-email?token=${token}`);
+    },
+
+    /**
+     * Resend Verification Email
+     */
+    resendVerificationEmail(email: string) {
+        return api.post(`${PREFIX}/auth/resend-verification-email`, { email });
+    }
 };

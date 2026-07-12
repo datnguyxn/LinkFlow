@@ -18,15 +18,13 @@ interface AuthActions {
   logout(): void;
 }
 
-type AuthStore =
-  AuthState &
-  AuthActions;
+type AuthStore = AuthState & AuthActions;
 
 export const useAuthStore =
   create<AuthStore>((set) => ({
     user: null,
 
-    loading: false,
+    loading: true,
 
     isAuthenticated: false,
 
@@ -34,6 +32,7 @@ export const useAuthStore =
       set({
         user,
         isAuthenticated: !!user,
+        loading: false,
       });
     },
 
@@ -47,6 +46,7 @@ export const useAuthStore =
       set({
         user: null,
         isAuthenticated: false,
+        loading: false,
       });
     },
   }));

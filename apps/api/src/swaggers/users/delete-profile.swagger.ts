@@ -1,5 +1,6 @@
 import type { FastifySchema } from "fastify";
 import { Type } from "@sinclair/typebox";
+import { createSwaggerResponse } from "../../common/swagger/swagger-response.ts";
 
 export const deleteProfileSwagger: FastifySchema = {
     summary: "Delete My Profile",
@@ -10,38 +11,9 @@ export const deleteProfileSwagger: FastifySchema = {
             bearerAuth: [],
         },
     ],
-    response: {
-        200: {
-            description: "Successfully deleted user profile",
-            type: "object",
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                data: Type.Null(),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                }),
-            },
-        },
-        401: {
-            description: "Unauthorized - User is not authenticated",
-            type: "object",
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                errors: Type.Array(Type.Object({
-                    field: Type.String(),
-                    message: Type.String(),
-                    code: Type.String(),
-                })),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                }),
-            },
-        },
-    },
+    response: createSwaggerResponse(
+        200,
+        Type.Null(),
+        [400, 401, 403, 404, 500]
+    ),
 };      

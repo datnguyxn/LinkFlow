@@ -1,5 +1,6 @@
 import type { FastifySchema } from "fastify";
 import { Type } from "@sinclair/typebox";
+import { createSwaggerResponse } from "../../common/swagger/swagger-response.ts";
 
 export const loginSwagger: FastifySchema = {
     tags: ["Authentication"],
@@ -27,46 +28,18 @@ export const loginSwagger: FastifySchema = {
         }
     },
 
-    response: {
-        200: {
-            description: "Login successful",
-
-            type: "object",
-
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                data: Type.Object({
-                    accessToken: Type.String(),
-                    refreshToken: Type.String(),
-                }),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                })
-            }
-        },
-
-        400: {
-            description: "Validation failed",
-
-            type: "object",
-
-            properties: {
-                success: Type.Boolean(),
-                statusCode: Type.Number(),
-                message: Type.String(),
-                errors: Type.Array(Type.Object({
-                    field: Type.String(),
-                    message: Type.String(),
-                    code: Type.String(),
-                })),
-                meta: Type.Object({
-                    timestamp: Type.String(),
-                    requestId: Type.String(),
-                })
-            }
-        }
-    }
+    response: createSwaggerResponse(
+        200,
+        Type.Object({
+            accessToken: Type.String({
+                description: "Access token for authenticated requests",
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }),
+            refreshToken: Type.String({
+                description: "Refresh token for obtaining new access tokens",
+                example: "dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4gZXhhbXBsZQ=="
+            })
+        }),
+        [400, 401, 403, 404, 500]
+    ),
 };

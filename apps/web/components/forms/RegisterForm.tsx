@@ -8,16 +8,55 @@ import { FcGoogle } from 'react-icons/fc';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/button';
 import { loginWithGoogle } from '@/lib/apis/auth.api';
+import { type RegisterForm, registerSchema } from '@/lib/auth.validator';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/dist/client/components/navigation';
+import { appToast } from '@/lib/toast';
+import { authService } from '@/services/auth.service';
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const router = useRouter();
+
+  const onSubmit = async (data: RegisterForm) => {
+    try {
+      if (data.password !== data.confirmPassword) {
+        // Handle password mismatch error
+        appToast.error('Passwords do not match. Please try again.');
+        return;
+      }
+
+      // Call your registration API here
+
+      const result = await authService.register(data.email, data.password, data.fullName);
+
+      console.log('Registration successful:', result);
+
+      appToast.success('Registration successful');
+      router.replace(`/register/success?email=${encodeURIComponent(data.email)}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <motion.form
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-5"
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+      onSubmit={handleSubmit(onSubmit)}
     >
       <button
         type="button"
@@ -54,7 +93,6 @@ export default function RegisterForm() {
       </div>
 
       <div className="space-y-5">
-
         <div>
           <label
             htmlFor="fullname"
@@ -75,8 +113,8 @@ export default function RegisterForm() {
             id="fullname"
             placeholder="Your full name"
             icon={<User className="text-slate-500" />}
-            // error={errors.fullname?.message}
-            // {...register('fullname')}
+            error={errors.fullName?.message}
+            {...register('fullName')}
           />
         </div>
 
@@ -100,8 +138,8 @@ export default function RegisterForm() {
             id="email"
             placeholder="your@email.com"
             icon={<Mail className="text-slate-500" />}
-            // error={errors.email?.message}
-            // {...register('email')}
+            error={errors.email?.message}
+            {...register('email')}
           />
         </div>
 
@@ -126,11 +164,19 @@ export default function RegisterForm() {
             type={showConfirm ? 'text' : 'password'}
             placeholder="Your secure password"
             icon={<Lock className="text-slate-500" />}
-            // error={errors.password?.message}
-            // {...register('password')}
+            error={errors.password?.message}
+            {...register('password')}
             right={
-              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="cursor-pointer">
-                {showConfirm ? <EyeOff className="text-slate-500" /> : <Eye className="text-slate-500" />}
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="cursor-pointer"
+              >
+                {showConfirm ? (
+                  <EyeOff className="text-slate-500" />
+                ) : (
+                  <Eye className="text-slate-500" />
+                )}
               </button>
             }
           />
@@ -157,11 +203,19 @@ export default function RegisterForm() {
             type={showPassword ? 'text' : 'password'}
             placeholder="Confirm your password"
             icon={<Lock className="text-slate-500" />}
-            // error={errors.confirmPassword?.message}
-            // {...register('confirmPassword')}
+            error={errors.confirmPassword?.message}
+            {...register('confirmPassword')}
             right={
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="cursor-pointer">
-                {showPassword ? <EyeOff className="text-slate-500" /> : <Eye className="text-slate-500" />}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="text-slate-500" />
+                ) : (
+                  <Eye className="text-slate-500" />
+                )}
               </button>
             }
           />
@@ -172,7 +226,7 @@ export default function RegisterForm() {
         <input type="checkbox" />I agree to the Terms of Service and Privacy Policy.
       </label>
 
-      <Button>Create Account</Button>
+      <Button loading={isSubmitting}>Create Account</Button>
     </motion.form>
   );
 }
