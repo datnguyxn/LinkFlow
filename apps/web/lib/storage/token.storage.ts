@@ -1,52 +1,52 @@
-    const ACCESS_TOKEN_KEY = "access_token";
+const ACCESS_TOKEN_KEY = 'access_token';
 
-    class TokenStorage {
-    /**
-     * Get access token
-     */
-    getAccessToken(): string | null {
-        if (typeof window === "undefined") {
-        return null;
-        }
-
-        return localStorage.getItem(ACCESS_TOKEN_KEY);
+class TokenStorage {
+  /**
+   * Get access token
+   */
+  getAccessToken(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
     }
 
-    /**
-     * Save access token
-     */
-    setAccessToken(token: string): void {
-        if (typeof window === "undefined") {
-        return;
-        }
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  }
 
-        localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  /**
+   * Save access token
+   */
+  setAccessToken(token: string): void {
+    if (typeof window === 'undefined') {
+      return;
     }
 
-    /**
-     * Remove access token
-     */
-    removeAccessToken(): void {
-        if (typeof window === "undefined") {
-        return;
-        }
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  }
 
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
+  /**
+   * Remove access token
+   */
+  removeAccessToken(): void {
+    if (typeof window === 'undefined') {
+      return;
     }
 
-    /**
-     * Clear all authentication data
-     */
-    clear(): void {
-        this.removeAccessToken();
-    }
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
 
-    /**
-     * Check login state
-     */
-    hasAccessToken(): boolean {
-        return !!this.getAccessToken();
-    }
-    }
+  /**
+   * Clear all authentication data
+   */
+  clear(): void {
+    this.removeAccessToken();
+  }
 
-    export const tokenStorage = new TokenStorage();
+  /**
+   * Check login state
+   */
+  hasAccessToken(): boolean {
+    return !!this.getAccessToken();
+  }
+}
+
+export const tokenStorage = new TokenStorage();

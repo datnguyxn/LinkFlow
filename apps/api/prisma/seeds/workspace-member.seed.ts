@@ -1,17 +1,17 @@
-import { PrismaClient, WorkspaceRole } from "@prisma/client";
+import { PrismaClient, WorkspaceRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function seedWorkspaceMember() {
   const admin = await prisma.user.findUnique({
     where: {
-      email: "admin@linkflow.dev",
+      email: 'admin@linkflow.dev',
     },
   });
 
   const workspace = await prisma.workspace.findUnique({
     where: {
-      slug: "linkflow",
+      slug: 'linkflow',
     },
   });
 

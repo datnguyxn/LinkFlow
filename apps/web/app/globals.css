@@ -129,7 +129,6 @@
   }
 }
 
-
 .dark {
   --background: #020617;
   --foreground: #f8fafc;
@@ -172,21 +171,17 @@ section {
 }
 
 .gradient-text {
-  background: linear-gradient(
-    90deg,
-    #2563eb,
-    #4f46e5
-  );
+  background: linear-gradient(90deg, #2563eb, #4f46e5);
   -webkit-background-clip: text;
   color: transparent;
 }
 
 .glass {
   backdrop-filter: blur(12px);
-  background: rgba(255,255,255,.7);
-  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .dark .glass {
-  background: rgba(15,23,42,.6);
+  background: rgba(15, 23, 42, 0.6);
 }

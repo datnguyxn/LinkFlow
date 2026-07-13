@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
-import {  ROUTE, AUTH, HTTP_STATUS } from '../common/constants/index.ts';
+import { ROUTE, AUTH, HTTP_STATUS } from '../common/constants/index.ts';
 import { config } from '../config/env/index.ts';
 
 export default fp(async (app) => {
@@ -17,7 +17,8 @@ export default fp(async (app) => {
       servers: [
         {
           url: `${config.BASE_URL}:${config.PORT}`,
-          description: config.NODE_ENV === 'production' ? 'Production server' : 'Development server',
+          description:
+            config.NODE_ENV === 'production' ? 'Production server' : 'Development server',
         },
       ],
 

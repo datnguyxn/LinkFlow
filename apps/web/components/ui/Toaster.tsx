@@ -1,17 +1,9 @@
 // components/ui/Toaster.tsx
 
-"use client";
+'use client';
 
-import { Toaster } from "sonner";
+import { Toaster } from 'sonner';
 
 export default function AppToaster() {
-  return (
-    <Toaster
-      richColors
-      position="top-right"
-      closeButton
-      duration={3000}
-      expand
-    />
-  );
+  return <Toaster richColors position="top-right" closeButton duration={3000} expand />;
 }

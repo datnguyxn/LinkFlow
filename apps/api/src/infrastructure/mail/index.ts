@@ -1,1 +1,1 @@
-export * from "./providers/smtp.provider.ts";
+export * from './providers/smtp.provider.ts';

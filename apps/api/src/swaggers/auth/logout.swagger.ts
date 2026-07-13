@@ -1,17 +1,13 @@
-import type { FastifySchema } from "fastify";
-import { Type } from "@sinclair/typebox";
-import { createSwaggerResponse } from "../../common/swagger/swagger-response.ts";
+import type { FastifySchema } from 'fastify';
+import { Type } from '@sinclair/typebox';
+import { createSwaggerResponse } from '../../common/swagger/swagger-response.ts';
 
 export const logoutSwagger: FastifySchema = {
-    tags: ["Authentication"],
+  tags: ['Authentication'],
 
-    summary: "Logout",
+  summary: 'Logout',
 
-    description: "Logout a user and invalidate the refresh token.",
+  description: 'Logout a user and invalidate the refresh token.',
 
-    response: createSwaggerResponse(
-        200,
-        Type.Null(),
-        [400, 401, 403, 404, 500]
-    ),
+  response: createSwaggerResponse(200, Type.Null(), [400, 401, 403, 404, 500]),
 };

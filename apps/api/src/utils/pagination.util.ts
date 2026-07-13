@@ -1,12 +1,12 @@
-import type { PaginationMeta } from "../common/responses/api.response.js";
+import type { PaginationMeta } from '../common/responses/api.response.js';
 
 /**
  * Pagination utility functions to support paginated queries and responses.
  * Provides methods to build pagination parameters and metadata for API responses.
  */
 export interface PaginationQuery {
-    page: number;
-    limit: number;
+  page: number;
+  limit: number;
 }
 
 /**
@@ -16,10 +16,10 @@ export interface PaginationQuery {
  * @returns An object containing 'skip' and 'take' values for database queries
  */
 export function buildPagination(page = 1, limit = 10) {
-    return {
-        skip: (page - 1) * limit,
-        take: limit,
-    };
+  return {
+    skip: (page - 1) * limit,
+    take: limit,
+  };
 }
 
 /**
@@ -30,19 +30,18 @@ export function buildPagination(page = 1, limit = 10) {
  * @returns An object containing pagination metadata including total pages and navigation flags
  */
 export function buildPaginationMeta(
-    page: number,
-    limit: number,
-    totalItems: number,
+  page: number,
+  limit: number,
+  totalItems: number,
 ): PaginationMeta {
+  const totalPages = Math.ceil(totalItems / limit);
 
-    const totalPages = Math.ceil(totalItems / limit);
-
-    return {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrevious: page > 1,
-    };
+  return {
+    page,
+    limit,
+    totalItems,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrevious: page > 1,
+  };
 }

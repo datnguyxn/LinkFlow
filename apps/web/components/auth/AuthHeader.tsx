@@ -29,7 +29,7 @@ export default function AuthHeader({ title, description, linkText, linkHref }: A
           text-slate-400
         "
       >
-        {description}{" "}
+        {description}{' '}
         <Link
           href={linkHref}
           className="

@@ -9,6 +9,8 @@ import { authEvents } from '@/events/auth.event';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
 import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
+import { appToast } from '@/lib/toast';
+import { ROUTES, isProtectedRoute } from '@/constants/routes';
 
 interface Props {
   children: ReactNode;
@@ -16,64 +18,36 @@ interface Props {
 
 const AuthContext = createContext({});
 
-const guestRoutes = ['/', '/login', '/register', '/register/success', '/verify-email'];
-
-function isGuestRoute(pathname: string) {
-  return guestRoutes.some((route) => {
-    if (route === '/') {
-      return pathname === '/';
-    }
-
-    return pathname.startsWith(route);
-  });
-}
-
 export default function AuthProvider({ children }: Props) {
-
   const router = useRouter();
 
   const pathname = usePathname();
 
   const loading = useAuthStore((state) => state.loading);
 
+  /**
+   * Handle logout event
+   */
   useEffect(() => {
-    const unsubscribe = authEvents.on('logout', () => {
-      router.replace('/login');
+    return authEvents.on('logout', () => {
+      router.replace(ROUTES.LOGIN);
     });
-
-    return unsubscribe;
   }, [router]);
 
+  /**
+   * Initialize authenticated user
+   */
   useEffect(() => {
-    if (isGuestRoute(pathname)) {
+    if (!isProtectedRoute(pathname)) {
       return;
     }
 
     authService.initialize();
   }, [pathname]);
 
-  //   const listener = async (event: MessageEvent) => {
-  //     if (event.origin !== window.location.origin) {
-  //       return;
-  //     }
-
-  //     if (event.data.type !== 'GOOGLE_LOGIN_SUCCESS') {
-  //       return;
-  //     }
-
-  //     console.log('event.origin =', event.origin);
-  //     console.log('window.location.origin =', window.location.origin);
-
-  //     await authService.initialize();
-
-  //     router.replace('/dashboard');
-  //   };
-
-  //   window.addEventListener('message', listener);
-
-  //   return () => window.removeEventListener('message', listener);
-  // }, [router]);
-
+  /**
+   * Listen OAuth events
+   */
   useEffect(() => {
     const channel = createAuthChannel();
 
@@ -81,29 +55,43 @@ export default function AuthProvider({ children }: Props) {
       return;
     }
 
-    channel.onmessage = async (event) => {
-      switch (event.data?.type) {
+    channel.onmessage = async ({ data }) => {
+      switch (data?.type) {
         case AUTH_EVENT.GOOGLE_LOGIN_SUCCESS:
           try {
-            console.log('Received GOOGLE_LOGIN_SUCCESS event from BroadcastChannel');
             await authService.exchangeGoogleLogin();
-            router.replace('/dashboard');
+
+            router.replace(ROUTES.DASHBOARD);
           } catch {
-            router.replace('/login');
+            appToast.error('Failed to sign in with Google.');
+
+            router.replace(ROUTES.LOGIN);
           }
+
+          break;
+
+        case AUTH_EVENT.GOOGLE_LOGIN_CANCELLED:
+          appToast.error('Google sign in was cancelled.');
+
+          router.replace(ROUTES.LOGIN);
+
           break;
 
         case AUTH_EVENT.LOGOUT:
-          router.replace('/login');
+          router.replace(ROUTES.LOGIN);
+
           break;
       }
     };
+
     return () => {
       channel.close();
     };
   }, [router]);
 
-  // if (!isGuestRoute(pathname) && loading) {
+  // Nếu muốn hiện loading toàn màn hình thì mở lại.
+  //
+  // if (!isPublicRoute(pathname) && loading) {
   //   return <FullScreenLoader />;
   // }
 

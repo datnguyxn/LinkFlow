@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
-import Container from "../common/Container";
-import SectionTitle from "../common/SectionTitle";
-import TestimonialCard from "../common/TestimonialCard";
+import Container from '../common/Container';
+import SectionTitle from '../common/SectionTitle';
+import TestimonialCard from '../common/TestimonialCard';
 
-import { testimonials } from "@/constants/testimonials";
+import { testimonials } from '@/constants/testimonials';
 
 export default function Testimonials() {
   return (

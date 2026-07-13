@@ -1,9 +1,5 @@
-export function emailButton(
-    text: string,
-    url: string,
-): string {
-
-    return `
+export function emailButton(text: string, url: string): string {
+  return `
 <p style="text-align:center">
 
 <a

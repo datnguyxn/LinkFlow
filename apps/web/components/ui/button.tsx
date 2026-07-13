@@ -1,17 +1,12 @@
-import { ButtonHTMLAttributes } from "react";
-import Spinner from "./Spinner";
-import { cn } from "@/lib/utils";
+import { ButtonHTMLAttributes } from 'react';
+import Spinner from './Spinner';
+import { cn } from '@/lib/utils';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
-export default function Button({
-  loading,
-  children,
-  className,
-  ...props
-}: Props) {
+export default function Button({ loading, children, className, ...props }: Props) {
   return (
     <button
       disabled={loading}
@@ -31,7 +26,7 @@ export default function Button({
         disabled:opacity-60
         cursor-pointer
       `,
-        className
+        className,
       )}
       {...props}
     >

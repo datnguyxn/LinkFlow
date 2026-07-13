@@ -1,21 +1,15 @@
-"use client";
+'use client';
 
-import { useAuthStore } from "@/stores/auth.store";
+import { useAuthStore } from '@/stores/auth.store';
 
-import { authService } from "@/services/auth.service";
+import { authService } from '@/services/auth.service';
 
 export function useAuth() {
-  const user = useAuthStore(
-    (state) => state.user,
-  );
+  const user = useAuthStore((state) => state.user);
 
-  const loading = useAuthStore(
-    (state) => state.loading,
-  );
+  const loading = useAuthStore((state) => state.loading);
 
-  const isAuthenticated = useAuthStore(
-    (state) => state.isAuthenticated,
-  );
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   return {
     user,
@@ -24,20 +18,12 @@ export function useAuth() {
 
     isAuthenticated,
 
-    login: authService.login.bind(
-      authService,
-    ),
+    login: authService.login.bind(authService),
 
-    logout: authService.logout.bind(
-      authService,
-    ),
+    logout: authService.logout.bind(authService),
 
-    refresh: authService.refresh.bind(
-      authService,
-    ),
+    refresh: authService.refresh.bind(authService),
 
-    me: authService.me.bind(
-      authService,
-    ),
+    me: authService.me.bind(authService),
   };
 }

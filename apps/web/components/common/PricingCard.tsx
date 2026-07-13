@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 interface Props {
   name: string;
@@ -8,21 +8,15 @@ interface Props {
   featured?: boolean;
 }
 
-export default function PricingCard({
-  name,
-  price,
-  description,
-  features,
-  featured,
-}: Props) {
+export default function PricingCard({ name, price, description, features, featured }: Props) {
   return (
     <div
       className={`
         rounded-3xl border p-8 transition
         ${
           featured
-            ? "border-blue-600 shadow-2xl scale-105"
-            : "border-slate-200 shadow-sm hover:shadow-lg"
+            ? 'border-blue-600 shadow-2xl scale-105'
+            : 'border-slate-200 shadow-sm hover:shadow-lg'
         }
       `}
     >
@@ -32,30 +26,19 @@ export default function PricingCard({
         </div>
       )}
 
-      <h3 className="text-2xl font-bold">
-        {name}
-      </h3>
+      <h3 className="text-2xl font-bold">{name}</h3>
 
-      <p className="mt-2 text-slate-500">
-        {description}
-      </p>
+      <p className="mt-2 text-slate-500">{description}</p>
 
       <div className="mt-8">
-        <span className="text-5xl font-bold">
-          {price}
-        </span>
+        <span className="text-5xl font-bold">{price}</span>
 
-        <span className="text-slate-500">
-          /month
-        </span>
+        <span className="text-slate-500">/month</span>
       </div>
 
       <ul className="mt-8 space-y-3">
         {features.map((item) => (
-          <li
-            key={item}
-            className="flex gap-2"
-          >
+          <li key={item} className="flex gap-2">
             ✓ {item}
           </li>
         ))}
@@ -65,11 +48,7 @@ export default function PricingCard({
         href="/register"
         className={`
           mt-10 block rounded-xl py-3 text-center font-semibold
-          ${
-            featured
-              ? "bg-blue-600 text-white"
-              : "border"
-          }
+          ${featured ? 'bg-blue-600 text-white' : 'border'}
         `}
       >
         Get Started

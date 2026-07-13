@@ -1,14 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<body>
-<script>
-const channel = new BroadcastChannel("linkflow-auth");
+  <body>
+    <script>
+      const params = new URLSearchParams(window.location.search);
 
-channel.postMessage({
-    type: "GOOGLE_LOGIN_SUCCESS"
-});
+      const error = params.get('error');
 
-window.close();
-</script>
-</body>
+      const channel = new BroadcastChannel('linkflow-auth');
+
+      if (error) {
+        channel.postMessage({
+          type: 'GOOGLE_LOGIN_CANCELLED',
+        });
+
+        channel.close();
+
+        window.close();
+      } else {
+        channel.postMessage({
+          type: 'GOOGLE_LOGIN_SUCCESS',
+        });
+
+        channel.close();
+
+        window.close();
+      }
+    </script>
+  </body>
 </html>

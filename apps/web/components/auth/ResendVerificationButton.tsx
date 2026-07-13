@@ -1,17 +1,15 @@
 'use client';
 
-import { RefreshCw } from "lucide-react";
+import { RefreshCw } from 'lucide-react';
 
-import { authService } from "@/services/auth.service";
-import { appToast } from "@/lib/toast";
+import { authService } from '@/services/auth.service';
+import { appToast } from '@/lib/toast';
 
 interface Props {
   email?: string;
 }
 
-export default function ResendVerificationButton({
-  email,
-}: Props) {
+export default function ResendVerificationButton({ email }: Props) {
   async function handleClick() {
     if (!email) {
       return;
@@ -20,13 +18,11 @@ export default function ResendVerificationButton({
     try {
       await authService.resendVerificationEmail(email);
 
-      appToast.success(
-        "Verification email sent successfully.",
-      );
+      appToast.success('Verification email sent successfully.');
     } catch {
-    //   appToast.error(
-    //     "Failed to resend verification email.",
-    //   );
+      //   appToast.error(
+      //     "Failed to resend verification email.",
+      //   );
     }
   }
 

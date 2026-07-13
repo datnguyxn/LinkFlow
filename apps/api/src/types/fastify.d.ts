@@ -1,15 +1,13 @@
-import "fastify";
-import { PrismaClient } from "@prisma/client";
-import { TFunction } from "i18next";
-import { JwtPayload } from "../modules/auth/types/auth.type.ts";
+import 'fastify';
+import { PrismaClient } from '@prisma/client';
+import { TFunction } from 'i18next';
+import { JwtPayload } from '../modules/auth/types/auth.type.ts';
 
-declare module "fastify" {
+declare module 'fastify' {
   interface FastifyInstance {
     prisma: PrismaClient;
 
-    authenticate: (
-      request: import("fastify").FastifyRequest
-    ) => Promise<void>;
+    authenticate: (request: import('fastify').FastifyRequest) => Promise<void>;
   }
 
   interface FastifyRequest {
@@ -23,6 +21,6 @@ declare module "fastify" {
   }
 
   interface FastifyRequest {
-        user?: JwtPayload;
-    }
+    user?: JwtPayload;
+  }
 }

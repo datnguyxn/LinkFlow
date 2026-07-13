@@ -1,20 +1,20 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function seedRoles() {
   const roles = [
     {
-      name: "OWNER",
-      description: "Workspace Owner",
+      name: 'OWNER',
+      description: 'Workspace Owner',
     },
     {
-      name: "ADMIN",
-      description: "Workspace Administrator",
+      name: 'ADMIN',
+      description: 'Workspace Administrator',
     },
     {
-      name: "MEMBER",
-      description: "Workspace Member",
+      name: 'MEMBER',
+      description: 'Workspace Member',
     },
   ];
 

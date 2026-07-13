@@ -1,5 +1,5 @@
 export function emailFooter(): string {
-    return `
+  return `
 <div class="footer">
 
     <p>

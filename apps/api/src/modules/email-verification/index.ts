@@ -1,1 +1,1 @@
-export * from "./repository/email-verification.repository.ts";
+export * from './repository/email-verification.repository.ts';

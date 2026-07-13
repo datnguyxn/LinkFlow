@@ -1,4 +1,4 @@
-import GoogleIcon from "../icons/GoogleIcon";
+import GoogleIcon from '../icons/GoogleIcon';
 
 export default function GoogleButton() {
   return (
@@ -24,7 +24,6 @@ export default function GoogleButton() {
       "
     >
       <GoogleIcon />
-
       Continue with Google
     </button>
   );

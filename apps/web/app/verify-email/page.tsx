@@ -1,7 +1,7 @@
-import { Suspense } from "react";
+import { Suspense } from 'react';
 
-import VerifyEmailClient from "./VerifyEmailClient";
-import FullScreenLoader from "@/components/common/FullScreenLoader";
+import VerifyEmailClient from '../../components/auth/VerifyEmailClient';
+import FullScreenLoader from '@/components/common/FullScreenLoader';
 
 export default function VerifyEmailPage() {
   return (

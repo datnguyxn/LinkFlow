@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 
-import Container from "../common/Container";
+import Container from '../common/Container';
 
 export default function Hero() {
   return (
@@ -36,9 +36,8 @@ export default function Hero() {
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-              LinkFlow is the enterprise-grade URL platform for teams.
-              Create branded short links, track every click in realtime,
-              and ship faster with a developer-first API.
+              LinkFlow is the enterprise-grade URL platform for teams. Create branded short links,
+              track every click in realtime, and ship faster with a developer-first API.
             </p>
 
             <div className="mt-10 flex gap-5">
@@ -53,7 +52,7 @@ export default function Hero() {
                 href="/docs"
                 className="flex h-14 w-14 items-center justify-center rounded-2xl border bg-white transition hover:bg-slate-100"
               >
-                <BookOpen className="text-slate-900 dark:text-black"  />
+                <BookOpen className="text-slate-900 dark:text-black" />
               </Link>
             </div>
 
@@ -86,8 +85,8 @@ export default function Hero() {
               transition={{
                 duration: 6,
                 repeat: Infinity,
-                repeatType: "mirror",
-                ease: "easeInOut",
+                repeatType: 'mirror',
+                ease: 'easeInOut',
               }}
             >
               <Image
@@ -133,8 +132,8 @@ export default function Hero() {
               transition={{
                 duration: 6,
                 repeat: Infinity,
-                repeatType: "mirror",
-                ease: "easeInOut",
+                repeatType: 'mirror',
+                ease: 'easeInOut',
               }}
             >
               <div className="flex items-center gap-2">
@@ -143,13 +142,9 @@ export default function Hero() {
                 </div>
 
                 <div>
-                  <h5 className="text-lg font-bold">
-                    284k
-                  </h5>
+                  <h5 className="text-lg font-bold">284k</h5>
 
-                  <p className="text-slate-500 dark:text-slate-300">
-                    Clicks today
-                  </p>
+                  <p className="text-slate-500 dark:text-slate-300">Clicks today</p>
                 </div>
               </div>
             </motion.div>

@@ -1,1 +1,1 @@
-export * from "./route/admin-user.route.ts";
+export * from './route/admin-user.route.ts';

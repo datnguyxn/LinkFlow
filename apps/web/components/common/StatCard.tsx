@@ -4,11 +4,7 @@ interface StatCardProps {
   color?: string;
 }
 
-export default function StatCard({
-  title,
-  value,
-  color = "bg-blue-500",
-}: StatCardProps) {
+export default function StatCard({ title, value, color = 'bg-blue-500' }: StatCardProps) {
   return (
     <div
       className="
@@ -23,17 +19,11 @@ export default function StatCard({
       
     "
     >
-      <div
-        className={`mb-4 h-2 w-12 rounded-full ${color}`}
-      />
+      <div className={`mb-4 h-2 w-12 rounded-full ${color}`} />
 
-      <p className="text-sm text-slate-500 dark:text-slate-600 dark:text-black">
-        {title}
-      </p>
+      <p className="text-sm text-slate-500 dark:text-slate-600 dark:text-black">{title}</p>
 
-      <h3 className="mt-2 text-3xl font-bold dark:text-black">
-        {value}
-      </h3>
+      <h3 className="mt-2 text-3xl font-bold dark:text-black">{value}</h3>
     </div>
   );
 }

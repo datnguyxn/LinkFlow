@@ -6,7 +6,6 @@ LinkFlow supports two authentication methods:
 
 - Email (Username) & Password
 - Google OAuth
-- GitHub OAuth
 
 The authentication module is designed with the following goals:
 
@@ -192,36 +191,88 @@ sequenceDiagram
 
 ---
 
-## GitHub OAuth
+# Forgot Password
+
+## Description
+
+Users who forget their password can request a password reset email.
+
+For security reasons, the API always returns a success response regardless of whether the email exists in the system.
+
+Only verified accounts can receive a password reset email.
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant Github
     participant API
     participant DB
     participant Mail
 
-    User->>Github: Continue with GitHub
+    User->>API: POST /auth/forgot-password
 
-    Github-->>API: OAuth Callback
+    API->>DB: Find user by email
 
-    API->>DB: Find OAuth Account
+    alt User not found
+        API-->>User: Success Response
+    else User found
 
-    alt Existing User
-        DB-->>API: Found
-    else New User
-        API->>DB: Create User(emailVerified=true)
-        API->>DB: Create OAuth Account
-        API->>Mail: Send Welcome Email
-        Mail-->>User: Welcome
+        alt Email not verified
+            API-->>User: Success Response
+        else Verified
+            API->>DB: Delete old reset token
+            API->>API: Generate reset token
+            API->>DB: Save reset token
+            API->>Mail: Send Password Reset Email
+            Mail-->>User: Password Reset Email
+            API-->>User: Success Response
+        end
+
     end
+```
 
-    API->>API: Generate JWT
-    API->>API: Generate Refresh Token
-    API->>DB: Save Refresh Token
+---
 
-    API-->>User: Login Success
+# Reset Password
+
+## Description
+
+The user clicks the password reset link received by email and submits a new password.
+
+If the reset token is valid:
+
+- User password is updated
+- Reset token is deleted
+- All refresh tokens are revoked
+- Existing sessions become invalid
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant API
+    participant DB
+
+    User->>API: POST /auth/reset-password
+
+    API->>DB: Find reset token
+
+    alt Invalid token
+        API-->>User: Invalid reset token
+
+    else Expired token
+        API->>DB: Delete reset token
+        API-->>User: Reset token expired
+
+    else Valid token
+        API->>API: Hash new password
+
+        API->>DB: Begin Transaction
+        API->>DB: Update user password
+        API->>DB: Delete reset token
+        API->>DB: Revoke all refresh tokens
+        API->>DB: Commit Transaction
+
+        API-->>User: Password reset successful
+    end
 ```
 
 ---
@@ -283,21 +334,21 @@ sequenceDiagram
 
 ## Access Token
 
-| Property | Value |
-|----------|-------|
-| Algorithm | HS256 |
-| Expiration | 15 Minutes |
-| Storage | Memory |
-| Purpose | API Authorization |
+| Property   | Value             |
+| ---------- | ----------------- |
+| Algorithm  | HS256             |
+| Expiration | 15 Minutes        |
+| Storage    | Memory            |
+| Purpose    | API Authorization |
 
 ### Payload
 
 ```json
 {
-    "sub": "userId",
-    "email": "user@email.com",
-    "workspaceId": "uuid",
-    "role": "OWNER"
+  "sub": "userId",
+  "email": "user@email.com",
+  "workspaceId": "uuid",
+  "role": "OWNER"
 }
 ```
 
@@ -305,12 +356,12 @@ sequenceDiagram
 
 ## Refresh Token
 
-| Property | Value |
-|----------|-------|
-| Expiration | 30 Days |
-| Storage | HttpOnly Cookie |
-| Database | refresh_tokens |
-| Rotation | Enabled |
+| Property   | Value           |
+| ---------- | --------------- |
+| Expiration | 30 Days         |
+| Storage    | HttpOnly Cookie |
+| Database   | refresh_tokens  |
+| Rotation   | Enabled         |
 
 ---
 
@@ -402,8 +453,7 @@ Permissions
 
 # Authentication Flow Summary
 
-| Flow | Verify Email | Welcome Email |
-|------|--------------|---------------|
-| Email Registration | ✅ | ✅ After Verification |
-| Google OAuth | ❌ | ✅ |
-| GitHub OAuth | ❌ | ✅ |
+| Flow               | Verify Email | Welcome Email         |
+| ------------------ | ------------ | --------------------- |
+| Email Registration | ✅           | ✅ After Verification |
+| Google OAuth       | ❌           | ✅                    |

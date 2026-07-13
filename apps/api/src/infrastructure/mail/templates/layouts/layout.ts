@@ -1,8 +1,8 @@
-import { emailHeader } from "../partials/header.ts";
-import { emailFooter } from "../partials/footer.ts";
+import { emailHeader } from '../partials/header.ts';
+import { emailFooter } from '../partials/footer.ts';
 
 export function emailLayout(content: string): string {
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="en">
 

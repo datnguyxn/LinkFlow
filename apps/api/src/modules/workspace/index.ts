@@ -1,1 +1,1 @@
-export * from "./repository/workspace.repository.ts"
+export * from './repository/workspace.repository.ts';

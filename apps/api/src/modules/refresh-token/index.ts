@@ -1,1 +1,1 @@
-export * from "./repository/refresh-token.repository.ts"
+export * from './repository/refresh-token.repository.ts';

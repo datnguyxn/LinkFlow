@@ -1,64 +1,73 @@
 {
-    "common": {
-        "successData": "Lấy dữ liệu thành công.",
-        "errorData": "Không tìm thấy dữ liệu.",
-        "internalServerError": "Lỗi hệ thống."
+  "common": {
+    "successData": "Lấy dữ liệu thành công.",
+    "errorData": "Không tìm thấy dữ liệu.",
+    "internalServerError": "Lỗi hệ thống."
+  },
+  "auth": {
+    "userAlreadyExists": "User already exists",
+    "loginSuccess": "Đăng nhập thành công",
+    "registerSuccess": "Đăng ký thành công",
+    "emailExists": "Email đã tồn tại",
+    "invalidEmail": "Email không hợp lệ",
+    "usernameTooShort": "Tên người dùng phải có ít nhất 3 ký tự",
+    "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
+    "passwordTooLong": "Mật khẩu phải có nhiều nhất 32 ký tự",
+    "passwordNoUppercase": "Mật khẩu phải chứa ít nhất một chữ hoa",
+    "passwordNoLowercase": "Mật khẩu phải chứa ít nhất một chữ thường",
+    "passwordNoNumber": "Mật khẩu phải chứa ít nhất một số",
+    "passwordNoSpecialCharacter": "Mật khẩu phải chứa ít nhất một ký tự đặc biệt",
+    "fullNameTooShort": "Họ và tên phải có ít nhất 2 ký tự",
+    "fullNameTooLong": "Họ và tên phải có nhiều nhất 50 ký tự",
+    "invalidFullName": "Họ và tên chứa ký tự không hợp lệ",
+    "invalidPassword": "Mật khẩu không hợp lệ",
+    "invalidUsername": "Tên người dùng không hợp lệ",
+    "invalidCredentials": "Email hoặc mật khẩu không hợp lệ",
+    "userNotFound": "Người dùng không tồn tại",
+    "refreshSuccess": "Làm mới refresh token thành công",
+    "logoutSuccess": "Đăng xuất thành công",
+    "middleware": {
+      "unauthorized": "Chưa được ủy quyền",
+      "forbidden": "Không được phép truy cập",
+      "invalidToken": "Token không hợp lệ",
+      "tokenExpired": "Token đã hết hạn",
+      "missingToken": "Thiếu token",
+      "invalidRefreshToken": "Token làm mới không hợp lệ",
+      "refreshTokenExpired": "Refresh token đã hết hạn",
+      "missingRefreshToken": "Thiếu refresh token"
     },
-    "auth": {
-        "userAlreadyExists": "User already exists",
-        "loginSuccess": "Đăng nhập thành công",
-        "registerSuccess": "Đăng ký thành công",
-        "emailExists": "Email đã tồn tại",
-        "invalidEmail": "Email không hợp lệ",
-        "usernameTooShort": "Tên người dùng phải có ít nhất 3 ký tự",
-        "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
-        "passwordTooLong": "Mật khẩu phải có nhiều nhất 32 ký tự",
-        "passwordNoUppercase": "Mật khẩu phải chứa ít nhất một chữ hoa",
-        "passwordNoLowercase": "Mật khẩu phải chứa ít nhất một chữ thường",
-        "passwordNoNumber": "Mật khẩu phải chứa ít nhất một số",
-        "passwordNoSpecialCharacter": "Mật khẩu phải chứa ít nhất một ký tự đặc biệt",
-        "fullNameTooShort": "Họ và tên phải có ít nhất 2 ký tự",
-        "fullNameTooLong": "Họ và tên phải có nhiều nhất 50 ký tự",
-        "invalidFullName": "Họ và tên chứa ký tự không hợp lệ",
-        "invalidPassword": "Mật khẩu không hợp lệ",
-        "invalidUsername": "Tên người dùng không hợp lệ",
-        "invalidCredentials": "Email hoặc mật khẩu không hợp lệ",
-        "userNotFound": "Người dùng không tồn tại",
-        "refreshSuccess": "Làm mới refresh token thành công",
-        "logoutSuccess": "Đăng xuất thành công",
-        "middleware": {
-            "unauthorized": "Chưa được ủy quyền",
-            "forbidden": "Không được phép truy cập",
-            "invalidToken": "Token không hợp lệ",
-            "tokenExpired": "Token đã hết hạn",
-            "missingToken": "Thiếu token",
-            "invalidRefreshToken": "Token làm mới không hợp lệ",
-            "refreshTokenExpired": "Refresh token đã hết hạn",
-            "missingRefreshToken": "Thiếu refresh token"
-        },
-        "login": {
-            "emailNotVerified": "Email chưa được xác minh. Vui lòng kiểm tra hộp thư đến của bạn để nhận email xác minh.",
-            "auth.login.userInactive": "Tài khoản người dùng đang không hoạt động. Vui lòng liên hệ hỗ trợ.",
-            "auth.login.userSuspended": "Tài khoản người dùng đã bị cấm. Vui lòng liên hệ hỗ trợ.",
-            "auth.login.userDeleted": "Tài khoản người dùng đã bị xóa.",
-            "auth.login.userUnavailable": "Tài khoản người dùng không khả dụng. Vui lòng liên hệ hỗ trợ."
-        },
-        "verifyEmail": {
-            "tokenExpired":"Token đã hết hạn",
-            "invalidToken":"Token không hợp lệ"
-        }
+    "login": {
+      "emailNotVerified": "Email chưa được xác minh. Vui lòng kiểm tra hộp thư đến của bạn để nhận email xác minh.",
+      "auth.login.userInactive": "Tài khoản người dùng đang không hoạt động. Vui lòng liên hệ hỗ trợ.",
+      "auth.login.userSuspended": "Tài khoản người dùng đã bị cấm. Vui lòng liên hệ hỗ trợ.",
+      "auth.login.userDeleted": "Tài khoản người dùng đã bị xóa.",
+      "auth.login.userUnavailable": "Tài khoản người dùng không khả dụng. Vui lòng liên hệ hỗ trợ."
     },
-    "request": {
-        "invalidRequest": "Yêu cầu không hợp lệ",
-        "manyRequests": "Quá nhiều yêu cầu, vui lòng thử lại sau",
-        "retryLater": "Thử lại sau sau {{after}} giây",
-        "validationFailed": "Xác thực thất bại"
+    "verifyEmail": {
+      "tokenExpired": "Token đã hết hạn",
+      "invalidToken": "Token không hợp lệ"
     },
-    "user": {
-        "usersFetchedSuccessfully": "Lấy danh sách người dùng thành công",
-        "userNotFound": "Người dùng không tồn tại",
-        "userUpdatedSuccessfully": "Người dùng được cập nhật thành công",
-        "userDeletedSuccessfully": "Người dùng được xóa thành công",
-        "oldPasswordIncorrect": "Mật khẩu cũ không chính xác"
+    "forgotPassword": {
+      "success": "Nếu tồn tại tài khoản với email này, một email đặt lại mật khẩu đã được gửi."
+    },
+    "resetPassword": {
+      "success": "Mật khẩu đã được đặt lại thành công.",
+      "invalidToken": "Token đặt lại mật khẩu không hợp lệ.",
+      "tokenExpired": "Token đặt lại mật khẩu đã hết hạn.",
+      "samePassword": "Mật khẩu mới phải khác với mật khẩu hiện tại."
     }
+  },
+  "request": {
+    "invalidRequest": "Yêu cầu không hợp lệ",
+    "manyRequests": "Quá nhiều yêu cầu, vui lòng thử lại sau",
+    "retryLater": "Thử lại sau sau {{after}} giây",
+    "validationFailed": "Xác thực thất bại"
+  },
+  "user": {
+    "usersFetchedSuccessfully": "Lấy danh sách người dùng thành công",
+    "userNotFound": "Người dùng không tồn tại",
+    "userUpdatedSuccessfully": "Người dùng được cập nhật thành công",
+    "userDeletedSuccessfully": "Người dùng được xóa thành công",
+    "oldPasswordIncorrect": "Mật khẩu cũ không chính xác"
+  }
 }

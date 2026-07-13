@@ -1,66 +1,19 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const guestRoutes = [
-  "/",
-  "/login",
-  "/register"
-];
+import { ROUTES, PUBLIC_ROUTES, isPublicRoute, isProtectedRoute } from '@/constants/routes';
 
-const protectedRoutes = [
-  "/dashboard",
-  "/workspace",
-  "/settings",
-  "/analytics",
-];
+export function middleware(request: NextRequest) {
+  const refreshToken = request.cookies.get('refreshToken')?.value;
 
-function isGuestRoute(pathname: string) {
-  return guestRoutes.some((route) => {
-    if (route === "/") {
-      return pathname === "/";
-    }
+  const { pathname } = request.nextUrl;
 
-    return pathname.startsWith(route);
-  });
-}
-
-function isProtectedRoute(pathname: string) {
-  return protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
-}
-
-export function middleware(
-  request: NextRequest,
-) {
-  const token =
-    request.cookies.get("refreshToken")?.value;
-
-  const pathname =
-    request.nextUrl.pathname;
-
-  const isGuest =
-    isGuestRoute(pathname);
-
-  const isProtected =
-    isProtectedRoute(pathname);
-
-  if (token && isGuest) {
-    return NextResponse.redirect(
-      new URL(
-        "/dashboard",
-        request.url,
-      ),
-    );
+  if (refreshToken && isPublicRoute(pathname)) {
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD, request.url));
   }
 
-  if (!token && isProtected) {
-    return NextResponse.redirect(
-      new URL(
-        "/login",
-        request.url,
-      ),
-    );
+  if (!refreshToken && isProtectedRoute(pathname)) {
+    return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
   }
 
   return NextResponse.next();
@@ -68,12 +21,10 @@ export function middleware(
 
 export const config = {
   matcher: [
-    "/",
-    "/login",
-    "/register",
-    "/dashboard/:path*",
-    "/workspace/:path*",
-    "/settings/:path*",
-    "/analytics/:path*",
+    ...PUBLIC_ROUTES,
+    `${ROUTES.DASHBOARD}/:path*`,
+    `${ROUTES.WORKSPACE}/:path*`,
+    `${ROUTES.SETTINGS}/:path*`,
+    `${ROUTES.ANALYTICS}/:path*`,
   ],
 };

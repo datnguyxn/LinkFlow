@@ -1,6 +1,6 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-import type { UserProfile } from "@/types/auth";
+import type { UserProfile } from '@/types/auth';
 
 interface AuthState {
   user: UserProfile | null;
@@ -20,33 +20,32 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
-export const useAuthStore =
-  create<AuthStore>((set) => ({
-    user: null,
+export const useAuthStore = create<AuthStore>((set) => ({
+  user: null,
 
-    loading: true,
+  loading: true,
 
-    isAuthenticated: false,
+  isAuthenticated: false,
 
-    setUser(user) {
-      set({
-        user,
-        isAuthenticated: !!user,
-        loading: false,
-      });
-    },
+  setUser(user) {
+    set({
+      user,
+      isAuthenticated: !!user,
+      loading: false,
+    });
+  },
 
-    setLoading(value) {
-      set({
-        loading: value,
-      });
-    },
+  setLoading(value) {
+    set({
+      loading: value,
+    });
+  },
 
-    logout() {
-      set({
-        user: null,
-        isAuthenticated: false,
-        loading: false,
-      });
-    },
-  }));
+  logout() {
+    set({
+      user: null,
+      isAuthenticated: false,
+      loading: false,
+    });
+  },
+}));

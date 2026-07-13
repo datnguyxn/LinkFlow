@@ -1,5 +1,5 @@
 export interface LoginOptions {
-    rememberMe?: boolean;
-    ipAddress?: string;
-    userAgent?: string;
+  rememberMe?: boolean;
+  ipAddress?: string;
+  userAgent?: string;
 }

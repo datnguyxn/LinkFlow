@@ -15,12 +15,11 @@ import {
   rateLimitPlugin,
   multipartPlugin,
   errorPlugin,
-  staticPlugin
-}
-  from './plugins/index.ts';
+  staticPlugin,
+} from './plugins/index.ts';
 import { prismaPlugin } from './infrastructure/database/index.ts';
-import { rabbitMQPlugin } from "./infrastructure/queue/index.ts";
-import { redisPlugin } from "./infrastructure/cache/index.ts";
+import { rabbitMQPlugin } from './infrastructure/queue/index.ts';
+import { redisPlugin } from './infrastructure/cache/index.ts';
 import { registerWorkers } from './bootstrap/workers.ts';
 
 export async function buildApp() {

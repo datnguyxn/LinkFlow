@@ -8,7 +8,7 @@ import { FcGoogle } from 'react-icons/fc';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/button';
 import { loginWithGoogle } from '@/lib/apis/auth.api';
-import { type RegisterForm, registerSchema } from '@/lib/auth.validator';
+import { type RegisterForm, registerSchema } from '@/lib/validators/auth.validator';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/dist/client/components/navigation';

@@ -1,64 +1,73 @@
 {
-    "common": {
-        "successData": "Data retrieved successfully.",
-        "errorData": "Data not found.",
-        "internalServerError": "Internal server error."
+  "common": {
+    "successData": "Data retrieved successfully.",
+    "errorData": "Data not found.",
+    "internalServerError": "Internal server error."
+  },
+  "auth": {
+    "userAlreadyExists": "User already exists",
+    "loginSuccess": "Login successful",
+    "registerSuccess": "Registration successful",
+    "emailExists": "Email already exists",
+    "invalidEmail": "Invalid email address",
+    "usernameTooShort": "Username must be at least 3 characters long",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "passwordTooLong": "Password must be at most 32 characters long",
+    "passwordNoUppercase": "Password must contain at least one uppercase letter",
+    "passwordNoLowercase": "Password must contain at least one lowercase letter",
+    "passwordNoNumber": "Password must contain at least one number",
+    "passwordNoSpecialCharacter": "Password must contain at least one special character",
+    "fullNameTooShort": "Full name must be at least 2 characters long",
+    "fullNameTooLong": "Full name must be at most 50 characters long",
+    "invalidFullName": "Full name contains invalid characters",
+    "invalidPassword": "Invalid password",
+    "invalidUsername": "Invalid username",
+    "invalidCredentials": "Invalid email or password",
+    "userNotFound": "User not found",
+    "refreshSuccess": "Refresh token successful",
+    "logoutSuccess": "Logout successful",
+    "middleware": {
+      "unauthorized": "Unauthorized",
+      "forbidden": "Forbidden",
+      "invalidToken": "Invalid token",
+      "tokenExpired": "Token has expired",
+      "missingToken": "Missing token",
+      "invalidRefreshToken": "Invalid refresh token",
+      "refreshTokenExpired": "Refresh token has expired",
+      "missingRefreshToken": "Missing refresh token"
     },
-    "auth": {
-        "userAlreadyExists": "User already exists",
-        "loginSuccess": "Login successful",
-        "registerSuccess": "Registration successful",
-        "emailExists": "Email already exists",
-        "invalidEmail": "Invalid email address",
-        "usernameTooShort": "Username must be at least 3 characters long",
-        "passwordTooShort": "Password must be at least 8 characters long",
-        "passwordTooLong": "Password must be at most 32 characters long",
-        "passwordNoUppercase": "Password must contain at least one uppercase letter",
-        "passwordNoLowercase": "Password must contain at least one lowercase letter",
-        "passwordNoNumber": "Password must contain at least one number",
-        "passwordNoSpecialCharacter": "Password must contain at least one special character",
-        "fullNameTooShort": "Full name must be at least 2 characters long",
-        "fullNameTooLong": "Full name must be at most 50 characters long",
-        "invalidFullName": "Full name contains invalid characters",
-        "invalidPassword": "Invalid password",
-        "invalidUsername": "Invalid username",
-        "invalidCredentials": "Invalid email or password",
-        "userNotFound": "User not found",
-        "refreshSuccess": "Refresh token successful",
-        "logoutSuccess": "Logout successful",
-        "middleware": {
-            "unauthorized": "Unauthorized",
-            "forbidden": "Forbidden",
-            "invalidToken": "Invalid token",
-            "tokenExpired": "Token has expired",
-            "missingToken": "Missing token",
-            "invalidRefreshToken": "Invalid refresh token",
-            "refreshTokenExpired": "Refresh token has expired",
-            "missingRefreshToken": "Missing refresh token"
-        },
-        "login": {
-            "emailNotVerified": "Email not verified. Please check your inbox for the verification email.",
-            "auth.login.userInactive": "User account is inactive. Please contact support.",
-            "auth.login.userSuspended": "User account is banned. Please contact support.",
-            "auth.login.userDeleted": "User account has been deleted.",
-            "auth.login.userUnavailable": "User account is unavailable. Please contact support."
-        },
-        "verifyEmail": {
-            "tokenExpired":"Token has expired",
-            "invalidToken":"Invalid token"
-        }
-    }, 
-    "request": {
-        "invalidRequest": "Invalid request",
-        "manyRequests": "Too many requests, please try again later",
-        "retryLater": "Retry after {{after}} seconds",
-        "validationFailed": "Validation failed"
+    "login": {
+      "emailNotVerified": "Email not verified. Please check your inbox for the verification email.",
+      "auth.login.userInactive": "User account is inactive. Please contact support.",
+      "auth.login.userSuspended": "User account is banned. Please contact support.",
+      "auth.login.userDeleted": "User account has been deleted.",
+      "auth.login.userUnavailable": "User account is unavailable. Please contact support."
     },
-    "user": {
-        "usersFetchedSuccessfully": "Users fetched successfully",
-        "userNotFound": "User not found",
-        "userUpdatedSuccessfully": "User updated successfully",
-        "userDeletedSuccessfully": "User deleted successfully",
-        "oldPasswordIncorrect": "Old password is incorrect"
+    "verifyEmail": {
+      "tokenExpired": "Token has expired",
+      "invalidToken": "Invalid token"
+    },
+    "forgotPassword": {
+      "success": "If an account with this email exists, a password reset email has been sent."
+    },
+    "resetPassword": {
+      "success": "Password has been reset successfully.",
+      "invalidToken": "Invalid password reset token.",
+      "tokenExpired": "Password reset token has expired.",
+      "samePassword": "New password must be different from the current password."
     }
+  },
+  "request": {
+    "invalidRequest": "Invalid request",
+    "manyRequests": "Too many requests, please try again later",
+    "retryLater": "Retry after {{after}} seconds",
+    "validationFailed": "Validation failed"
+  },
+  "user": {
+    "usersFetchedSuccessfully": "Users fetched successfully",
+    "userNotFound": "User not found",
+    "userUpdatedSuccessfully": "User updated successfully",
+    "userDeletedSuccessfully": "User deleted successfully",
+    "oldPasswordIncorrect": "Old password is incorrect"
+  }
 }

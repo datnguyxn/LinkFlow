@@ -1,5 +1,5 @@
 export interface UserLogoutEvent {
-    userId: string;
-    ipAddress?: string;
-    userAgent?: string;
+  userId: string;
+  ipAddress?: string;
+  userAgent?: string;
 }

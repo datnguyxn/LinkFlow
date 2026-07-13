@@ -1,5 +1,5 @@
-import fp from "fastify-plugin";
-import multipart from "@fastify/multipart";
+import fp from 'fastify-plugin';
+import multipart from '@fastify/multipart';
 
 export default fp(async (fastify) => {
   await fastify.register(multipart, {

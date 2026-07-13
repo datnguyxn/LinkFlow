@@ -1,6 +1,6 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import Container from "../common/Container";
+import Container from '../common/Container';
 
 export default function CTA() {
   return (
@@ -29,8 +29,8 @@ export default function CTA() {
           </h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-blue-100">
-            Join thousands of users using LinkFlow to shorten URLs,
-            create QR Codes and monitor traffic in real time.
+            Join thousands of users using LinkFlow to shorten URLs, create QR Codes and monitor
+            traffic in real time.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-5">

@@ -1,4 +1,4 @@
-import { rabbitMQ } from "./rabbitmq.ts";
+import { rabbitMQ } from './rabbitmq.ts';
 
 // export class Publisher {
 
@@ -28,32 +28,15 @@ import { rabbitMQ } from "./rabbitmq.ts";
 // export const publisher = new Publisher();
 
 export class Publisher {
+  async publish<T>(exchange: string, routingKey: string, payload: T) {
+    const channel = rabbitMQ.getChannel();
 
-    async publish<T>(
-        exchange: string,
-        routingKey: string,
-        payload: T,
-    ) {
+    await channel.assertExchange(exchange, 'topic', {
+      durable: true,
+    });
 
-        const channel = rabbitMQ.getChannel();
-
-        await channel.assertExchange(
-            exchange,
-            "topic",
-            {
-                durable: true,
-            },
-        );
-
-        channel.publish(
-            exchange,
-            routingKey,
-            Buffer.from(JSON.stringify(payload)),
-            {
-                persistent: true,
-            },
-        );
-
-    }
-
+    channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(payload)), {
+      persistent: true,
+    });
+  }
 }

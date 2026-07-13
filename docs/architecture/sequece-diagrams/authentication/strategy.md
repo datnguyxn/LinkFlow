@@ -2,7 +2,7 @@
 
 Mục tiêu của story:
 
-> *As a developer, I want to design the authentication architecture so that the system is scalable and secure.*
+> _As a developer, I want to design the authentication architecture so that the system is scalable and secure._
 
 ---
 
@@ -63,12 +63,12 @@ Issue JWT
 
 Nội dung cần research
 
-* JWT hay Session?
-* OAuth Google
-* OAuth Github
-* Refresh Token
-* Cookie hay LocalStorage
-* Password hashing
+- JWT hay Session?
+- OAuth Google
+- OAuth Github
+- Refresh Token
+- Cookie hay LocalStorage
+- Password hashing
 
 ---
 
@@ -165,10 +165,10 @@ table này chính là để làm việc đó.
 
 Nên quyết định
 
-* lưu hash refresh token
-* revoke token
-* rotate refresh token
-* logout all devices
+- lưu hash refresh token
+- revoke token
+- rotate refresh token
+- logout all devices
 
 ---
 
@@ -253,10 +253,10 @@ Authentication
 
 Story này thường **không cần code nhiều**, mà cần tạo tài liệu thiết kế để cả team thống nhất trước khi implement:
 
-* ✅ Authentication Flow (đăng ký, đăng nhập, OAuth, logout, refresh)
-* ✅ JWT Strategy (payload, thời hạn, secret, thuật toán)
-* ✅ Refresh Token Strategy (lưu DB, rotate, revoke)
-* ✅ RBAC Design (Role & Permission)
-* ✅ Authentication Sequence Diagram (Mermaid hoặc draw.io)
+- ✅ Authentication Flow (đăng ký, đăng nhập, OAuth, logout, refresh)
+- ✅ JWT Strategy (payload, thời hạn, secret, thuật toán)
+- ✅ Refresh Token Strategy (lưu DB, rotate, revoke)
+- ✅ RBAC Design (Role & Permission)
+- ✅ Authentication Sequence Diagram (Mermaid hoặc draw.io)
 
 Sau khi hoàn thành các tài liệu trên, team mới bắt đầu code các API như `/auth/register`, `/auth/login`, `/auth/refresh`, middleware JWT và phân quyền.

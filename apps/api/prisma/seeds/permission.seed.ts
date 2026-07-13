@@ -1,45 +1,45 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 const permissions = [
-  "auth.login",
-  "auth.logout",
-  "auth.refresh",
+  'auth.login',
+  'auth.logout',
+  'auth.refresh',
 
-  "user.read",
-  "user.create",
-  "user.update",
-  "user.delete",
+  'user.read',
+  'user.create',
+  'user.update',
+  'user.delete',
 
-  "workspace.read",
-  "workspace.create",
-  "workspace.update",
-  "workspace.delete",
-  "workspace.invite",
+  'workspace.read',
+  'workspace.create',
+  'workspace.update',
+  'workspace.delete',
+  'workspace.invite',
 
-  "url.read",
-  "url.create",
-  "url.update",
-  "url.delete",
+  'url.read',
+  'url.create',
+  'url.update',
+  'url.delete',
 
-  "analytics.read",
+  'analytics.read',
 
-  "dashboard.read",
+  'dashboard.read',
 
-  "search.read",
+  'search.read',
 
-  "notification.read",
-  "notification.update",
+  'notification.read',
+  'notification.update',
 
-  "apikey.read",
-  "apikey.create",
-  "apikey.update",
-  "apikey.delete",
+  'apikey.read',
+  'apikey.create',
+  'apikey.update',
+  'apikey.delete',
 
-  "admin.dashboard",
-  "admin.user",
-  "admin.audit",
+  'admin.dashboard',
+  'admin.user',
+  'admin.audit',
 ];
 
 export async function seedPermissions() {

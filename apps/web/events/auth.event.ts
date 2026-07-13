@@ -1,4 +1,4 @@
-type AuthEvent = "logout";
+type AuthEvent = 'logout';
 
 type Listener = () => void;
 
@@ -11,9 +11,7 @@ class AuthEvents {
     this.listeners[event].push(listener);
 
     return () => {
-      this.listeners[event] = this.listeners[event].filter(
-        (l) => l !== listener,
-      );
+      this.listeners[event] = this.listeners[event].filter((l) => l !== listener);
     };
   }
 

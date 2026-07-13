@@ -1,15 +1,15 @@
-import type { AuthResponse } from "../types/auth.type.ts";
-import { TransactionService } from "../../../infrastructure/database/index.ts";
-import { AuthService } from "./auth.service.ts";
-import { GoogleProvider } from "../providers/google.provider.ts";
-import { OAuthRepository } from "../../users/repository/oauth.repository.ts";
-import { UserRepository } from "../../users/index.ts";
-import { LANGUAGE } from "../../../common/constants/index.ts";
-import type { OAuthProfile } from "../types/oauth.type.ts";
-import type { User } from "@prisma/client";
-import { oauthConfig } from "../../../config/oauth.config.ts";
-import crypto from "node:crypto";
-import type { LoginOptions } from "../types/login-option.type.ts";
+import type { AuthResponse } from '../types/auth.type.ts';
+import { TransactionService } from '../../../infrastructure/database/index.ts';
+import { AuthService } from './auth.service.ts';
+import { GoogleProvider } from '../providers/google.provider.ts';
+import { OAuthRepository } from '../../users/repository/oauth.repository.ts';
+import { UserRepository } from '../../users/index.ts';
+import { LANGUAGE } from '../../../common/constants/index.ts';
+import type { OAuthProfile } from '../types/oauth.type.ts';
+import type { User } from '@prisma/client';
+import { oauthConfig } from '../../../config/oauth.config.ts';
+import crypto from 'node:crypto';
+import type { LoginOptions } from '../types/login-option.type.ts';
 
 /**
  * OAuthService handles OAuth authentication flows for different providers.
@@ -17,202 +17,149 @@ import type { LoginOptions } from "../types/login-option.type.ts";
  * - Provides methods to generate authorization URLs and handle login with authorization codes.
  */
 export class OAuthService {
+  // Constructor for the OAuthService class.
+  constructor(
+    private googleProvider = new GoogleProvider(),
+    private oauthRepository = new OAuthRepository(),
+    private userRepository = new UserRepository(),
+    private authService = new AuthService(),
+    private transactionService = new TransactionService(),
+  ) {}
 
-    // Constructor for the OAuthService class.
-    constructor(
-        private googleProvider = new GoogleProvider(),
-        private oauthRepository = new OAuthRepository(),
-        private userRepository = new UserRepository(),
-        private authService = new AuthService(),
-        private transactionService = new TransactionService()) { }
+  /**
+   * Generates the Google OAuth authorization URL for user login.
+   * - User clicks "Login with Google" button.
+   * - Redirects to Google's OAuth consent screen.
+   * - User grants permissions and is redirected back with an authorization code.
+   * - The authorization code is exchanged for an access token and user info.  
+   *
+   * @param code - The authorization code received from Google's OAuth 2.0 authorization server.
+   * @param rememberMe - Optional boolean to indicate if the user wants to stay logged in.
+   * @param ipAddress - Optional IP address of the user for logging purposes.
+   * @param userAgent - Optional user agent string of the user's browser for logging purposes.
+   * @returns A promise that resolves to an AuthResponse containing access and refresh tokens.
+   */
+  async loginWithGoogle(code: string, options: LoginOptions): Promise<AuthResponse> {
+    // Exchange authorization code
+    const token = await this.googleProvider.exchangeCode(code);
 
-    /**
-     * Generates the Google OAuth authorization URL for user login.
-     * - User clicks "Login with Google" button.
-     * - Redirects to Google's OAuth consent screen.
-     * - User grants permissions and is redirected back with an authorization code.
-     * - The authorization code is exchanged for an access token and user info.    
-     * 
-     * @param code - The authorization code received from Google's OAuth 2.0 authorization server.
-     * @param rememberMe - Optional boolean to indicate if the user wants to stay logged in.
-     * @param ipAddress - Optional IP address of the user for logging purposes.
-     * @param userAgent - Optional user agent string of the user's browser for logging purposes.
-     * @returns A promise that resolves to an AuthResponse containing access and refresh tokens.
-     */
-    async loginWithGoogle(
-        code: string,
-        options: LoginOptions
-    ): Promise<AuthResponse> {
+    // Get Google profile
+    const profile = await this.googleProvider.getUserInfo(token.access_token);
 
-        // Exchange authorization code
-        const token =
-            await this.googleProvider.exchangeCode(code);
+    // Find or create user
+    const user = await this.findOrCreateUser(profile);
 
-        // Get Google profile
-        const profile =
-            await this.googleProvider.getUserInfo(
-                token.access_token,
-            );
+    // Complete login
+    return this.authService.completeLogin(user, options, 'google');
+  }
 
-        // Find or create user
-        const user =
-            await this.findOrCreateUser(profile);
+  /**
+   * Finds an existing user by their OAuth profile or creates a new user if none exists.
+   * - Checks for an existing OAuth account linked to the provider and provider account ID.
+   * - If found, retrieves the associated user.
+   * - If not found, checks for an existing user by email.
+   * - If no user exists, creates a new user and links the OAuth account.
+   * @param profile - The OAuth profile containing user information from the provider.
+   * @returns A promise that resolves to the found or newly created User object.
+   */
+  private async findOrCreateUser(profile: OAuthProfile): Promise<User> {
+    // Find OAuth account
+    const oauth = await this.oauthRepository.findByProvider(profile.provider, profile.providerId);
 
-        // Complete login
-        return this.authService.completeLogin(
-            user,
-            options
-        );
+    if (oauth) {
+      const user = await this.userRepository.findById(oauth.userId);
+
+      if (user) {
+        return user;
+      }
     }
 
-    /**
-     * Finds an existing user by their OAuth profile or creates a new user if none exists.
-     * - Checks for an existing OAuth account linked to the provider and provider account ID.
-     * - If found, retrieves the associated user.
-     * - If not found, checks for an existing user by email.
-     * - If no user exists, creates a new user and links the OAuth account.
-     * @param profile - The OAuth profile containing user information from the provider.
-     * @returns A promise that resolves to the found or newly created User object.
-     */
-    private async findOrCreateUser(
-        profile: OAuthProfile,
-    ): Promise<User> {
+    // Find by email
+    const existingUser = await this.userRepository.findByEmail(profile.email);
 
-        // Find OAuth account
-        const oauth =
-            await this.oauthRepository.findByProvider(
-                profile.provider,
-                profile.providerId,
-            );
+    if (existingUser) {
+      await this.oauthRepository.create({
+        provider: profile.provider,
+        providerAccountId: profile.providerId,
+        user: {
+          connect: {
+            id: existingUser.id,
+          },
+        },
+      });
 
-        if (oauth) {
-
-            const user =
-                await this.userRepository.findById(
-                    oauth.userId,
-                );
-
-            if (user) {
-                return user;
-            }
-        }
-
-        // Find by email
-        const existingUser =
-            await this.userRepository.findByEmail(
-                profile.email,
-            );
-
-        if (existingUser) {
-
-            await this.oauthRepository.create({
-                provider: profile.provider,
-                providerAccountId:
-                    profile.providerId,
-                user: {
-                    connect: {
-                        id: existingUser.id,
-                    },
-                },
-            });
-
-            // Return the existing user if found
-            return existingUser;
-        }
-
-        // New User
-        return this.transactionService.run(async (tx) => {
-
-            // Create a new user and link the OAuth account within a transaction
-            const user =
-                await this.userRepository.createOAuthUser({
-                    email: profile.email,
-                    fullName: profile.fullName,
-                    avatarUrl: profile.avatarUrl,
-                    emailVerified:
-                        profile.emailVerified,
-                    language: LANGUAGE.EN,
-                    timezone: "UTC",
-                }, tx);
-
-            await this.oauthRepository.create({
-                provider: profile.provider,
-                providerAccountId:
-                    profile.providerId,
-                user: {
-                    connect: {
-                        id: user.id,
-                    },
-                },
-            }, tx);
-
-            return user;
-
-        });
+      // Return the existing user if found
+      return existingUser;
     }
 
-    /**
-     * Generates the Google OAuth authorization URL for user login.
-     * - User clicks "Login with Google" button.
-     * - Redirects to Google's OAuth consent screen.
-     * - User grants permissions and is redirected back with an authorization code.
-     * - The authorization code is exchanged for an access token and user info.
-     * @returns The Google OAuth authorization URL as a string.
-     */
+    // New User
+    return this.transactionService.run(async (tx) => {
+      // Create a new user and link the OAuth account within a transaction
+      const user = await this.userRepository.createOAuthUser(
+        {
+          email: profile.email,
+          fullName: profile.fullName,
+          avatarUrl: profile.avatarUrl,
+          emailVerified: profile.emailVerified,
+          language: LANGUAGE.EN,
+          timezone: 'UTC',
+        },
+        tx,
+      );
 
-    getGoogleAuthorizationUrl(): { url: string; state: string } {
-        const state = crypto.randomUUID();
+      await this.oauthRepository.create(
+        {
+          provider: profile.provider,
+          providerAccountId: profile.providerId,
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+        tx,
+      );
 
-        const url = new URL(
-            oauthConfig.google.authorizationUrl,
-        );
+      return user;
+    });
+  }
 
-        url.searchParams.set(
-            "client_id",
-            oauthConfig.google.clientId,
-        );
+  /**
+   * Generates the Google OAuth authorization URL for user login.
+   * - User clicks "Login with Google" button.
+   * - Redirects to Google's OAuth consent screen.
+   * - User grants permissions and is redirected back with an authorization code.
+   * - The authorization code is exchanged for an access token and user info.
+   * @returns The Google OAuth authorization URL as a string.
+   */
 
-        url.searchParams.set(
-            "redirect_uri",
-            oauthConfig.google.redirectUri,
-        );
+  getGoogleAuthorizationUrl(): { url: string; state: string } {
+    const state = crypto.randomUUID();
 
-        url.searchParams.set(
-            "response_type",
-            "code",
-        );
+    const url = new URL(oauthConfig.google.authorizationUrl);
 
-        url.searchParams.set(
-            "scope",
-            oauthConfig.google.scopes.join(" "),
-        );
+    url.searchParams.set('client_id', oauthConfig.google.clientId);
 
-        // Request refresh token
-        url.searchParams.set(
-            "access_type",
-            "offline",
-        );
+    url.searchParams.set('redirect_uri', oauthConfig.google.redirectUri);
 
-        // Always show consent screen (optional)
-        url.searchParams.set(
-            "prompt",
-            "consent",
-        );
+    url.searchParams.set('response_type', 'code');
 
-        // OpenID Connect
-        url.searchParams.set(
-            "include_granted_scopes",
-            "true",
-        );
+    url.searchParams.set('scope', oauthConfig.google.scopes.join(' '));
 
-        url.searchParams.set(
-            "state",
-            state,
-        );
+    // Request refresh token
+    url.searchParams.set('access_type', 'offline');
 
-        return {
-            url: url.toString(),
-            state
-        };
-    }
+    // Always show consent screen (optional)
+    url.searchParams.set('prompt', 'consent');
+
+    // OpenID Connect
+    url.searchParams.set('include_granted_scopes', 'true');
+
+    url.searchParams.set('state', state);
+
+    return {
+      url: url.toString(),
+      state,
+    };
+  }
 }

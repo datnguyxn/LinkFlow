@@ -1,1 +1,1 @@
-export * from "./repository/audit-log.repository.ts"
+export * from './repository/audit-log.repository.ts';

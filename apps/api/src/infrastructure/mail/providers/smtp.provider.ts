@@ -1,128 +1,93 @@
-import nodemailer, { type Transporter } from "nodemailer";
+import nodemailer, { type Transporter } from 'nodemailer';
 
 import type {
-    MailService,
-    SendResetPasswordEmail,
-    SendUrlExpirationReminder,
-    SendVerificationEmail,
-    SendWorkspaceInvitationEmail,
-    UserActionTemplateProps
-} from "../interfaces/mail.service.ts";
+  MailService,
+  SendResetPasswordEmail,
+  SendUrlExpirationReminder,
+  SendVerificationEmail,
+  SendWorkspaceInvitationEmail,
+  UserActionTemplateProps,
+} from '../interfaces/mail.service.ts';
 
-import { config } from "../../../config/env/index.ts";
+import { config } from '../../../config/env/index.ts';
 
-import { verifyEmailTemplate } from "../templates/verify-email.template.ts";
-import { resetPasswordTemplate } from "../templates/reset-password.template.ts";
-import { userActionTemplate } from "../templates/user-action.template.ts";
+import { verifyEmailTemplate } from '../templates/verify-email.template.ts';
+import { resetPasswordTemplate } from '../templates/reset-password.template.ts';
+import { userActionTemplate } from '../templates/user-action.template.ts';
 
 export class SmtpProvider implements MailService {
+  private readonly transporter: Transporter;
 
-    private readonly transporter: Transporter;
+  constructor() {
+    this.transporter = nodemailer.createTransport({
+      host: config.SMTP_HOST,
+      port: Number(config.SMTP_PORT),
+      secure: config.SMTP_SECURE === 'true',
 
-    constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: config.SMTP_HOST,
-            port: Number(config.SMTP_PORT),
-            secure: config.SMTP_SECURE === "true",
+      auth: {
+        user: config.SMTP_FROM,
+        pass: config.SMTP_PASSWORD,
+      },
+    });
+  }
 
-            auth: {
-                user: config.SMTP_FROM,
-                pass: config.SMTP_PASSWORD,
-            },
-        });
+  async sendVerificationEmail(data: SendVerificationEmail): Promise<void> {
+    const verifyUrl = `${config.CLIENT_URL}/verify-email?token=${data.verifyToken}`;
 
-    }
+    await this.transporter.sendMail({
+      from: `"LinkFlow" <${config.SMTP_FROM}>`,
 
-    async sendVerificationEmail(
-        data: SendVerificationEmail,
-    ): Promise<void> {
+      to: data.email,
 
-        const verifyUrl =
-            `${config.CLIENT_URL}/verify-email?token=${data.verifyToken}`;
+      subject: 'Verify your email',
 
-        await this.transporter.sendMail({
+      html: verifyEmailTemplate(
+        data.fullName,
 
-            from: `"LinkFlow" <${config.SMTP_FROM}>`,
+        verifyUrl,
+      ),
+    });
+  }
 
-            to: data.email,
+  async sendResetPasswordEmail(data: SendResetPasswordEmail): Promise<void> {
+    const resetUrl = `${config.CLIENT_URL}/reset-password?token=${data.resetToken}`;
 
-            subject: "Verify your email",
+    await this.transporter.sendMail({
+      from: `"LinkFlow" <${config.SMTP_FROM}>`,
 
-            html: verifyEmailTemplate(
+      to: data.email,
 
-                data.fullName,
+      subject: 'Reset your password',
 
-                verifyUrl,
+      html: resetPasswordTemplate({
+        fullName: data.fullName,
 
-            ),
+        resetUrl,
+      }),
+    });
+  }
 
-        });
+  async sendWorkspaceInvitationEmail(data: SendWorkspaceInvitationEmail): Promise<void> {
+    console.log(data);
 
-    }
+    // TODO
+  }
 
-    async sendResetPasswordEmail(
-        data: SendResetPasswordEmail,
-    ): Promise<void> {
+  async sendUrlExpirationReminder(data: SendUrlExpirationReminder): Promise<void> {
+    console.log(data);
 
-        const resetUrl =
-            `${config.CLIENT_URL}/reset-password?token=${data.resetToken}`;
+    // TODO
+  }
 
-        await this.transporter.sendMail({
+  async sendUserActionEmail(data: UserActionTemplateProps): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"LinkFlow" <${config.SMTP_FROM}>`,
 
-            from: `"LinkFlow" <${config.SMTP_FROM}>`,
+      to: data.email,
 
-            to: data.email,
+      subject: `Your LinkFlow account has been updated: ${data.action}`,
 
-            subject: "Reset your password",
-
-            html: resetPasswordTemplate({
-
-                fullName: data.fullName,
-
-                resetUrl,
-
-            }),
-
-        });
-
-    }
-
-    async sendWorkspaceInvitationEmail(
-        data: SendWorkspaceInvitationEmail,
-    ): Promise<void> {
-
-        console.log(data);
-
-        // TODO
-
-    }
-
-    async sendUrlExpirationReminder(
-        data: SendUrlExpirationReminder,
-    ): Promise<void> {
-
-        console.log(data);
-
-        // TODO
-
-    }
-
-    async sendUserActionEmail(
-        data: UserActionTemplateProps
-    ): Promise<void> {
-
-        await this.transporter.sendMail({
-
-            from: `"LinkFlow" <${config.SMTP_FROM}>`,
-
-            to: data.email,
-
-            subject: `Your LinkFlow account has been updated: ${data.action}`,
-
-            html: userActionTemplate(data),
-
-        });
-
-    }
-
+      html: userActionTemplate(data),
+    });
+  }
 }

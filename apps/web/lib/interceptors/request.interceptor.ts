@@ -1,25 +1,17 @@
 // lib/interceptors/request.interceptor.ts
 
-import type {
-  AxiosError,
-  InternalAxiosRequestConfig,
-} from "axios";
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-import { tokenStorage } from "../storage/token.storage";
+import { tokenStorage } from '../storage/token.storage';
 
 /**
  * Attach access token to every request.
  */
-export function requestSuccess(
-  config: InternalAxiosRequestConfig,
-): InternalAxiosRequestConfig {
+export function requestSuccess(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
   const accessToken = tokenStorage.getAccessToken();
 
   if (accessToken) {
-    config.headers.set(
-      "Authorization",
-      `Bearer ${accessToken}`,
-    );
+    config.headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
   return config;
@@ -28,8 +20,6 @@ export function requestSuccess(
 /**
  * Handle request error.
  */
-export function requestError(
-  error: AxiosError,
-) {
+export function requestError(error: AxiosError) {
   return Promise.reject(error);
 }

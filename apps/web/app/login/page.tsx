@@ -1,6 +1,6 @@
 import AuthCard from '@/components/auth/AuthCard';
 import AuthHeader from '@/components/auth/AuthHeader';
-import LoginForm from '@/components/forms/LoginForm';
+import LoginForm from '@/components/forms/auth/LoginForm';
 
 export default function LoginPage() {
   return (

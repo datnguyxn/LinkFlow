@@ -1,15 +1,12 @@
-import Container from "../common/Container";
-import FeatureCard from "../common/FeatureCard";
-import SectionTitle from "../common/SectionTitle";
+import Container from '../common/Container';
+import FeatureCard from '../common/FeatureCard';
+import SectionTitle from '../common/SectionTitle';
 
-import { features } from "@/constants/features";
+import { features } from '@/constants/features';
 
 export default function Features() {
   return (
-    <section
-      id="features"
-      className="py-24 dark:bg-slate-900"
-    >
+    <section id="features" className="py-24 dark:bg-slate-900">
       <Container>
         <SectionTitle
           eyebrow="Features"
@@ -27,10 +24,7 @@ export default function Features() {
         "
         >
           {features.map((feature) => (
-            <FeatureCard
-              key={feature.title}
-              {...feature}
-            />
+            <FeatureCard key={feature.title} {...feature} />
           ))}
         </div>
       </Container>

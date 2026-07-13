@@ -1,4 +1,4 @@
-import { Link2 } from "lucide-react";
+import { Link2 } from 'lucide-react';
 
 export default function Logo() {
   return (
@@ -20,9 +20,7 @@ export default function Logo() {
         <Link2 size={20} />
       </div>
 
-      <span className="text-xl font-bold tracking-tight">
-        LinkFlow
-      </span>
+      <span className="text-xl font-bold tracking-tight">LinkFlow</span>
     </div>
   );
 }

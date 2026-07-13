@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { appToast } from "@/lib/toast";
+import { appToast } from '@/lib/toast';
 
-import { loginSchema, type LoginForm } from '@/lib/auth.validator';
+import { loginSchema, type LoginForm } from '@/lib/validators/auth.validator';
 
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -17,7 +17,6 @@ import Button from '@/components/ui/button';
 import { loginWithGoogle } from '@/lib/apis/auth.api';
 import { authService } from '@/services/auth.service';
 import { useRouter } from 'next/navigation';
-
 
 export default function LoginForm() {
   const [show, setShow] = useState(false);
@@ -34,11 +33,13 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      const result = await authService.login(data.email, data.password, data.remember);
+      console.log('Login form submitted with data:', data);
+
+      const result = await authService.login(data.email, data.password, data.rememberMe);
 
       console.log('Login successful:', result);
 
-      appToast.success("Login successfully");
+      appToast.success('Login successfully');
 
       router.replace('/dashboard');
     } catch (error) {
@@ -128,13 +129,13 @@ export default function LoginForm() {
           <label
             htmlFor="password"
             className="
-        mb-2
-        block
-        text-sm
-        font-medium
-        text-slate-700
-        dark:text-slate-200
-      "
+              mb-2
+              block
+              text-sm
+              font-medium
+              text-slate-700
+              dark:text-slate-200
+            "
           >
             Password
             <span className="ml-1 text-red-500">*</span>
@@ -158,11 +159,15 @@ export default function LoginForm() {
 
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-3 text-slate-300">
-          <input type="checkbox" {...register('remember')} />
+          <input type="checkbox" {...register('rememberMe')} />
           Remember me
         </label>
 
-        <button type="button" className="text-blue-500 cursor-pointer">
+        <button
+          type="button"
+          className="text-blue-500 cursor-pointer"
+          onClick={() => router.push('/forgot-password')}
+        >
           Forgot password
         </button>
       </div>

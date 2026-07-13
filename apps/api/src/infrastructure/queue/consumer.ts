@@ -43,73 +43,47 @@
 
 // export const consumer = new Consumer();
 
-import { rabbitMQ } from "./rabbitmq.ts";
+import { rabbitMQ } from './rabbitmq.ts';
 
 export class Consumer {
+  async consume<T>(
+    exchange: string,
+    routingKey: string,
+    queue: string,
+    callback: (payload: T) => Promise<void>,
+  ) {
+    const channel = rabbitMQ.getChannel();
 
-    async consume<T>(
-        exchange: string,
-        routingKey: string,
-        queue: string,
-        callback: (payload: T) => Promise<void>,
-    ) {
+    // 1. Tạo exchange
+    await channel.assertExchange(exchange, 'topic', {
+      durable: true,
+    });
 
-        const channel = rabbitMQ.getChannel();
+    // 2. Tạo queue
+    await channel.assertQueue(queue, {
+      durable: true,
+    });
 
-        // 1. Tạo exchange
-        await channel.assertExchange(
-            exchange,
-            "topic",
-            {
-                durable: true,
-            },
-        );
+    // 3. Bind queue vào exchange
+    await channel.bindQueue(queue, exchange, routingKey);
 
-        // 2. Tạo queue
-        await channel.assertQueue(
-            queue,
-            {
-                durable: true,
-            },
-        );
+    // 4. Consume
+    await channel.consume(queue, async (message) => {
+      if (!message) return;
 
-        // 3. Bind queue vào exchange
-        await channel.bindQueue(
-            queue,
-            exchange,
-            routingKey,
-        );
+      const payload = JSON.parse(message.content.toString()) as T;
 
-        // 4. Consume
-        await channel.consume(
-            queue,
-            async (message) => {
+      try {
+        await callback(payload);
 
-                if (!message) return;
+        channel.ack(message);
+      } catch (error) {
+        console.error(error);
 
-                const payload = JSON.parse(
-                    message.content.toString(),
-                ) as T;
-
-                try {
-
-                    await callback(payload);
-
-                    channel.ack(message);
-
-                } catch (error) {
-
-                    console.error(error);
-
-                    channel.nack(message, false, true);
-
-                }
-
-            },
-        );
-
-    }
-
+        channel.nack(message, false, true);
+      }
+    });
+  }
 }
 
 export const consumer = new Consumer();

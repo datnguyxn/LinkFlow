@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { InputHTMLAttributes } from "react";
-import { cn } from "@/lib/utils";
+import { InputHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
@@ -9,13 +9,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   right?: React.ReactNode;
 }
 
-export default function Input({
-  icon,
-  error,
-  right,
-  className,
-  ...props
-}: Props) {
+export default function Input({ icon, error, right, className, ...props }: Props) {
   return (
     <div>
       <div
@@ -33,7 +27,7 @@ export default function Input({
           focus-within:border-blue-500
           dark:focus-within:border-blue-500
         `,
-          error && "border-red-500"
+          error && 'border-red-500',
         )}
       >
         {icon}
@@ -49,7 +43,7 @@ export default function Input({
             outline-none
             placeholder:text-slate-500
           `,
-            className
+            className,
           )}
           {...props}
         />
@@ -57,11 +51,7 @@ export default function Input({
         {right}
       </div>
 
-      {error && (
-        <p className="mt-2 text-sm text-red-400">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
     </div>
   );
 }

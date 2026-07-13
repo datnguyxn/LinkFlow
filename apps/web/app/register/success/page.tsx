@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
+import Link from 'next/link';
+import { ArrowLeft, Mail } from 'lucide-react';
 
-import ResendVerificationButton from "./ResendVerificationButton";
+import ResendVerificationButton from '@/components/auth/ResendVerificationButton';
 
 interface RegisterSuccessPageProps {
   searchParams?: Promise<{
@@ -9,9 +9,7 @@ interface RegisterSuccessPageProps {
   }>;
 }
 
-export default async function RegisterSuccessPage({
-  searchParams,
-}: RegisterSuccessPageProps) {
+export default async function RegisterSuccessPage({ searchParams }: RegisterSuccessPageProps) {
   const params = await searchParams;
 
   const email = params?.email;
@@ -66,9 +64,7 @@ export default async function RegisterSuccessPage({
         </div>
 
         <div className="mt-6 text-center">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Check your email
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Check your email</h1>
 
           <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-400">
             Your account has been created successfully.
@@ -78,19 +74,15 @@ export default async function RegisterSuccessPage({
             We have sent a verification email
             {email && (
               <>
-                {" "}
-                to{" "}
-                <span className="font-semibold text-slate-900 dark:text-white">
-                  {email}
-                </span>
+                {' '}
+                to <span className="font-semibold text-slate-900 dark:text-white">{email}</span>
               </>
             )}
             .
           </p>
 
           <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
-            Please open your inbox and click the verification link to activate
-            your account.
+            Please open your inbox and click the verification link to activate your account.
           </p>
         </div>
 
@@ -127,11 +119,8 @@ export default async function RegisterSuccessPage({
 
         <div className="mt-8 rounded-xl bg-slate-100 p-4 dark:bg-slate-800">
           <p className="text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
-            Did not you receive the email? Check your spam folder or click{" "}
-            <span className="font-semibold">
-              Resend Verification Email
-            </span>
-            .
+            Did not you receive the email? Check your spam folder or click{' '}
+            <span className="font-semibold">Resend Verification Email</span>.
           </p>
         </div>
       </div>

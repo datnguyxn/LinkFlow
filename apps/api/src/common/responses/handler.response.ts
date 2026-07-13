@@ -1,8 +1,11 @@
-import type { FastifyReply } from "fastify";
-import type { ApiError, ApiResponse, PaginationMeta } from "./api.response.js";
+import type { FastifyReply } from 'fastify';
+import type { ApiError, ApiResponse, PaginationMeta } from './api.response.js';
 
 export class ResponseHandler {
-  private static createMeta(pagination?: PaginationMeta, requestId: string = ""): ApiResponse["meta"] {
+  private static createMeta(
+    pagination?: PaginationMeta,
+    requestId: string = '',
+  ): ApiResponse['meta'] {
     return {
       timestamp: new Date().toISOString(),
       pagination,
@@ -13,9 +16,9 @@ export class ResponseHandler {
   static success<T>(
     reply: FastifyReply,
     data: T,
-    message = "Success",
+    message = 'Success',
     statusCode = 200,
-    pagination?: PaginationMeta
+    pagination?: PaginationMeta,
   ) {
     const response: ApiResponse<T> = {
       success: true,
@@ -28,11 +31,7 @@ export class ResponseHandler {
     return reply.status(statusCode).send(response);
   }
 
-  static created<T>(
-    reply: FastifyReply,
-    data: T,
-    message = "Created successfully"
-  ) {
+  static created<T>(reply: FastifyReply, data: T, message = 'Created successfully') {
     return this.success(reply, data, message, 201);
   }
 
@@ -40,12 +39,7 @@ export class ResponseHandler {
     return reply.status(204).send();
   }
 
-  static error(
-    reply: FastifyReply,
-    statusCode: number,
-    message: string,
-    errors?: ApiError[]
-  ) {
+  static error(reply: FastifyReply, statusCode: number, message: string, errors?: ApiError[]) {
     const response: ApiResponse<null> = {
       success: false,
       statusCode,

@@ -1,16 +1,14 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
-import type { AnalyticsOverviewCard } from "@/types/analytics";
+import type { AnalyticsOverviewCard } from '@/types/analytics';
 
 interface Props {
   data: AnalyticsOverviewCard;
 }
 
-export default function AnalyticsChartCard({
-  data,
-}: Props) {
+export default function AnalyticsChartCard({ data }: Props) {
   return (
     <motion.div
       initial={{
@@ -47,13 +45,9 @@ export default function AnalyticsChartCard({
         ))}
       </div>
 
-      <h3 className="text-xl font-bold">
-        {data.title}
-      </h3>
+      <h3 className="text-xl font-bold">{data.title}</h3>
 
-      <p className="mt-2 text-slate-500">
-        {data.description}
-      </p>
+      <p className="mt-2 text-slate-500">{data.description}</p>
     </motion.div>
   );
 }

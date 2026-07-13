@@ -5,7 +5,6 @@ import { z } from 'zod';
  * This schema defines the expected structure and types of environment variables.
  */
 export const envSchema = z.object({
-  
   // Environment and application settings
   NODE_ENV: z.enum(['development', 'test', 'production']),
   NAME: z.string(),
@@ -31,7 +30,7 @@ export const envSchema = z.object({
   JWT_ACCESS_EXPIRES_MS: z.coerce.number(),
   JWT_REFRESH_EXPIRES_MS: z.coerce.number(),
   JWT_REFRESH_REMEMBER_EXPIRES_MS: z.coerce.number(),
-  
+
   // Redis configuration
   REDIS_HOST: z.string().optional(),
   REDIS_PORT: z.coerce.number().optional(),

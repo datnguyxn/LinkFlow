@@ -1,35 +1,35 @@
-import type { FastifySchema } from "fastify";
-import { Type } from "@sinclair/typebox";
-import { createSwaggerResponse } from "../../../common/swagger/swagger-response.ts";
+import type { FastifySchema } from 'fastify';
+import { Type } from '@sinclair/typebox';
+import { createSwaggerResponse } from '../../../common/swagger/swagger-response.ts';
 
 export const banUserSchema: FastifySchema = {
-    tags: ["Admin"],
+  tags: ['Admin'],
 
-    summary: "Ban User",
+  summary: 'Ban User',
 
-    description: "Ban a user from the system.",
+  description: 'Ban a user from the system.',
 
-    params: {
-        type: "object",
+  params: {
+    type: 'object',
 
-        required: ["userId"],
+    required: ['userId'],
 
-        properties: {
-            userId: Type.String({
-                description: "The ID of the user to be banned",
-                format: "uuid"
-            })
-        }
+    properties: {
+      userId: Type.String({
+        description: 'The ID of the user to be banned',
+        format: 'uuid',
+      }),
     },
+  },
 
-    response: createSwaggerResponse(
-        200,
-        Type.Object({
-            message: Type.String({
-                description: "Confirmation message indicating the user has been banned",
-                example: "User has been successfully banned."
-            })
-        }),
-        [400, 401, 403, 404, 500]
-    ),
+  response: createSwaggerResponse(
+    200,
+    Type.Object({
+      message: Type.String({
+        description: 'Confirmation message indicating the user has been banned',
+        example: 'User has been successfully banned.',
+      }),
+    }),
+    [400, 401, 403, 404, 500],
+  ),
 };

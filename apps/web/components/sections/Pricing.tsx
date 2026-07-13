@@ -1,15 +1,12 @@
-import Container from "../common/Container";
-import SectionTitle from "../common/SectionTitle";
-import PricingCard from "../common/PricingCard";
+import Container from '../common/Container';
+import SectionTitle from '../common/SectionTitle';
+import PricingCard from '../common/PricingCard';
 
-import { pricingPlans } from "@/constants/pricing";
+import { pricingPlans } from '@/constants/pricing';
 
 export default function Pricing() {
   return (
-    <section
-      id="pricing"
-      className="bg-slate-50 py-24 dark:bg-slate-900"
-    >
+    <section id="pricing" className="bg-slate-50 py-24 dark:bg-slate-900">
       <Container>
         <SectionTitle
           eyebrow="Pricing"
@@ -19,10 +16,7 @@ export default function Pricing() {
 
         <div className="mt-16 grid gap-8 lg:grid-cols-3">
           {pricingPlans.map((plan) => (
-            <PricingCard
-              key={plan.name}
-              {...plan}
-            />
+            <PricingCard key={plan.name} {...plan} />
           ))}
         </div>
       </Container>

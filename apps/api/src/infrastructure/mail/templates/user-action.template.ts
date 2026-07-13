@@ -1,14 +1,13 @@
-import { emailLayout } from "./layouts/layout.ts";
-import type { UserActionTemplateProps } from "../interfaces/mail.service.ts";
+import { emailLayout } from './layouts/layout.ts';
+import type { UserActionTemplateProps } from '../interfaces/mail.service.ts';
 
 export function userActionTemplate({
-    fullName,
-    action,
-    reason,
-    actionTime,
+  fullName,
+  action,
+  reason,
+  actionTime,
 }: UserActionTemplateProps): string {
-
-    return emailLayout(`
+  return emailLayout(`
 
 <h2>Hello ${fullName},</h2>
 
@@ -35,22 +34,22 @@ This is to inform you that your LinkFlow account has been updated.
 
 <tr>
     <td><strong>Date</strong></td>
-    <td> ${new Date(actionTime).toLocaleString("en-US", {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    <td> ${new Date(actionTime).toLocaleString('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     })}</td>
 </tr>
 
 ${
-reason
-? `
+  reason
+    ? `
 <tr>
     <td><strong>Reason</strong></td>
     <td>${reason}</td>
 </tr>
 `
-: ""
+    : ''
 }
 
 </table>

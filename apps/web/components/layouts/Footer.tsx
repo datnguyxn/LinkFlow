@@ -1,7 +1,7 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import Container from "../common/Container";
-import Logo from "../common/Logo";
+import Container from '../common/Container';
+import Logo from '../common/Logo';
 
 export default function Footer() {
   return (
@@ -12,15 +12,12 @@ export default function Footer() {
             <Logo />
 
             <p className="mt-5 max-w-sm text-slate-500">
-              LinkFlow is a modern URL shortening platform built
-              for businesses and creators.
+              LinkFlow is a modern URL shortening platform built for businesses and creators.
             </p>
           </div>
 
           <div>
-            <h3 className="mb-4 font-semibold">
-              Product
-            </h3>
+            <h3 className="mb-4 font-semibold">Product</h3>
 
             <ul className="space-y-3 text-slate-500">
               <li>
@@ -42,9 +39,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 font-semibold">
-              Company
-            </h3>
+            <h3 className="mb-4 font-semibold">Company</h3>
 
             <ul className="space-y-3 text-slate-500">
               <li>
@@ -66,9 +61,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 font-semibold">
-              Resources
-            </h3>
+            <h3 className="mb-4 font-semibold">Resources</h3>
 
             <ul className="space-y-3 text-slate-500">
               <li>

@@ -1,32 +1,26 @@
-import amqp, { type Channel } from "amqplib";
-import { config } from "../../config/env/index.ts";
+import amqp, { type Channel } from 'amqplib';
+import { config } from '../../config/env/index.ts';
 
 class RabbitMQ {
+  private connection!: Awaited<ReturnType<typeof amqp.connect>>;
+  private channel!: Channel;
 
-    private connection!: Awaited<ReturnType<typeof amqp.connect>>;
-    private channel!: Channel;
+  async connect() {
+    this.connection = await amqp.connect(config.RABBITMQ_URL);
 
-    async connect() {
+    this.channel = await this.connection.createChannel();
 
+    console.log('✅ RabbitMQ Connected');
+  }
 
-        this.connection = await amqp.connect(
-            config.RABBITMQ_URL
-        );
+  getChannel() {
+    return this.channel;
+  }
 
-        this.channel = await this.connection.createChannel();
-
-        console.log("✅ RabbitMQ Connected");
-    }
-
-    getChannel() {
-        return this.channel;
-    }
-
-    async close() {
-        await this.channel.close();
-        await this.connection.close();
-    }
-
+  async close() {
+    await this.channel.close();
+    await this.connection.close();
+  }
 }
 
 export const rabbitMQ = new RabbitMQ();

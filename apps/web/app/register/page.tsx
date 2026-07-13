@@ -1,6 +1,6 @@
-import AuthCard from "@/components/auth/AuthCard";
-import AuthHeader from "@/components/auth/AuthHeader";
-import RegisterForm from "@/components/forms/RegisterForm";
+import AuthCard from '@/components/auth/AuthCard';
+import AuthHeader from '@/components/auth/AuthHeader';
+import RegisterForm from '@/components/forms/auth/RegisterForm';
 
 export default function RegisterPage() {
   return (
