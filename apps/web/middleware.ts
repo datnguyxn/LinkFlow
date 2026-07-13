@@ -21,10 +21,19 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    ...PUBLIC_ROUTES,
-    `${ROUTES.DASHBOARD}/:path*`,
-    `${ROUTES.WORKSPACE}/:path*`,
-    `${ROUTES.SETTINGS}/:path*`,
-    `${ROUTES.ANALYTICS}/:path*`,
+    '/',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/forgot-password/success',
+    '/reset-password',
+    '/reset-password/success',
+    '/verify-email',
+    '/register/success',
+
+    '/dashboard/:path*',
+    '/workspace/:path*',
+    '/settings/:path*',
+    '/analytics/:path*',
   ],
 };

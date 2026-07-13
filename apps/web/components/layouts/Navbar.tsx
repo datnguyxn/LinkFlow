@@ -69,29 +69,7 @@ export default function Navbar() {
 
           <ThemeToggle />
 
-          {user ? (
-            <>
-              <div className="flex items-center gap-3">
-                <img
-                  src={user.avatarUrl ?? '/images/default-avatar.png'}
-                  alt={user.fullName}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {user.fullName}
-                </span>
-              </div>
-
-              <button
-                onClick={logout}
-                className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium transition hover:bg-slate-200 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
+          <>
               <Link
                 href="/login"
                 className="px-5 py-2.5 text-sm font-semibold text-black transition hover:text-blue-600 dark:text-white"
@@ -106,7 +84,6 @@ export default function Navbar() {
                 Get Started
               </Link>
             </>
-          )}
         </div>
 
         <button onClick={() => setOpen(!open)} className="md:hidden">
