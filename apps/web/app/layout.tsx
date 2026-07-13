@@ -1,21 +1,29 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from '@/providers/theme-provider';
+import { Inter } from 'next/font/google';
+
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+import { ThemeProvider } from '@/providers/theme-provider';
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+import AuthProvider from '@/providers/AuthProvider';
+import QueryProvider from '@/providers/QueryProvider';
+import AppToaster from '@/components/ui/Toaster';
+
+const inter = Inter({
   subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
-  title: 'LinkFlow',
-  description: 'LinkFlow is a platform for creating and managing your links',
+  title: {
+    default: 'LinkFlow - Smart Link Management Platform',
+    template: '%s | LinkFlow',
+  },
+  description: 'Create branded short links, QR codes and powerful analytics with LinkFlow.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -24,13 +32,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              {children}
+              <AppToaster />
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

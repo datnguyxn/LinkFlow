@@ -30,6 +30,7 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+!.env.test
 
 # =========================
 # Prisma
@@ -59,7 +60,6 @@ minio-data/
 # Uploads
 # =========================
 uploads/
-storage/
 
 # =========================
 # Temporary Files
@@ -127,3 +127,8 @@ storybook-static/
 *.key
 *.crt
 /generated/prisma
+
+# =========================
+# Visual Studio Code
+# =========================
+.vscode/

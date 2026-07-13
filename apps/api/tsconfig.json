@@ -23,7 +23,11 @@
 
     "isolatedModules": true,
 
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+
+    "rewriteRelativeImportExtensions": true,
+
+    "allowImportingTsExtensions": true
   },
 
   "include": ["src"]

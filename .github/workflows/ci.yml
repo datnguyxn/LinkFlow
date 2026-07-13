@@ -2,41 +2,47 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main]
 
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main]
 
 jobs:
-  backend:
+  build:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    strategy:
+      matrix:
+        package: [api, web]
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
+
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm --filter ${{ matrix.package }} lint
 
       - name: Build
-        run: pnpm build
+        run: pnpm --filter ${{ matrix.package }} build
 
-      # - name: Test
-      #   run: pnpm test
+      - name: Generate Prisma Client
+        run: cd apps/api && pnpm prisma generate
+
+      - name: Test
+        run: pnpm --filter ${{ matrix.package }} test
