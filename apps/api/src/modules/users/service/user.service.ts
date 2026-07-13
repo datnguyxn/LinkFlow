@@ -3,6 +3,11 @@ import { Prisma } from '@prisma/client';
 import { hashPassword, comparePassword } from '../../../utils/password.util.ts';
 import { ConflictError } from '../../../common/errors/index.ts';
 import { ERROR_CODE } from '../../../common/constants/index.ts';
+import type { MultipartFile } from '@fastify/multipart';
+import { validateAvatar } from '../validator/image.validator.ts';
+import { MinioStorageService, STORAGE_FOLDER } from '../../../infrastructure/storage/index.ts';
+import { randomUUID } from 'node:crypto';
+import { extname } from 'node:path';
 
 /**
  * UserService class provides methods for managing user profiles,
@@ -13,7 +18,10 @@ import { ERROR_CODE } from '../../../common/constants/index.ts';
  * It interacts with the UserRepository to perform database operations.  
  */
 export class UserService {
-  constructor(private userRepository: UserRepository = new UserRepository()) {}
+  constructor(
+    private userRepository: UserRepository = new UserRepository(),
+    private storageService: MinioStorageService = new MinioStorageService(),
+  ) {}
 
   /**
    * Update user profile information
@@ -92,7 +100,6 @@ export class UserService {
    * @param userId - The unique ID of the user to fetch
    * @returns The user object containing profile information
    * @throws ConflictError if the user is not found
-   *
    */
   async getMyProfile(userId: string) {
     // Check if the user exists before attempting to fetch profile
@@ -102,5 +109,91 @@ export class UserService {
     }
 
     return user;
+  }
+
+  /**
+   * Upload user avatar
+   * @param userId - The unique ID of the user uploading the avatar
+   * @param avatarFile - The avatar file to upload
+   * @returns An object containing the public URL of the uploaded avatar
+   */
+  async uploadAvatar(userId: string, avatarFile: MultipartFile) {
+    // Check if the user exists before attempting to upload avatar
+    const user = await this.userRepository.findById(userId);
+
+    // If the user does not exist, throw a ConflictError
+    if (!user) {
+      throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
+    }
+
+    // Store the old avatar URL to delete it later if a new avatar is uploaded
+    const oldAvatarUrl = user.avatarUrl;
+
+    // Validate the avatar file (e.g., check file type, size)
+    const buffer = await validateAvatar(avatarFile);
+
+    // Generate a unique file name and folder path for the avatar
+    const fileName = `${randomUUID()}${extname(avatarFile.filename)}`;
+
+    // Upload the avatar file to the storage service
+    const folder = `${STORAGE_FOLDER.AVATAR}/${userId}`;
+
+    // Upload the avatar file to the storage service
+    const { objectKey } = await this.storageService.uploadFile({
+      folder,
+      fileName,
+      mimeType: avatarFile.mimetype,
+      buffer,
+    });
+
+    // Update the user's avatar URL in the database
+    await this.userRepository.update(userId, { avatarUrl: objectKey });
+
+    // If the user had an old avatar, delete it from the storage service
+    if (oldAvatarUrl) {
+      try {
+        // Delete the old avatar file from the storage service
+        await this.storageService.deleteFile(oldAvatarUrl);
+      } catch (error) {
+        // Log the error and throw a ConflictError if the deletion fails
+        console.error(`Failed to delete old avatar: ${error}`);
+        throw new ConflictError('user.avatar.deleteFailed', ERROR_CODE.FILE_DELETE_FAILED);
+      }
+    }
+
+    // Return the public URL of the uploaded avatar
+    return {
+      objectKey,
+    };
+  }
+
+  /**
+   * Fetch user avatar
+   * @param userId - The unique ID of the user whose avatar is to be fetched
+   * @returns An object containing the file stream and metadata of the user's avatar
+   * @throws ConflictError if the user or avatar is not found
+   */
+  async getMyAvatar(userId: string) {
+    // Check if the user exists before attempting to fetch the avatar
+    const user = await this.userRepository.findById(userId);
+
+    // If the user does not exist, throw a ConflictError
+    if (!user) {
+      throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
+    }
+
+    // If the user does not have an avatar, throw a ConflictError
+    if (!user.avatarUrl) {
+      throw new ConflictError('user.avatarNotFound', ERROR_CODE.NOT_FOUND);
+    }
+
+    // Fetch the avatar file stream and metadata from the storage service
+    const stream = await this.storageService.getFileStream(user.avatarUrl);
+
+    // Fetch the metadata of the avatar file from the storage service
+    const metadata = await this.storageService.getFileMetadata(user.avatarUrl);
+
+    // Return the file stream and metadata of the user's avatar
+    return { stream, metadata };
   }
 }

@@ -41,11 +41,13 @@ export const envSchema = z.object({
   RABBITMQ_URL: z.string(),
 
   // MinIO configuration
-  MINIO_ENDPOINT: z.string().optional(),
-  MINIO_PORT: z.coerce.number().optional(),
-  MINIO_ACCESS_KEY: z.string().optional(),
-  MINIO_SECRET_KEY: z.string().optional(),
-  MINIO_BUCKET: z.string().optional(),
+  MINIO_ENDPOINT: z.string(),
+  MINIO_PORT: z.coerce.number(),
+  MINIO_USE_SSL: z.string().transform((v) => v.toLowerCase() === 'true'),
+  MINIO_ACCESS_KEY: z.string(),
+  MINIO_SECRET_KEY: z.string(),
+  MINIO_BUCKET: z.string(),
+  MINIO_PUBLIC_URL: z.string(),
 
   // Google OAuth configuration
   GOOGLE_CLIENT_ID: z.string(),

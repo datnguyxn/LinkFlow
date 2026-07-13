@@ -7,6 +7,4 @@ export default fp(async (app) => {
     root: path.join(process.cwd(), 'public'),
     prefix: '/',
   });
-
-  console.log(path.join(process.cwd(), 'public'));
 });

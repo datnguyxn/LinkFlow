@@ -21,6 +21,7 @@ import { prismaPlugin } from './infrastructure/database/index.ts';
 import { rabbitMQPlugin } from './infrastructure/queue/index.ts';
 import { redisPlugin } from './infrastructure/cache/index.ts';
 import { registerWorkers } from './bootstrap/workers.ts';
+import { storagePlugin } from './infrastructure/storage/index.ts';
 
 export async function buildApp() {
   await registerI18n();
@@ -32,6 +33,7 @@ export async function buildApp() {
 
   await app.register(rabbitMQPlugin);
   await app.register(redisPlugin);
+  await app.register(storagePlugin);
 
   await registerWorkers();
 
@@ -40,11 +42,11 @@ export async function buildApp() {
   await app.register(helmetPlugin);
   await app.register(sensiblePlugin);
   await app.register(prismaPlugin);
+  await app.register(multipartPlugin);
 
   await app.register(cookiePlugin);
   await app.register(jwtPlugin);
   await app.register(rateLimitPlugin);
-  await app.register(multipartPlugin);
   await app.register(errorPlugin);
   await app.register(staticPlugin);
 

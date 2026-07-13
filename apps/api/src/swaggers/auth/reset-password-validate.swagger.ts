@@ -7,11 +7,11 @@ export const resetPasswordValidateSwagger: FastifySchema = {
 
   summary: 'Validate Reset Password Token',
 
-  description: 'Validate the password reset token sent to the user\'s email.',
+  description: "Validate the password reset token sent to the user's email.",
 
   querystring: Type.Object({
     token: Type.String({
-      description: 'The password reset token sent to the user\'s email',
+      description: "The password reset token sent to the user's email",
       minLength: 1,
     }),
   }),

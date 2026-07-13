@@ -4,6 +4,7 @@ import { UserService } from '../service/user.service.ts';
 import { ResponseHandler } from '../../../common/responses/handler.response.js';
 import { HTTP_STATUS } from '../../../common/constants/index.ts';
 import { UserSerializer } from '../../../common/serializers/user.serializer.ts';
+import type { MultipartFile } from '@fastify/multipart';
 
 /**
  * UserController handles incoming HTTP requests related to user management.
@@ -24,6 +25,12 @@ export class UserController {
    * 2. Call service to fetch user by ID
    * 3. Return error if user not found
    * 4. Return success response with user data
+   *
+   * @param request - FastifyRequest object containing request data
+   * @param reply - FastifyReply object for sending responses
+   * @returns - A promise that resolves to the HTTP response
+   *
+   * @throws ConflictError if the user is not found
    */
   async getMyProfile(request: FastifyRequest, reply: FastifyReply) {
     const id = request.user.id;
@@ -47,6 +54,12 @@ export class UserController {
    * 3. Call service to update user profile
    * 4. Return error if user not found
    * 5. Return success response with updated user data
+   *
+   * @param request - FastifyRequest object containing request data
+   * @param reply - FastifyReply object for sending responses
+   * @returns - A promise that resolves to the HTTP response
+   *
+   * @throws ConflictError if the user is not found
    */
   async updateProfile(
     request: FastifyRequest<{ Body: Prisma.UserUpdateInput }>,
@@ -69,6 +82,12 @@ export class UserController {
    * 2. Call service to delete user account
    * 3. Return error if user not found
    * 4. Return success response confirming deletion
+   *
+   * @param request - FastifyRequest object containing request data
+   * @param reply - FastifyReply object for sending responses
+   * @returns - A promise that resolves to the HTTP response
+   *
+   * @throws ConflictError if the user is not found
    */
   async deleteMyAccount(request: FastifyRequest, reply: FastifyReply) {
     const id = request.user.id;
@@ -88,6 +107,12 @@ export class UserController {
    * 3. Call service to change user password
    * 4. Return error if user not found or old password is incorrect
    * 5. Return success response confirming password change
+   *
+   * @param request - FastifyRequest object containing request data
+   * @param reply - FastifyReply object for sending responses
+   * @returns - A promise that resolves to the HTTP response
+   *
+   * @throws ConflictError if the user is not found or if the old password is incorrect
    */
   async changePassword(
     request: FastifyRequest<{ Body: { oldPassword: string; newPassword: string } }>,
@@ -105,5 +130,81 @@ export class UserController {
       updatedUser,
       request.t('user.passwordChangedSuccessfully'),
     );
+  }
+
+  /**
+   * Handle request to upload or update user avatar
+   * Flow:
+   * 1. Extract user ID from request parameters
+   * 2. Extract avatar file from request
+   * 3. Call service to upload or update user avatar
+   * 4. Return error if file is not provided
+   * 5. Return success response with updated user data
+   *
+   * @param request - FastifyRequest object containing request data
+   * @param reply - FastifyReply object for sending responses
+   * @returns - A promise that resolves to the HTTP response
+   *
+   * @throws BadRequestError if the avatar file is not provided
+   */
+  async uploadAvatar(request: FastifyRequest, reply: FastifyReply) {
+    // Extract the uploaded file from the request
+    const file = (request.body as { file: MultipartFile }).file;
+
+    // Check if the file is provided; if not, return a bad request error
+    if (!file) {
+      return ResponseHandler.error(
+        reply,
+        HTTP_STATUS.BAD_REQUEST,
+        request.t('user.avatar.fileRequired'),
+      );
+    }
+
+    // Extract the user ID from the authenticated request
+    const id = request.user.id;
+
+    // Call the service to handle the avatar upload and update the user's profile
+    const updatedUser = await this.userService.uploadAvatar(id, file);
+
+    // Return a success response with the updated user data and a success message
+    return ResponseHandler.success(
+      reply,
+      updatedUser,
+      request.t('user.avatar.uploadedSuccessfully'),
+    );
+  }
+
+  /**
+   * Handle request to fetch the user's avatar
+   * Flow:
+   * 1. Extract user ID from request parameters
+   * 2. Call service to fetch user avatar
+   * 3. Return error if avatar is not found
+   * 4. Return success response with avatar data
+   *
+   * @param request - FastifyRequest object containing request data
+   * @param reply - FastifyReply object for sending responses
+   * @returns - A promise that resolves to the HTTP response
+   *
+   * @throws NotFoundError if the avatar is not found
+   */
+  async getMyAvatar(request: FastifyRequest, reply: FastifyReply) {
+    // Extract the user ID from the authenticated request
+    const id = request.user.id;
+
+    // Call the service to fetch the user's avatar data
+    const avatarData = await this.userService.getMyAvatar(id);
+
+    // Check if the avatar data is found; if not, return a not found error
+    if (!avatarData) {
+      return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.avatar.notFound'));
+    }
+
+    reply.header(
+      'Content-Type',
+      avatarData.metadata.metaData['content-type'] ?? 'application/octet-stream',
+    );
+
+    return reply.send(avatarData.stream);
   }
 }

@@ -7,7 +7,8 @@ export const resendVerificationEmailSwagger: FastifySchema = {
 
   summary: 'Resend Verification Email',
 
-  description: 'Resend the verification email to a user who has not yet verified their email address.',
+  description:
+    'Resend the verification email to a user who has not yet verified their email address.',
 
   body: Type.Object({
     email: Type.String({

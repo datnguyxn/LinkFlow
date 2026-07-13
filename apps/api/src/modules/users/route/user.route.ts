@@ -26,39 +26,132 @@ export const userRoutes = async (app: FastifyInstance) => {
   // Ensure user has either ADMIN or USER role before accessing user management routes
   app.addHook('preHandler', roleGuard(UserRole.ADMIN, UserRole.USER));
 
-  // Bind controller context for fetching a specific user by ID
+  /**
+   * GET /me
+   *
+   * Features:
+   * - Fetch the profile of the currently authenticated user
+   * - Rate limiting to prevent abuse
+   * - Swagger documentation for this route
+   */
   app.get(
     '/me',
     {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
       schema: getMyProfileSwagger,
     },
     controller.getMyProfile.bind(controller),
   );
 
-  // Bind controller context for updating a specific user by ID
+  /**
+   * PATCH /me
+   *
+   * Features:
+   * - Update the profile of the currently authenticated user
+   * - Rate limiting to prevent abuse
+   * - Swagger documentation for this route
+   */
   app.patch(
     '/me',
     {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
       schema: updateProfileSwagger,
     },
     controller.updateProfile.bind(controller),
   );
 
-  // Bind controller context for deleting a specific user by ID
+  /**
+   * DELETE /me
+   *
+   * Features:
+   * - Delete the account of the currently authenticated user
+   * - Rate limiting to prevent abuse
+   * - Swagger documentation for this route
+   */
   app.delete(
     '/me',
     {
+      config: {
+        rateLimit: {
+          max: 5, // Maximum 5 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
       schema: deleteProfileSwagger,
     },
     controller.deleteMyAccount.bind(controller),
   );
 
-  // Bind controller context for changing user password
+  /**
+   * PATCH /me/password
+   *
+   * Features:
+   * - Change the password of the currently authenticated user
+   * - Rate limiting to prevent abuse
+   * - Swagger documentation for this route
+   */
   app.patch(
     '/me/password',
     {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
       schema: changePasswordSwagger,
     },
     controller.changePassword.bind(controller),
+  );
+
+  /**
+   * PATCH /me/avatar
+   *
+   * Features:
+   * - Upload or update the avatar of the currently authenticated user
+   * - Rate limiting to prevent abuse
+   * - Swagger documentation for this route
+   */
+  app.patch(
+    '/me/avatar',
+    {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+    },
+    controller.uploadAvatar.bind(controller),
+  );
+
+  /**
+   * GET /me/avatar
+   *
+   * Features:
+   * - Fetch the avatar of the currently authenticated user
+   * - Rate limiting to prevent abuse
+   */
+  app.get(
+    '/me/avatar',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+    },
+    controller.getMyAvatar.bind(controller),
   );
 };

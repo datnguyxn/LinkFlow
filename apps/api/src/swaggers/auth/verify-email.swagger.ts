@@ -7,11 +7,11 @@ export const verifyEmailSwagger: FastifySchema = {
 
   summary: 'Verify Email',
 
-  description: 'Verify a user\'s email address using a verification token.',
+  description: "Verify a user's email address using a verification token.",
 
   querystring: Type.Object({
     token: Type.String({
-      description: 'The verification token sent to the user\'s email',
+      description: "The verification token sent to the user's email",
       minLength: 1,
     }),
   }),

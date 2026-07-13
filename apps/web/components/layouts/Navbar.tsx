@@ -70,20 +70,20 @@ export default function Navbar() {
           <ThemeToggle />
 
           <>
-              <Link
-                href="/login"
-                className="px-5 py-2.5 text-sm font-semibold text-black transition hover:text-blue-600 dark:text-white"
-              >
-                Sign in
-              </Link>
+            <Link
+              href="/login"
+              className="px-5 py-2.5 text-sm font-semibold text-black transition hover:text-blue-600 dark:text-white"
+            >
+              Sign in
+            </Link>
 
-              <Link
-                href="/register"
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                Get Started
-              </Link>
-            </>
+            <Link
+              href="/register"
+              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Get Started
+            </Link>
+          </>
         </div>
 
         <button onClick={() => setOpen(!open)} className="md:hidden">
