@@ -7,6 +7,11 @@ import {
   loginSwagger,
   refreshTokenSwagger,
   logoutSwagger,
+  forgotPasswordSwagger,
+  resetPasswordSwagger,
+  resetPasswordValidateSwagger,
+  resendVerificationEmailSwagger,
+  verifyEmailSwagger,
 } from '../../../swaggers/index.ts';
 import { loginSchema, type LoginBody } from '../validator/login.validator.ts';
 import {
@@ -202,6 +207,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: verifyEmailSwagger, // Swagger documentation for this route
     },
     controller.verifyEmail.bind(controller), // Bind controller context,
   );
@@ -222,6 +228,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: resendVerificationEmailSwagger, // Swagger documentation for this route
     },
     controller.resendVerificationEmail.bind(controller), // Bind controller context,
   );
@@ -242,6 +249,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: forgotPasswordSwagger, // Swagger documentation for this route
     },
     controller.forgotPassword.bind(controller), // Bind controller context
   );
@@ -262,6 +270,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: resetPasswordValidateSwagger, // Swagger documentation for this route
     },
     controller.validateResetPassword.bind(controller), // Bind controller context
   );
@@ -283,6 +292,7 @@ export const authRoutes = async (app: FastifyInstance) => {
         },
       },
       preValidation: [validate(resetPasswordSchema)], // Validate request body before reaching controller
+      schema: resetPasswordSwagger, // Swagger documentation for this route
     },
     controller.resetPassword.bind(controller), // Bind controller context
   );

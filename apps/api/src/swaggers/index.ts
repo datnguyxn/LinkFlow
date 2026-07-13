@@ -2,10 +2,17 @@ export * from './auth/register.swagger.ts';
 export * from './auth/login.swagger.ts';
 export * from './auth/refresh-token.swagger.ts';
 export * from './auth/logout.swagger.ts';
+export * from './auth/verify-email.swagger.ts';
+export * from './auth/forgot-password.swagger.ts';
+export * from './auth/reset-password.swagger.ts';
+export * from './auth/reset-password-validate.swagger.ts';
+export * from './auth/resend-verification-email.swagger.ts';
+
 export * from './users/get-profile.swagger.ts';
 export * from './users/update-profile.swagger.ts';
 export * from './users/change-password.swagger.ts';
 export * from './users/delete-profile.swagger.ts';
+
 export * from './admin/users/get-all.swagger.ts';
 export * from './admin/users/get.swagger.ts';
 export * from './admin/users/ban.swagger.ts';
