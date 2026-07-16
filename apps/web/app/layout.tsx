@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import AuthProvider from '@/providers/AuthProvider';
 import QueryProvider from '@/providers/QueryProvider';
 import AppToaster from '@/components/ui/Toaster';
+import I18nProvider from '@/providers/I18nProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -42,7 +43,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
-              {children}
+              <I18nProvider>{children}</I18nProvider>
               <AppToaster />
             </AuthProvider>
           </ThemeProvider>

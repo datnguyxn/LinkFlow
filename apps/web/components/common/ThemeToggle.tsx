@@ -1,14 +1,39 @@
 'use client';
 
+import { useUser } from '@/hooks/useUser';
+import { useUserStore } from '@/stores/user.store';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export default function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
+
+  const { user, updateUserProfile } = useUser();
+
+  const updateUser = useUserStore((state) => state.updateUser);
+
+  const handleThemeChange = async () => {
+    const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
+    console.log('CHANGE THEME');
+    // đổi UI ngay
+    setTheme(nextTheme);
+
+    try {
+      await updateUserProfile({
+        theme: nextTheme === 'dark' ? 'DARK' : 'LIGHT',
+      });
+
+      updateUser({
+        theme: nextTheme === 'dark' ? 'DARK' : 'LIGHT',
+      });
+    } catch {
+      setTheme(resolvedTheme === 'dark' ? 'dark' : 'light');
+    }
+  };
 
   return (
     <button
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      onClick={() => handleThemeChange()}
       className="
         flex
         h-10
@@ -27,7 +52,7 @@ export default function ThemeToggle() {
       "
       aria-label="Toggle theme"
     >
-      {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </button>
   );
 }

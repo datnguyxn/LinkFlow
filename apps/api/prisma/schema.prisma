@@ -28,7 +28,7 @@ model User {
 
   emailVerified Boolean @default(false) @map("email_verified")
 
-  theme Boolean @default(false)
+  theme Theme @default(SYSTEM)
 
   language String?
 
@@ -564,4 +564,10 @@ enum OAuthProvider {
 enum UserRole {
   ADMIN
   USER
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
 }

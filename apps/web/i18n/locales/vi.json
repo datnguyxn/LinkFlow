@@ -1,0 +1,25 @@
+{
+  "common": {
+    "dashboard": "Trang chủ",
+    "links": "Liên kết",
+    "analytics": "Thống kê",
+    "profile": "Hồ sơ",
+    "settings": "Cài đặt",
+
+    "logout": "Đăng xuất",
+
+    "edit": "Chỉnh sửa",
+    "save": "Lưu",
+    "cancel": "Hủy",
+
+    "language": "Ngôn ngữ",
+    "theme": "Giao diện",
+
+    "security": "Bảo mật",
+
+    "activeAccount": "Đang hoạt động",
+    "inactiveAccount": "Chưa kích hoạt",
+    "suspendedAccount": "Đã khóa",
+    "deletedAccount": "Đã xóa"
+  }
+}

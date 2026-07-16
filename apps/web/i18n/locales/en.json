@@ -1,0 +1,20 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "links": "Links",
+    "analytics": "Analytics",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Sign Out",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "language": "Language",
+    "theme": "Theme",
+    "security": "Security",
+    "activeAccount": "Active Account",
+    "inactiveAccount": "Inactive Account",
+    "suspendedAccount": "Suspended Account",
+    "deletedAccount": "Deleted Account"
+  }
+}
