@@ -19,15 +19,15 @@ export default function QuickActions() {
   ];
 
   return (
-    <Card>
+    <Card className="shadow-lg dark:bg-slate-900">
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
 
       <CardContent
         className="
-space-y-3
-"
+          space-y-3
+          "
       >
         {actions.map((item) => {
           const Icon = item.icon;
@@ -36,14 +36,14 @@ space-y-3
             <button
               key={item.title}
               className="
-flex
-items-center
-gap-3
-w-full
-p-3
-rounded-lg
-hover:bg-muted
-"
+                flex
+                items-center
+                gap-3
+                w-full
+                p-3
+                rounded-lg
+                hover:bg-muted
+                "
             >
               <Icon size={18} />
 

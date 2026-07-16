@@ -1,8 +1,13 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuthStore } from '@/stores/auth.store';
+import { config } from '@/config';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ProfileAvatar() {
+  const { user } = useAuth();
+
   return (
     <div>
       <label
@@ -15,7 +20,7 @@ export default function ProfileAvatar() {
         "
       >
         <Avatar className="h-24 w-24 hover:scale-105 transition-transform duration-300 hover:shadow-lg">
-          <AvatarImage src="/avatar.png" />
+          <AvatarImage src={user?.avatarUrl} />
           <AvatarFallback>DN</AvatarFallback>
         </Avatar>
 

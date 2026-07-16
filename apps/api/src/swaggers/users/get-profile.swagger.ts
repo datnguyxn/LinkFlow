@@ -21,6 +21,8 @@ export const getMyProfileSwagger: FastifySchema = {
       emailVerified: Type.Boolean(),
       language: Type.String(),
       timezone: Type.String(),
+      theme: Type.String(),
+      createdAt: Type.String({ format: 'date-time' }),
     }),
     [400, 401, 403, 404, 500],
   ),

@@ -28,6 +28,7 @@ export const updateProfileSwagger: FastifySchema = {
       emailVerified: Type.Boolean(),
       language: Type.String(),
       timezone: Type.String(),
+      theme: Type.String(),
     }),
     [400, 401, 403, 404, 500],
   ),

@@ -4,7 +4,7 @@ import Button from '@/components/ui/button';
 
 export default function SecurityCard() {
   return (
-    <Card>
+    <Card className="shadow-lg dark:bg-slate-900">
       <CardHeader>
         <CardTitle>Security</CardTitle>
       </CardHeader>
@@ -15,9 +15,9 @@ export default function SecurityCard() {
 
           <p
             className="
-text-sm
-text-muted-foreground
-"
+              text-sm
+              text-muted-foreground
+              "
           >
             No password created yet
           </p>
