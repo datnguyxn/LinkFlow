@@ -121,6 +121,9 @@ export class AuthController {
     // Extract refresh token from cookies
     const refreshToken = request.cookies.refreshToken;
 
+    console.log('Refresh token request received. Refresh token:', request.cookies);
+    console.log('Refresh token request received. Refresh token:', refreshToken);
+
     // Handle case: missing refresh token
     if (!refreshToken) {
       throw new UnauthorizedError(
@@ -144,8 +147,6 @@ export class AuthController {
         request.t('auth.refreshFailed'),
       );
     }
-
-    reply.setCookie('refreshToken', data.refreshToken, cookieOptions);
 
     // Set new refresh token in HTTP-only cookie for security
     reply.setCookie('refreshToken', data.refreshToken, cookieOptions);

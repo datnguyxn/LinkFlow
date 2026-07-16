@@ -55,12 +55,13 @@ export interface RefreshResponse {
 export interface UserProfile {
   email: string;
   fullName: string;
-  avatarUrl?: string | null;
+  avatarUrl?: string;
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED';
   emailVerified: boolean;
+  theme: string;
   language: string;
-
   timezone: string;
+  createdAt: string;
 }
 
 export interface AuthResponse {

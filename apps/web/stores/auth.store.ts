@@ -13,6 +13,8 @@ interface AuthState {
 interface AuthActions {
   setUser(user: UserProfile | null): void;
 
+  setAvatarUrl(avatarUrl: string | null): void;
+
   setLoading(value: boolean): void;
 
   logout(): void;
@@ -33,6 +35,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
       isAuthenticated: !!user,
       loading: false,
     });
+  },
+
+  setAvatarUrl(avatarUrl: string | null) {
+    set((state) => ({
+      user: state.user
+        ? {
+            ...state.user,
+            avatarUrl: avatarUrl ?? '/avatars/default-avt.jpg',
+          }
+        : null,
+    }));
   },
 
   setLoading(value) {

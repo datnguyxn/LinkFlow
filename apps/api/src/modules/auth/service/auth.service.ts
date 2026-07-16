@@ -165,12 +165,18 @@ export class AuthService {
     // Hash token
     const tokenHash = await this.jwtService.hashRefreshToken(refreshToken);
 
+    console.log(
+      `[AuthService.refresh] payload: ${JSON.stringify(payload)}, tokenHash: ${tokenHash}`,
+    );
+
     // Find refresh token
     const storedToken = await this.refreshTokenRepository.findByTokenHash(tokenHash);
 
+    console.log(`[AuthService.refresh] storedToken: ${JSON.stringify(storedToken)}`);
+
     if (!storedToken) {
       throw new UnauthorizedError(
-        'auth.middleware.INVALID_REFRESH_TOKEN',
+        'auth.middleware.invalidRefreshToken',
         ERROR_CODE.INVALID_REFRESH_TOKEN,
       );
     }
@@ -178,7 +184,7 @@ export class AuthService {
     // Check revoked
     if (storedToken.revoked) {
       throw new UnauthorizedError(
-        'auth.middleware.INVALID_REFRESH_TOKEN',
+        'auth.middleware.invalidRefreshToken',
         ERROR_CODE.INVALID_REFRESH_TOKEN,
       );
     }
@@ -186,7 +192,7 @@ export class AuthService {
     // Check expired
     if (storedToken.expiresAt < new Date()) {
       throw new UnauthorizedError(
-        'auth.middleware.REFRESH_TOKEN_EXPIRED',
+        'auth.middleware.refreshTokenExpired',
         ERROR_CODE.REFRESH_TOKEN_EXPIRED,
       );
     }
@@ -195,45 +201,63 @@ export class AuthService {
     const user = await this.userRepository.findById(payload.id);
 
     if (!user) {
-      throw new UnauthorizedError(
-        'auth.middleware.INVALID_REFRESH_TOKEN',
-        ERROR_CODE.INVALID_REFRESH_TOKEN,
-      );
+      throw new UnauthorizedError('user.userUnavailable', ERROR_CODE.USER_UNAVAILABLE);
     }
 
+    const refreshExpiresMs = storedToken.rememberMe
+      ? config.JWT_REFRESH_REMEMBER_EXPIRES_MS
+      : config.JWT_REFRESH_EXPIRES_MS;
+
+    const refreshExpiresIn = storedToken.rememberMe
+      ? config.JWT_REFRESH_REMEMBER_EXPIRES_IN
+      : config.JWT_REFRESH_EXPIRES_IN;
+
     // Generate new tokens
-    const tokens = this.jwtService.generateTokens({
+    const accessToken = this.jwtService.generateAccessToken({
       id: user.id,
       email: user.email,
+      role: user.role,
       language: user.language || LANGUAGE.EN, // default language
-      role: user.role || 'USER', // default role
     });
 
-    // Hash new refresh token
-    const newRefreshTokenHash = await this.jwtService.hashRefreshToken(tokens.refreshToken);
-
-    // Save new refresh token
-    await this.refreshTokenRepository.create({
-      userId: user.id,
-      token: {
-        tokenHash: newRefreshTokenHash,
-        expiresAt: new Date(
-          Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '604800000'),
-        ), // default 7 days
-        user: {
-          connect: {
-            id: user.id,
-          },
-        },
+    const newRefreshToken = this.jwtService.generateRefreshToken(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        language: user.language || LANGUAGE.EN, // default language
       },
-      ipAddress: ipAddress,
-      userAgent: userAgent,
+      refreshExpiresIn,
+    );
+    // Hash new refresh token
+    const newRefreshTokenHash = await this.jwtService.hashRefreshToken(newRefreshToken);
+
+    await this.transactionService.run(async (tx) => {
+      // Save new refresh token
+      await this.refreshTokenRepository.create(
+        {
+          userId: user.id,
+          token: {
+            tokenHash: newRefreshTokenHash,
+            expiresAt: new Date(Date.now() + Number(refreshExpiresMs)), // default 7 days
+            user: {
+              connect: {
+                id: user.id,
+              },
+            },
+          },
+          ipAddress: ipAddress,
+          userAgent: userAgent,
+          rememberMe: storedToken.rememberMe,
+        },
+        tx,
+      );
+
+      // Revoke old token
+      await this.refreshTokenRepository.revoke(storedToken.id, tx);
     });
 
-    // Revoke old token
-    await this.refreshTokenRepository.revoke(storedToken.id);
-
-    return tokens;
+    return { accessToken, refreshToken: newRefreshToken };
   }
 
   /**
@@ -328,6 +352,10 @@ export class AuthService {
 
     // Generate refresh token
     const refreshExpiresIn = options.rememberMe
+      ? config.JWT_REFRESH_REMEMBER_EXPIRES_IN
+      : config.JWT_REFRESH_EXPIRES_IN;
+
+    const refreshTokenMs = options.rememberMe
       ? config.JWT_REFRESH_REMEMBER_EXPIRES_MS
       : config.JWT_REFRESH_EXPIRES_MS;
 
@@ -345,9 +373,7 @@ export class AuthService {
       userId: user.id,
       token: {
         tokenHash: await this.jwtService.hashRefreshToken(refreshToken),
-        expiresAt: new Date(
-          Date.now() + parseInt(config.JWT_REFRESH_EXPIRES_MS.toString() || '86400000'),
-        ), // default 1 day
+        expiresAt: new Date(Date.now() + Number(refreshTokenMs)), // default 7 days
         user: {
           connect: {
             id: user.id,

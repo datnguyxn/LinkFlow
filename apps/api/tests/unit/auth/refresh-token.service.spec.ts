@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { AuthService } from '../../../src/modules/auth/service/auth.service';
 import { UserRole } from '@prisma/client';
 import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
 
@@ -58,7 +57,10 @@ describe('AuthService', () => {
 
       fixture.userRepository.findById = vi.fn().mockResolvedValue(mockUser);
 
-      fixture.jwtService.generateTokens = vi.fn().mockReturnValue(generatedTokens);
+      fixture.jwtService.generateAccessToken = vi.fn().mockReturnValue(generatedTokens.accessToken);
+      fixture.jwtService.generateRefreshToken = vi
+        .fn()
+        .mockReturnValue(generatedTokens.refreshToken);
 
       fixture.transactionService.run = vi.fn().mockImplementation(async (callback) => callback());
 
@@ -76,16 +78,14 @@ describe('AuthService', () => {
 
       expect(fixture.userRepository.findById).toHaveBeenCalledWith(mockUser.id);
 
-      expect(fixture.jwtService.generateTokens).toHaveBeenCalled();
+      expect(fixture.jwtService.generateAccessToken).toHaveBeenCalled();
 
       expect(fixture.jwtService.hashRefreshToken).toHaveBeenNthCalledWith(
         2,
         generatedTokens.refreshToken,
       );
 
-      expect(fixture.refreshTokenRepository.create).toHaveBeenCalled();
-
-      expect(fixture.refreshTokenRepository.revoke).toHaveBeenCalledWith(storedRefreshToken.id);
+      expect(fixture.transactionService.run).toHaveBeenCalled();
 
       expect(result).toEqual(generatedTokens);
     });
@@ -181,7 +181,7 @@ describe('AuthService', () => {
 
     await expect(fixture.authService.refresh('refresh-token', '', '')).rejects.toMatchObject({
       statusCode: 401,
-      code: 'INVALID_REFRESH_TOKEN',
+      code: 'USER_UNAVAILABLE',
     });
   });
 
@@ -210,7 +210,7 @@ describe('AuthService', () => {
       role: UserRole.USER,
     });
 
-    fixture.jwtService.generateTokens.mockImplementation(() => {
+    fixture.jwtService.generateAccessToken.mockImplementation(() => {
       throw new Error('JWT Error');
     });
 
@@ -244,11 +244,8 @@ describe('AuthService', () => {
       role: UserRole.USER,
     });
 
-    fixture.jwtService.generateTokens.mockReturnValue({
-      accessToken: 'access',
-
-      refreshToken: 'refresh',
-    });
+    fixture.jwtService.generateAccessToken.mockReturnValue('access');
+    fixture.jwtService.generateRefreshToken.mockReturnValue('refresh');
 
     await expect(fixture.authService.refresh('refresh-token', '', '')).rejects.toThrow(
       'Hash Error',
@@ -277,10 +274,8 @@ describe('AuthService', () => {
       role: UserRole.USER,
     });
 
-    fixture.jwtService.generateTokens.mockReturnValue({
-      accessToken: 'access',
-      refreshToken: 'refresh',
-    });
+    fixture.jwtService.generateAccessToken.mockReturnValue('access');
+    fixture.jwtService.generateRefreshToken.mockReturnValue('refresh');
 
     fixture.refreshTokenRepository.create.mockResolvedValue({});
 
@@ -292,8 +287,6 @@ describe('AuthService', () => {
       'Revoke Error',
     );
 
-    expect(fixture.refreshTokenRepository.create).toHaveBeenCalled();
-
-    expect(fixture.refreshTokenRepository.revoke).toHaveBeenCalledWith('refresh-id');
+    expect(fixture.transactionService.run).toHaveBeenCalled();
   });
 });

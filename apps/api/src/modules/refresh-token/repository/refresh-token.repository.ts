@@ -75,9 +75,9 @@ export class RefreshTokenRepository {
    * @param id - The ID of the refresh token to revoke.
    * @returns The updated refresh token record with revoked status set to true.
    */
-  async revoke(id: string) {
+  async revoke(id: string, db: Prisma.TransactionClient | PrismaClient = prisma) {
     // Use the Prisma client to update the refresh token in the database, setting its revoked status to true and recording the revocation time
-    return prisma.refreshToken.update({
+    return db.refreshToken.update({
       where: {
         id,
       },

@@ -4,6 +4,7 @@ import { tokenStorage } from '@/lib/storage/token.storage';
 import { useAuthStore } from '@/stores/auth.store';
 import { authEvents } from '@/events/auth.event';
 import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
+import { userService } from '@/services/user.service';
 
 class AuthService {
   /**
@@ -29,9 +30,7 @@ class AuthService {
 
     tokenStorage.setAccessToken(response.data.data.accessToken);
 
-    const me = await authApi.me();
-
-    useAuthStore.getState().setUser(me.data.data);
+    const me = await this.me();
 
     queryClient.setQueryData(['me'], me.data.data);
 
@@ -55,8 +54,15 @@ class AuthService {
   async me() {
     const user = await authApi.me();
 
-    useAuthStore.getState().setUser(user.data.data);
-
+    if (user.data.data.avatarUrl === '' || !user.data.data.avatarUrl) {
+      useAuthStore.getState().setUser(user.data.data);
+      useAuthStore.getState().setAvatarUrl('/avatars/default-avt.jpg');
+    } else if (user.data.data.avatarUrl?.startsWith('https')) {
+      useAuthStore.getState().setUser(user.data.data);
+      useAuthStore.getState().setAvatarUrl(user.data.data.avatarUrl);
+    } else {
+      await userService.getAvatar(user.data.data);
+    }
     queryClient.setQueryData(['me'], user.data.data);
 
     queryClient.invalidateQueries({
@@ -106,9 +112,13 @@ class AuthService {
         accessToken = await this.refresh();
       }
 
-      await this.me();
-    } catch {
-      await this.logout();
+      const me = await this.me();
+
+      return me.data.data;
+    } catch (error) {
+      console.error('Error initializing auth:', error);
+      return null;
+      //await this.logout();
     } finally {
       authStore.setLoading(false);
     }

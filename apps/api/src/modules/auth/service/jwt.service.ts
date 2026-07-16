@@ -11,7 +11,7 @@ export class JwtService {
     });
   }
 
-  generateRefreshToken(payload: JwtPayload, expiresIn: SignOptions['expiresIn']): string {
+  generateRefreshToken(payload: JwtPayload, expiresIn: string | number | undefined): string {
     return jwt.sign(payload, config.JWT_REFRESH_SECRET, {
       expiresIn: expiresIn as SignOptions['expiresIn'],
     });

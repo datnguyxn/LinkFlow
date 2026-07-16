@@ -11,6 +11,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
 import { appToast } from '@/lib/toast';
 import { ROUTES, isProtectedRoute } from '@/constants/routes';
+import { useAppTheme } from '@/services/theme.service';
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,8 @@ export default function AuthProvider({ children }: Props) {
   const pathname = usePathname();
 
   const loading = useAuthStore((state) => state.loading);
+
+  const { applyTheme } = useAppTheme();
 
   /**
    * Handle logout event

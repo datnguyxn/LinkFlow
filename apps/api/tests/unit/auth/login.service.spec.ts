@@ -283,7 +283,7 @@ describe('AuthService', () => {
 
       expect(fixture.jwtService.generateRefreshToken).toHaveBeenCalledWith(
         expect.any(Object),
-        config.JWT_REFRESH_REMEMBER_EXPIRES_MS,
+        config.JWT_REFRESH_REMEMBER_EXPIRES_IN,
       );
     });
 
@@ -310,7 +310,7 @@ describe('AuthService', () => {
 
       expect(fixture.jwtService.generateRefreshToken).toHaveBeenCalledWith(
         expect.any(Object),
-        config.JWT_REFRESH_EXPIRES_MS,
+        config.JWT_REFRESH_EXPIRES_IN,
       );
     });
 
