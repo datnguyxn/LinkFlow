@@ -64,7 +64,7 @@
     "validationFailed": "Validation failed"
   },
   "user": {
-    "usersFetchedSuccessfully": "Users fetched successfully",
+    "userFetchedSuccessfully": "User fetched successfully",
     "userNotFound": "User not found",
     "userUpdatedSuccessfully": "User updated successfully",
     "userDeletedSuccessfully": "User deleted successfully",

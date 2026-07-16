@@ -27,7 +27,6 @@ export async function seedAdminUser() {
       fullName: 'System Administrator',
       status: UserStatus.ACTIVE,
       emailVerified: true,
-      theme: false,
       role: UserRole.ADMIN,
       language: 'en',
       timezone: 'UTC',

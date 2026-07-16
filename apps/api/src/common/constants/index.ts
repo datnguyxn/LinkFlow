@@ -7,5 +7,4 @@ export * from './cookie.constant.ts';
 export * from './rabbitmq.constant.ts';
 export * from './audit.constant.ts';
 export * from './error.constant.ts';
-export * from './default-avatar.constant.ts';
 export * from './upload.constant.ts';

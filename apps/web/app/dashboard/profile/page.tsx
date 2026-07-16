@@ -11,8 +11,11 @@ export default function ProfilePage() {
 
       <div
         className="
-        p-8
+        pt-7
+        pe-8
+        ps-8
         space-y-6
+        dark:bg-slate-950
         "
       >
         <ProfileCard />

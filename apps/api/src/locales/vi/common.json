@@ -64,7 +64,7 @@
     "validationFailed": "Xác thực thất bại"
   },
   "user": {
-    "usersFetchedSuccessfully": "Lấy danh sách người dùng thành công",
+    "userFetchedSuccessfully": "Lấy thông tin người dùng thành công",
     "userNotFound": "Người dùng không tồn tại",
     "userUpdatedSuccessfully": "Người dùng được cập nhật thành công",
     "userDeletedSuccessfully": "Người dùng được xóa thành công",
