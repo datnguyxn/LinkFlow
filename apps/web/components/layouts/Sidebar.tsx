@@ -98,16 +98,6 @@ export default function Sidebar() {
       icon: BarChart3,
     },
     {
-      name: 'Profile',
-      href: '/dashboard/profile',
-      icon: User,
-    },
-    {
-      name: 'Security',
-      href: '/dashboard/security',
-      icon: Monitor,
-    },
-    {
       name: 'Settings',
       href: '/dashboard/settings',
       icon: Settings,
