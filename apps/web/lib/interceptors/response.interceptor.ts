@@ -1,5 +1,4 @@
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import axios from 'axios';
 
 import { api } from '../axios';
 import { authService } from '@/services/auth.service';
@@ -34,20 +33,26 @@ export function responseSuccess(response: AxiosResponse) {
 export async function responseError(error: AxiosError<ApiErrorResponse>) {
   const originalRequest = error.config as
     | (InternalAxiosRequestConfig & {
-        _retry?: boolean;
-      })
+      _retry?: boolean;
+    })
     | undefined;
 
   if (!originalRequest) {
     return Promise.reject(error);
   }
 
+  if (!error.response) {
+    appToast.error('Network error');
+    return Promise.reject(error);
+  }
+
+
   const status = error.response?.status;
   const data = error.response?.data;
 
   // Hiển thị toast cho lỗi business (trừ 401)
   if (status && status !== 401 && data) {
-    appToast.error(data.errors?.[0]?.message ?? data.message);
+    appToast.error(data.errors?.[0]?.message ?? data.message ?? 'Something went wrong.');
 
     return Promise.reject(error);
   }
@@ -66,7 +71,7 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
     url.includes('/auth/refresh-token')
   ) {
     if (data) {
-      appToast.error(data.errors?.[0]?.message ?? data.message);
+      appToast.error(data.errors?.[0]?.message ?? data.message ?? 'Something went wrong.');
     }
 
     return Promise.reject(error);

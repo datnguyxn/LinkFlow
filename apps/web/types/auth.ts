@@ -62,6 +62,7 @@ export interface UserProfile {
   language: string;
   timezone: string;
   createdAt: string;
+  provider: string;
 }
 
 export interface AuthResponse {

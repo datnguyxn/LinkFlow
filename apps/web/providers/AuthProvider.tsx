@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import FullScreenLoader from '@/components/common/FullScreenLoader';
 import { authEvents } from '@/events/auth.event';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
@@ -12,6 +11,7 @@ import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
 import { appToast } from '@/lib/toast';
 import { ROUTES, isProtectedRoute } from '@/constants/routes';
 import { useAppTheme } from '@/services/theme.service';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   children: ReactNode;
@@ -92,10 +92,10 @@ export default function AuthProvider({ children }: Props) {
     };
   }, [router]);
 
-  // Nếu muốn hiện loading toàn màn hình thì mở lại.
-  //
+  //Nếu muốn hiện loading toàn màn hình thì mở lại.
+
   // if (!isPublicRoute(pathname) && loading) {
-  //   return <FullScreenLoader />;
+  //   return <Skeleton />;
   // }
 
   return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>;
