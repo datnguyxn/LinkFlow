@@ -6,14 +6,12 @@ export default function PersonalInfoCardSkeleton() {
   return (
     <Card className="mx-8 shadow-lg dark:bg-slate-900">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>
-          Personal Information
-        </CardTitle>
+        <CardTitle>Personal Information</CardTitle>
 
         {/* <Skeleton className="h-9 w-20 rounded-md" /> */}
         <Button variant="outline" className="h-10 w-20 rounded-2xl">
-                    Edit
-                  </Button>
+          Edit
+        </Button>
       </CardHeader>
 
       <CardContent className="space-y-5">

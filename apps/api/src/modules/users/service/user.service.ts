@@ -23,7 +23,7 @@ export class UserService {
     private userRepository: UserRepository = new UserRepository(),
     private storageService: MinioStorageService = new MinioStorageService(),
     private oauthRepository: OAuthRepository = new OAuthRepository(),
-  ) { }
+  ) {}
 
   /**
    * Update user profile information
@@ -95,8 +95,11 @@ export class UserService {
     }
 
     // Logic to delete user account from the database
-    const deletedUser = await this.userRepository.update(userId, { status: UserStatus.DELETED, deletedAt: new Date() });
-    
+    const deletedUser = await this.userRepository.update(userId, {
+      status: UserStatus.DELETED,
+      deletedAt: new Date(),
+    });
+
     // If the user had an avatar, delete it from the storage service
     if (!deletedUser) {
       throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);

@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trash2 } from 'lucide-react';
 
@@ -16,13 +10,9 @@ export default function DangerZoneCardSkeleton() {
           <Trash2 className="h-5 w-5 text-red-600" />
 
           <div>
-            <CardTitle className="text-red-600">
-              Danger Zone
-            </CardTitle>
+            <CardTitle className="text-red-600">Danger Zone</CardTitle>
 
-            <CardDescription>
-              Permanently delete your account.
-            </CardDescription>
+            <CardDescription>Permanently delete your account.</CardDescription>
           </div>
         </div>
       </CardHeader>

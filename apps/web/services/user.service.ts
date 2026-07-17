@@ -26,7 +26,10 @@ class UserService {
   /**
    * Change user password
    */
-  async changePassword(oldPassword: string, newPassword: string): Promise<ApiResponse<{ message: string }>> {
+  async changePassword(
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<ApiResponse<{ message: string }>> {
     const response = await userApi.changePassword({ oldPassword, newPassword });
     return response.data;
   }
@@ -49,7 +52,7 @@ class UserService {
   /**
    * Upload user avatar
    */
-  async uploadAvatar(file: File): Promise<{ data: ApiResponse<{objectKey: string}> }> {
+  async uploadAvatar(file: File): Promise<{ data: ApiResponse<{ objectKey: string }> }> {
     const response = await userApi.uploadAvatar(file);
     return response;
   }

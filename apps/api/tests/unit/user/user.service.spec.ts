@@ -46,113 +46,95 @@ describe('UserService', () => {
     userService = new UserService(userRepository, storageService, oauthRepository);
   });
 
-  describe("getMyProfile", () => {
-    it("should return user profile successfully", async () => {
+  describe('getMyProfile', () => {
+    it('should return user profile successfully', async () => {
       const mockUser = {
-        id: "1",
-        email: "john@example.com",
-        fullName: "John Doe",
+        id: '1',
+        email: 'john@example.com',
+        fullName: 'John Doe',
       };
 
       userRepository.findById.mockResolvedValue(mockUser);
 
       oauthRepository.findByUserId.mockResolvedValue([
         {
-          provider: "GOOGLE",
+          provider: 'GOOGLE',
         },
       ]);
 
-      const result = await userService.getMyProfile("1");
+      const result = await userService.getMyProfile('1');
 
       expect(result).toEqual({
         user: mockUser,
-        provider: "GOOGLE",
+        provider: 'GOOGLE',
       });
 
-      expect(userRepository.findById)
-        .toHaveBeenCalledWith("1");
+      expect(userRepository.findById).toHaveBeenCalledWith('1');
 
-      expect(oauthRepository.findByUserId)
-        .toHaveBeenCalledWith("1");
+      expect(oauthRepository.findByUserId).toHaveBeenCalledWith('1');
     });
 
-    it("should return LOCAL when user has no oauth provider", async () => {
+    it('should return LOCAL when user has no oauth provider', async () => {
       const mockUser = {
-        id: "1",
-        email: "john@example.com",
-        fullName: "John Doe",
+        id: '1',
+        email: 'john@example.com',
+        fullName: 'John Doe',
       };
 
       userRepository.findById.mockResolvedValue(mockUser);
 
       oauthRepository.findByUserId.mockResolvedValue([]);
 
-      const result = await userService.getMyProfile("1");
+      const result = await userService.getMyProfile('1');
 
       expect(result).toEqual({
         user: mockUser,
-        provider: "LOCAL",
+        provider: 'LOCAL',
       });
 
-      expect(oauthRepository.findByUserId)
-        .toHaveBeenCalledWith("1");
+      expect(oauthRepository.findByUserId).toHaveBeenCalledWith('1');
     });
 
-    it("should throw ConflictError when user does not exist", async () => {
+    it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        userService.getMyProfile("1"),
-      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(userService.getMyProfile('1')).rejects.toBeInstanceOf(ConflictError);
 
-      await expect(
-        userService.getMyProfile("1"),
-      ).rejects.toMatchObject({
-        message: "user.userNotFound",
+      await expect(userService.getMyProfile('1')).rejects.toMatchObject({
+        message: 'user.userNotFound',
       });
 
-      expect(userRepository.findById)
-        .toHaveBeenCalledWith("1");
+      expect(userRepository.findById).toHaveBeenCalledWith('1');
 
-      expect(oauthRepository.findByUserId)
-        .not.toHaveBeenCalled();
+      expect(oauthRepository.findByUserId).not.toHaveBeenCalled();
     });
 
-    it("should propagate user repository errors", async () => {
-      const dbError = new Error("Database error");
+    it('should propagate user repository errors', async () => {
+      const dbError = new Error('Database error');
 
       userRepository.findById.mockRejectedValue(dbError);
 
-      await expect(
-        userService.getMyProfile("1"),
-      ).rejects.toThrow("Database error");
+      await expect(userService.getMyProfile('1')).rejects.toThrow('Database error');
 
-      expect(userRepository.findById)
-        .toHaveBeenCalledWith("1");
+      expect(userRepository.findById).toHaveBeenCalledWith('1');
 
-      expect(oauthRepository.findByUserId)
-        .not.toHaveBeenCalled();
+      expect(oauthRepository.findByUserId).not.toHaveBeenCalled();
     });
 
-    it("should propagate oauth repository errors", async () => {
+    it('should propagate oauth repository errors', async () => {
       const mockUser = {
-        id: "1",
-        email: "john@example.com",
-        fullName: "John Doe",
+        id: '1',
+        email: 'john@example.com',
+        fullName: 'John Doe',
       };
 
       userRepository.findById.mockResolvedValue(mockUser);
 
-      oauthRepository.findByUserId.mockRejectedValue(
-        new Error("OAuth error"),
-      );
+      oauthRepository.findByUserId.mockRejectedValue(new Error('OAuth error'));
 
-      await expect(
-        userService.getMyProfile("1"),
-      ).rejects.toThrow("OAuth error");
+      await expect(userService.getMyProfile('1')).rejects.toThrow('OAuth error');
 
-      expect(oauthRepository.findByUserId)
-        .toHaveBeenCalledWith("1");
+      expect(oauthRepository.findByUserId).toHaveBeenCalledWith('1');
     });
   });
 
@@ -237,7 +219,7 @@ describe('UserService', () => {
       userRepository.findById.mockResolvedValue(user);
 
       vi.mocked(comparePassword)
-        .mockResolvedValueOnce(true)   // old password đúng
+        .mockResolvedValueOnce(true) // old password đúng
         .mockResolvedValueOnce(false); // new password khác old
 
       vi.mocked(hashPassword).mockResolvedValue('new-hash');
@@ -247,23 +229,11 @@ describe('UserService', () => {
         passwordHash: 'new-hash',
       });
 
-      const result = await userService.changePassword(
-        '1',
-        'old-password',
-        'new-password',
-      );
+      const result = await userService.changePassword('1', 'old-password', 'new-password');
 
-      expect(comparePassword).toHaveBeenNthCalledWith(
-        1,
-        'old-password',
-        'old-hash',
-      );
+      expect(comparePassword).toHaveBeenNthCalledWith(1, 'old-password', 'old-hash');
 
-      expect(comparePassword).toHaveBeenNthCalledWith(
-        2,
-        'new-password',
-        'old-hash',
-      );
+      expect(comparePassword).toHaveBeenNthCalledWith(2, 'new-password', 'old-hash');
 
       expect(hashPassword).toHaveBeenCalledWith('new-password');
 
@@ -309,15 +279,11 @@ describe('UserService', () => {
       });
 
       vi.mocked(comparePassword)
-        .mockResolvedValueOnce(true)  // old password đúng
+        .mockResolvedValueOnce(true) // old password đúng
         .mockResolvedValueOnce(true); // new password giống old
 
       await expect(
-        userService.changePassword(
-          '1',
-          'old-password',
-          'old-password',
-        ),
+        userService.changePassword('1', 'old-password', 'old-password'),
       ).rejects.toBeInstanceOf(ConflictError);
 
       expect(hashPassword).not.toHaveBeenCalled();
@@ -331,16 +297,12 @@ describe('UserService', () => {
       });
 
       vi.mocked(comparePassword)
-        .mockResolvedValueOnce(true)   // old password đúng
+        .mockResolvedValueOnce(true) // old password đúng
         .mockResolvedValueOnce(false); // new password khác old
 
-      vi.mocked(hashPassword).mockRejectedValue(
-        new Error('Hash failed'),
-      );
+      vi.mocked(hashPassword).mockRejectedValue(new Error('Hash failed'));
 
-      await expect(
-        userService.changePassword('1', 'old', 'new'),
-      ).rejects.toThrow('Hash failed');
+      await expect(userService.changePassword('1', 'old', 'new')).rejects.toThrow('Hash failed');
 
       expect(userRepository.update).not.toHaveBeenCalled();
     });
@@ -352,18 +314,14 @@ describe('UserService', () => {
       });
 
       vi.mocked(comparePassword)
-        .mockResolvedValueOnce(true)   // old password đúng
+        .mockResolvedValueOnce(true) // old password đúng
         .mockResolvedValueOnce(false); // new password khác old
 
       vi.mocked(hashPassword).mockResolvedValue('new-hash');
 
-      userRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      userRepository.update.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        userService.changePassword('1', 'old', 'new'),
-      ).rejects.toThrow('Database error');
+      await expect(userService.changePassword('1', 'old', 'new')).rejects.toThrow('Database error');
     });
   });
 
@@ -402,13 +360,9 @@ describe('UserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(userService.deleteMyAccount('1')).rejects.toBeInstanceOf(
-        ConflictError,
-      );
+      await expect(userService.deleteMyAccount('1')).rejects.toBeInstanceOf(ConflictError);
 
-      await expect(userService.deleteMyAccount('1')).rejects.toThrow(
-        'user.userNotFound',
-      );
+      await expect(userService.deleteMyAccount('1')).rejects.toThrow('user.userNotFound');
 
       expect(userRepository.update).not.toHaveBeenCalled();
     });
@@ -422,13 +376,9 @@ describe('UserService', () => {
       userRepository.findById.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(null);
 
-      await expect(userService.deleteMyAccount('1')).rejects.toBeInstanceOf(
-        ConflictError,
-      );
+      await expect(userService.deleteMyAccount('1')).rejects.toBeInstanceOf(ConflictError);
 
-      await expect(userService.deleteMyAccount('1')).rejects.toThrow(
-        'user.userNotFound',
-      );
+      await expect(userService.deleteMyAccount('1')).rejects.toThrow('user.userNotFound');
 
       expect(userRepository.update).toHaveBeenCalledWith(
         '1',
@@ -446,13 +396,9 @@ describe('UserService', () => {
 
       userRepository.findById.mockResolvedValue(user);
 
-      userRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      userRepository.update.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        userService.deleteMyAccount('1'),
-      ).rejects.toThrow('Database error');
+      await expect(userService.deleteMyAccount('1')).rejects.toThrow('Database error');
 
       expect(userRepository.update).toHaveBeenCalledWith(
         '1',

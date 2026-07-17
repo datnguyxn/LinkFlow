@@ -111,7 +111,7 @@ export class UserRepository {
             select: {
               provider: true,
             },
-          }
+          },
         },
       }),
       prisma.user.count({

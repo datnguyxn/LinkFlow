@@ -79,9 +79,7 @@ describe('AdminUserService', () => {
       };
 
       userRepository.findById.mockResolvedValue(mockUser);
-      oauthRepository.findByUserId.mockResolvedValue([
-        { provider: 'GOOGLE' },
-      ]);
+      oauthRepository.findByUserId.mockResolvedValue([{ provider: 'GOOGLE' }]);
 
       const result = await adminUserService.getUserById('1');
 
@@ -116,13 +114,9 @@ describe('AdminUserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        adminUserService.getUserById('1'),
-      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(adminUserService.getUserById('1')).rejects.toBeInstanceOf(ConflictError);
 
-      await expect(
-        adminUserService.getUserById('1'),
-      ).rejects.toMatchObject({
+      await expect(adminUserService.getUserById('1')).rejects.toMatchObject({
         message: 'user.userNotFound',
       });
 
@@ -135,9 +129,7 @@ describe('AdminUserService', () => {
 
       userRepository.findById.mockRejectedValue(dbError);
 
-      await expect(
-        adminUserService.getUserById('1'),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.getUserById('1')).rejects.toThrow('Database error');
 
       expect(userRepository.findById).toHaveBeenCalledWith('1');
       expect(oauthRepository.findByUserId).not.toHaveBeenCalled();
@@ -149,13 +141,9 @@ describe('AdminUserService', () => {
       };
 
       userRepository.findById.mockResolvedValue(mockUser);
-      oauthRepository.findByUserId.mockRejectedValue(
-        new Error('Database error'),
-      );
+      oauthRepository.findByUserId.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.getUserById('1'),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.getUserById('1')).rejects.toThrow('Database error');
 
       expect(userRepository.findById).toHaveBeenCalledWith('1');
       expect(oauthRepository.findByUserId).toHaveBeenCalledWith('1');
@@ -203,11 +191,7 @@ describe('AdminUserService', () => {
 
       adminUserPublisher.userAction.mockResolvedValue(undefined);
 
-      const result = await adminUserService.unbanUser(
-        userId,
-        adminId,
-        ipAddress,
-      );
+      const result = await adminUserService.unbanUser(userId, adminId, ipAddress);
 
       expect(result).toEqual({
         userUpdated: activeUser,
@@ -224,10 +208,7 @@ describe('AdminUserService', () => {
         tx,
       );
 
-      expect(oauthRepository.findByUserId).toHaveBeenCalledWith(
-        userId,
-        tx,
-      );
+      expect(oauthRepository.findByUserId).toHaveBeenCalledWith(userId, tx);
 
       expect(adminUserPublisher.userAction).toHaveBeenCalledWith({
         event: UserAction.USER_ACTION,
@@ -257,10 +238,7 @@ describe('AdminUserService', () => {
 
       adminUserPublisher.userAction.mockResolvedValue(undefined);
 
-      const result = await adminUserService.unbanUser(
-        userId,
-        adminId,
-      );
+      const result = await adminUserService.unbanUser(userId, adminId);
 
       expect(result.provider).toBe('LOCAL');
     });
@@ -268,9 +246,9 @@ describe('AdminUserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        adminUserService.unbanUser(userId, adminId),
-      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(adminUserService.unbanUser(userId, adminId)).rejects.toBeInstanceOf(
+        ConflictError,
+      );
 
       expect(transactionService.run).not.toHaveBeenCalled();
 
@@ -284,13 +262,9 @@ describe('AdminUserService', () => {
     it('should rollback when update failed', async () => {
       userRepository.findById.mockResolvedValue(suspendedUser);
 
-      userRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      userRepository.update.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.unbanUser(userId, adminId),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.unbanUser(userId, adminId)).rejects.toThrow('Database error');
 
       expect(transactionService.run).toHaveBeenCalled();
 
@@ -304,13 +278,9 @@ describe('AdminUserService', () => {
 
       userRepository.update.mockResolvedValue(activeUser);
 
-      oauthRepository.findByUserId.mockRejectedValue(
-        new Error('Database error'),
-      );
+      oauthRepository.findByUserId.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.unbanUser(userId, adminId),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.unbanUser(userId, adminId)).rejects.toThrow('Database error');
 
       expect(transactionService.run).toHaveBeenCalled();
 
@@ -326,13 +296,9 @@ describe('AdminUserService', () => {
 
       oauthRepository.findByUserId.mockResolvedValue([]);
 
-      adminUserPublisher.userAction.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      adminUserPublisher.userAction.mockRejectedValue(new Error('RabbitMQ error'));
 
-      await expect(
-        adminUserService.unbanUser(userId, adminId),
-      ).rejects.toThrow('RabbitMQ error');
+      await expect(adminUserService.unbanUser(userId, adminId)).rejects.toThrow('RabbitMQ error');
 
       expect(transactionService.run).toHaveBeenCalled();
 
@@ -379,17 +345,11 @@ describe('AdminUserService', () => {
 
       refreshTokenRepository.revokeAllByUserId.mockResolvedValue(undefined);
 
-      oauthRepository.findByUserId.mockResolvedValue([
-        { provider: 'GOOGLE' },
-      ]);
+      oauthRepository.findByUserId.mockResolvedValue([{ provider: 'GOOGLE' }]);
 
       adminUserPublisher.userAction.mockResolvedValue(undefined);
 
-      const result = await adminUserService.banUser(
-        userId,
-        adminId,
-        ipAddress,
-      );
+      const result = await adminUserService.banUser(userId, adminId, ipAddress);
 
       expect(result).toEqual({
         userUpdated: suspendedUser,
@@ -406,15 +366,9 @@ describe('AdminUserService', () => {
         tx,
       );
 
-      expect(refreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(
-        userId,
-        tx,
-      );
+      expect(refreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(userId, tx);
 
-      expect(oauthRepository.findByUserId).toHaveBeenCalledWith(
-        userId,
-        tx,
-      );
+      expect(oauthRepository.findByUserId).toHaveBeenCalledWith(userId, tx);
 
       expect(adminUserPublisher.userAction).toHaveBeenCalledWith({
         event: UserAction.USER_ACTION,
@@ -446,10 +400,7 @@ describe('AdminUserService', () => {
 
       adminUserPublisher.userAction.mockResolvedValue(undefined);
 
-      const result = await adminUserService.banUser(
-        userId,
-        adminId,
-      );
+      const result = await adminUserService.banUser(userId, adminId);
 
       expect(result).toEqual({
         userUpdated: suspendedUser,
@@ -460,9 +411,7 @@ describe('AdminUserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        adminUserService.banUser(userId, adminId),
-      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(adminUserService.banUser(userId, adminId)).rejects.toBeInstanceOf(ConflictError);
 
       expect(transactionService.run).not.toHaveBeenCalled();
 
@@ -478,13 +427,9 @@ describe('AdminUserService', () => {
     it('should rollback when update failed', async () => {
       userRepository.findById.mockResolvedValue(activeUser);
 
-      userRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      userRepository.update.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.banUser(userId, adminId),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.banUser(userId, adminId)).rejects.toThrow('Database error');
 
       expect(refreshTokenRepository.revokeAllByUserId).not.toHaveBeenCalled();
 
@@ -498,13 +443,9 @@ describe('AdminUserService', () => {
 
       userRepository.update.mockResolvedValue(suspendedUser);
 
-      refreshTokenRepository.revokeAllByUserId.mockRejectedValue(
-        new Error('Revoke error'),
-      );
+      refreshTokenRepository.revokeAllByUserId.mockRejectedValue(new Error('Revoke error'));
 
-      await expect(
-        adminUserService.banUser(userId, adminId),
-      ).rejects.toThrow('Revoke error');
+      await expect(adminUserService.banUser(userId, adminId)).rejects.toThrow('Revoke error');
 
       expect(oauthRepository.findByUserId).not.toHaveBeenCalled();
 
@@ -518,13 +459,9 @@ describe('AdminUserService', () => {
 
       refreshTokenRepository.revokeAllByUserId.mockResolvedValue(undefined);
 
-      oauthRepository.findByUserId.mockRejectedValue(
-        new Error('Database error'),
-      );
+      oauthRepository.findByUserId.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.banUser(userId, adminId),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.banUser(userId, adminId)).rejects.toThrow('Database error');
 
       expect(adminUserPublisher.userAction).not.toHaveBeenCalled();
     });
@@ -538,13 +475,9 @@ describe('AdminUserService', () => {
 
       oauthRepository.findByUserId.mockResolvedValue([]);
 
-      adminUserPublisher.userAction.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      adminUserPublisher.userAction.mockRejectedValue(new Error('RabbitMQ error'));
 
-      await expect(
-        adminUserService.banUser(userId, adminId),
-      ).rejects.toThrow('RabbitMQ error');
+      await expect(adminUserService.banUser(userId, adminId)).rejects.toThrow('RabbitMQ error');
 
       expect(adminUserPublisher.userAction).toHaveBeenCalledTimes(1);
     });
@@ -591,12 +524,7 @@ describe('AdminUserService', () => {
 
       adminUserPublisher.userAction.mockResolvedValue(undefined);
 
-      const result = await adminUserService.changeRole(
-        adminId,
-        userId,
-        'ADMIN',
-        ipAddress,
-      );
+      const result = await adminUserService.changeRole(adminId, userId, 'ADMIN', ipAddress);
 
       expect(result).toEqual({
         userUpdated: updatedUser,
@@ -613,10 +541,7 @@ describe('AdminUserService', () => {
         tx,
       );
 
-      expect(oauthRepository.findByUserId).toHaveBeenCalledWith(
-        userId,
-        tx,
-      );
+      expect(oauthRepository.findByUserId).toHaveBeenCalledWith(userId, tx);
 
       expect(adminUserPublisher.userAction).toHaveBeenCalledWith({
         event: UserAction.USER_ACTION,
@@ -646,11 +571,7 @@ describe('AdminUserService', () => {
 
       adminUserPublisher.userAction.mockResolvedValue(undefined);
 
-      const result = await adminUserService.changeRole(
-        adminId,
-        userId,
-        'ADMIN',
-      );
+      const result = await adminUserService.changeRole(adminId, userId, 'ADMIN');
 
       expect(result).toEqual({
         userUpdated: updatedUser,
@@ -661,9 +582,9 @@ describe('AdminUserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        adminUserService.changeRole(adminId, userId, 'ADMIN'),
-      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(adminUserService.changeRole(adminId, userId, 'ADMIN')).rejects.toBeInstanceOf(
+        ConflictError,
+      );
 
       expect(transactionService.run).not.toHaveBeenCalled();
 
@@ -677,13 +598,11 @@ describe('AdminUserService', () => {
     it('should rollback when update failed', async () => {
       userRepository.findById.mockResolvedValue(mockUser);
 
-      userRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      userRepository.update.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.changeRole(adminId, userId, 'ADMIN'),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.changeRole(adminId, userId, 'ADMIN')).rejects.toThrow(
+        'Database error',
+      );
 
       expect(oauthRepository.findByUserId).not.toHaveBeenCalled();
 
@@ -695,13 +614,11 @@ describe('AdminUserService', () => {
 
       userRepository.update.mockResolvedValue(updatedUser);
 
-      oauthRepository.findByUserId.mockRejectedValue(
-        new Error('Database error'),
-      );
+      oauthRepository.findByUserId.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.changeRole(adminId, userId, 'ADMIN'),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.changeRole(adminId, userId, 'ADMIN')).rejects.toThrow(
+        'Database error',
+      );
 
       expect(adminUserPublisher.userAction).not.toHaveBeenCalled();
     });
@@ -713,13 +630,11 @@ describe('AdminUserService', () => {
 
       oauthRepository.findByUserId.mockResolvedValue([]);
 
-      adminUserPublisher.userAction.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      adminUserPublisher.userAction.mockRejectedValue(new Error('RabbitMQ error'));
 
-      await expect(
-        adminUserService.changeRole(adminId, userId, 'ADMIN'),
-      ).rejects.toThrow('RabbitMQ error');
+      await expect(adminUserService.changeRole(adminId, userId, 'ADMIN')).rejects.toThrow(
+        'RabbitMQ error',
+      );
 
       expect(adminUserPublisher.userAction).toHaveBeenCalledTimes(1);
     });
@@ -944,9 +859,9 @@ describe('AdminUserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        adminUserService.restoreUser(userId, adminId),
-      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(adminUserService.restoreUser(userId, adminId)).rejects.toBeInstanceOf(
+        ConflictError,
+      );
 
       expect(transactionService.run).not.toHaveBeenCalled();
 
@@ -960,9 +875,7 @@ describe('AdminUserService', () => {
 
       userRepository.update.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        adminUserService.restoreUser(userId, adminId),
-      ).rejects.toThrow('Database error');
+      await expect(adminUserService.restoreUser(userId, adminId)).rejects.toThrow('Database error');
 
       expect(transactionService.run).toHaveBeenCalled();
 
@@ -978,9 +891,7 @@ describe('AdminUserService', () => {
 
       oauthRepository.findByUserId.mockRejectedValue(new Error('OAuth error'));
 
-      await expect(
-        adminUserService.restoreUser(userId, adminId),
-      ).rejects.toThrow('OAuth error');
+      await expect(adminUserService.restoreUser(userId, adminId)).rejects.toThrow('OAuth error');
 
       expect(transactionService.run).toHaveBeenCalled();
 
@@ -998,13 +909,11 @@ describe('AdminUserService', () => {
 
       oauthRepository.findByUserId.mockResolvedValue([]);
 
-      adminUserPublisher.userAction.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      adminUserPublisher.userAction.mockRejectedValue(new Error('RabbitMQ error'));
 
-      await expect(
-        adminUserService.restoreUser(userId, adminId, ipAddress),
-      ).rejects.toThrow('RabbitMQ error');
+      await expect(adminUserService.restoreUser(userId, adminId, ipAddress)).rejects.toThrow(
+        'RabbitMQ error',
+      );
 
       expect(transactionService.run).toHaveBeenCalled();
 

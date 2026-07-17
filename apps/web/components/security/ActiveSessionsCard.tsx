@@ -8,12 +8,11 @@ import ActiveSessionsCardSkeleton from './ActiveSessionsCardSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function ActiveSessionsCard() {
-
-    const { loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return <ActiveSessionsCardSkeleton />;
-  } 
+  }
 
   return (
     <Card className="mx-8 shadow-lg dark:bg-slate-900">

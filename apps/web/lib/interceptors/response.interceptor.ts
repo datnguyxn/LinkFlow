@@ -33,8 +33,8 @@ export function responseSuccess(response: AxiosResponse) {
 export async function responseError(error: AxiosError<ApiErrorResponse>) {
   const originalRequest = error.config as
     | (InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    })
+        _retry?: boolean;
+      })
     | undefined;
 
   if (!originalRequest) {
@@ -45,7 +45,6 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
     appToast.error('Network error');
     return Promise.reject(error);
   }
-
 
   const status = error.response?.status;
   const data = error.response?.data;

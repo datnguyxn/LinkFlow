@@ -33,13 +33,12 @@ export class UserController {
    * @throws ConflictError if the user is not found
    */
   async getMyProfile(request: FastifyRequest, reply: FastifyReply) {
-
     // Extract the user ID from the authenticated request
     const id = request.user.id;
 
     // Logic to fetch user by ID
     const result = await this.userService.getMyProfile(id);
-    
+
     // Check if the user was found; if not, return a not found error
     if (!result.user) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
@@ -72,7 +71,6 @@ export class UserController {
     request: FastifyRequest<{ Body: Prisma.UserUpdateInput }>,
     reply: FastifyReply,
   ) {
-
     // Extract the user ID from the authenticated request
     const id = request.user.id;
 
@@ -81,12 +79,12 @@ export class UserController {
 
     // Logic to update user by ID
     const updatedUser = await this.userService.updateProfile(id, updateData);
-    
+
     // Check if the user was found and updated; if not, return a not found error
     if (!updatedUser) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
     }
-    
+
     // Return a success response with the updated user data and a success message
     return ResponseHandler.success(reply, updatedUser, request.t('user.userUpdatedSuccessfully'));
   }
@@ -106,7 +104,6 @@ export class UserController {
    * @throws ConflictError if the user is not found
    */
   async deleteMyAccount(request: FastifyRequest, reply: FastifyReply) {
-    
     // Extract the user ID from the authenticated request
     const id = request.user.id;
 
@@ -141,16 +138,15 @@ export class UserController {
     request: FastifyRequest<{ Body: { oldPassword: string; newPassword: string } }>,
     reply: FastifyReply,
   ) {
-
     // Extract the user ID from the authenticated request
     const id = request.user.id;
-    
+
     // Extract old and new passwords from the request body
     const { oldPassword, newPassword } = request.body;
 
     // Logic to change user password
     const updatedUser = await this.userService.changePassword(id, oldPassword, newPassword);
-    
+
     // Check if the user was found and the password was changed; if not, return a not found error
     if (!updatedUser) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));

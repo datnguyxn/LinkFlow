@@ -51,53 +51,46 @@ describe('AuthService', () => {
         '127.0.0.1',
       );
 
-      expect(fixture.userRepository.findByEmail)
-        .toHaveBeenCalledWith('dat@gmail.com');
+      expect(fixture.userRepository.findByEmail).toHaveBeenCalledWith('dat@gmail.com');
 
-      expect(hashPassword)
-        .toHaveBeenCalledWith('Password@123');
+      expect(hashPassword).toHaveBeenCalledWith('Password@123');
 
-      expect(fixture.transactionService.run)
-        .toHaveBeenCalledTimes(1);
+      expect(fixture.transactionService.run).toHaveBeenCalledTimes(1);
 
-      expect(fixture.userRepository.createUser)
-        .toHaveBeenCalledWith(
-          {
-            email: 'dat@gmail.com',
-            passwordHash: 'hashed-password',
-            fullName: 'Dat Nguyen',
-            status: UserStatus.PENDING_VERIFICATION,
-            language: 'en',
-            timezone: 'UTC',
-          },
-          expect.any(Object),
-        );
+      expect(fixture.userRepository.createUser).toHaveBeenCalledWith(
+        {
+          email: 'dat@gmail.com',
+          passwordHash: 'hashed-password',
+          fullName: 'Dat Nguyen',
+          status: UserStatus.PENDING_VERIFICATION,
+          language: 'en',
+          timezone: 'UTC',
+        },
+        expect.any(Object),
+      );
 
-      expect(fixture.emailVerificationRepository.deleteByUserId)
-        .toHaveBeenCalledWith(
-          'user-id',
-          expect.any(Object),
-        );
+      expect(fixture.emailVerificationRepository.deleteByUserId).toHaveBeenCalledWith(
+        'user-id',
+        expect.any(Object),
+      );
 
-      expect(fixture.emailVerificationRepository.create)
-        .toHaveBeenCalledWith(
-          expect.any(Object),
-          expect.objectContaining({
-            userId: 'user-id',
-            verifyToken: expect.any(String),
-          }),
-        );
+      expect(fixture.emailVerificationRepository.create).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          userId: 'user-id',
+          verifyToken: expect.any(String),
+        }),
+      );
 
-      expect(fixture.authPublisher.userRegistered)
-        .toHaveBeenCalledWith(
-          expect.objectContaining({
-            userId: 'user-id',
-            email: 'dat@gmail.com',
-            fullName: 'Dat Nguyen',
-            verifyToken: expect.any(String),
-            ipAddress: '127.0.0.1',
-          }),
-        );
+      expect(fixture.authPublisher.userRegistered).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-id',
+          email: 'dat@gmail.com',
+          fullName: 'Dat Nguyen',
+          verifyToken: expect.any(String),
+          ipAddress: '127.0.0.1',
+        }),
+      );
     });
 
     it('should throw USER_INACTIVE when user is inactive', async () => {
@@ -107,11 +100,7 @@ describe('AuthService', () => {
       });
 
       await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          'Password@123',
-          'Dat Nguyen',
-        ),
+        fixture.authService.registerUser('dat@gmail.com', 'Password@123', 'Dat Nguyen'),
       ).rejects.toMatchObject({
         statusCode: 403,
         code: ERROR_CODE.USER_INACTIVE,
@@ -128,11 +117,7 @@ describe('AuthService', () => {
       });
 
       await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          'Password@123',
-          'Dat Nguyen',
-        ),
+        fixture.authService.registerUser('dat@gmail.com', 'Password@123', 'Dat Nguyen'),
       ).rejects.toMatchObject({
         statusCode: 403,
         code: ERROR_CODE.USER_SUSPENDED,
@@ -149,11 +134,7 @@ describe('AuthService', () => {
       });
 
       await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          'Password@123',
-          'Dat Nguyen',
-        ),
+        fixture.authService.registerUser('dat@gmail.com', 'Password@123', 'Dat Nguyen'),
       ).rejects.toMatchObject({
         statusCode: 403,
         code: ERROR_CODE.USER_DELETED,
@@ -170,11 +151,7 @@ describe('AuthService', () => {
       });
 
       await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          'Password@123',
-          'Dat Nguyen',
-        ),
+        fixture.authService.registerUser('dat@gmail.com', 'Password@123', 'Dat Nguyen'),
       ).rejects.toMatchObject({
         statusCode: 403,
         code: ERROR_CODE.USER_UNAVAILABLE,
@@ -191,18 +168,13 @@ describe('AuthService', () => {
       });
 
       await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          '123',
-          'Dat',
-        ),
+        fixture.authService.registerUser('dat@gmail.com', '123', 'Dat'),
       ).rejects.toMatchObject({
         statusCode: 409,
         code: ERROR_CODE.USER_ALREADY_EXISTS,
       });
 
-      expect(fixture.authPublisher.userRegistered)
-        .not.toHaveBeenCalled();
+      expect(fixture.authPublisher.userRegistered).not.toHaveBeenCalled();
     });
 
     it('should resend verification email', async () => {
@@ -216,8 +188,7 @@ describe('AuthService', () => {
 
       fixture.userRepository.findByEmail.mockResolvedValue(pendingUser);
 
-      vi.spyOn(fixture.authService as any, 'checkUserStatus')
-        .mockImplementation(() => { });
+      vi.spyOn(fixture.authService as any, 'checkUserStatus').mockImplementation(() => {});
 
       fixture.transactionService.run.mockImplementation(async (callback: any) => {
         fixture.emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
@@ -228,11 +199,7 @@ describe('AuthService', () => {
 
       fixture.authPublisher.userRegistered.mockResolvedValue(undefined);
 
-      await fixture.authService.registerUser(
-        'dat@gmail.com',
-        '123',
-        'Dat',
-      );
+      await fixture.authService.registerUser('dat@gmail.com', '123', 'Dat');
 
       expect(fixture.authPublisher.userRegistered).toHaveBeenCalled();
     });
@@ -240,16 +207,11 @@ describe('AuthService', () => {
     it('should throw if createPendingUser failed', async () => {
       fixture.userRepository.findByEmail.mockResolvedValue(null);
 
-      vi.mocked(hashPassword)
-        .mockRejectedValue(new Error('Hash Error'));
+      vi.mocked(hashPassword).mockRejectedValue(new Error('Hash Error'));
 
-      await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          '123',
-          'Dat',
-        ),
-      ).rejects.toThrow('Hash Error');
+      await expect(fixture.authService.registerUser('dat@gmail.com', '123', 'Dat')).rejects.toThrow(
+        'Hash Error',
+      );
     });
 
     it('should throw if publishVerificationEmail failed', async () => {
@@ -261,8 +223,7 @@ describe('AuthService', () => {
 
       fixture.userRepository.findByEmail.mockResolvedValue(null);
 
-      vi.mocked(hashPassword)
-        .mockResolvedValue('hashed-password');
+      vi.mocked(hashPassword).mockResolvedValue('hashed-password');
 
       fixture.transactionService.run.mockImplementation(async (callback: any) => {
         fixture.userRepository.createUser.mockResolvedValue(createdUser);
@@ -272,17 +233,11 @@ describe('AuthService', () => {
         return callback({});
       });
 
-      fixture.authPublisher.userRegistered.mockRejectedValue(
-        new Error('RabbitMQ Error'),
-      );
+      fixture.authPublisher.userRegistered.mockRejectedValue(new Error('RabbitMQ Error'));
 
-      await expect(
-        fixture.authService.registerUser(
-          'dat@gmail.com',
-          '123',
-          'Dat',
-        ),
-      ).rejects.toThrow('RabbitMQ Error');
+      await expect(fixture.authService.registerUser('dat@gmail.com', '123', 'Dat')).rejects.toThrow(
+        'RabbitMQ Error',
+      );
     });
   });
 

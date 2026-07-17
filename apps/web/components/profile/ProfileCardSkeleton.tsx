@@ -10,7 +10,6 @@ export default function ProfileCardSkeleton() {
           <div className="relative">
             {/* Avatar */}
             <Skeleton className="h-24 w-24 rounded-full" />
-
           </div>
 
           <div className="space-y-3">

@@ -39,7 +39,7 @@ export class AuthService {
     private emailVerificationRepository = new EmailVerificationRepository(),
     private passwordResetRepository = new PasswordResetRepository(),
     private authPublisher = new AuthPublisher(new Publisher()),
-  ) { }
+  ) {}
 
   /**
    * Register a new user
@@ -68,7 +68,6 @@ export class AuthService {
 
     // If user exists and is active or email is verified, throw conflict error
     if (existingUser) {
-
       // Check user status and throw appropriate error if not active
       this.checkUserStatus(existingUser);
 

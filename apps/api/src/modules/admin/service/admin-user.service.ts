@@ -28,7 +28,7 @@ export class AdminUserService {
     private adminUserPublisher: AdminUserPublisher = new AdminUserPublisher(new Publisher()),
     private transactionService: TransactionService = new TransactionService(),
     private oauthRepository: OAuthRepository = new OAuthRepository(),
-  ) { }
+  ) {}
 
   /**
    * Fetch all users with pagination
@@ -119,7 +119,11 @@ export class AdminUserService {
 
     // Logic to unban the user by updating their status to ACTIVE
     const updatedUser = await this.transactionService.run(async (tx) => {
-      const userUpdated = await this.userRepository.update(userId, { status: UserStatus.ACTIVE }, tx);
+      const userUpdated = await this.userRepository.update(
+        userId,
+        { status: UserStatus.ACTIVE },
+        tx,
+      );
 
       const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
 
@@ -169,9 +173,13 @@ export class AdminUserService {
     }
     // Logic to change the user's role in the database
     const updatedUser = await this.transactionService.run(async (tx) => {
-      const updatedUser = await this.userRepository.update(userId, {
-        role: UserRole[newRole as keyof typeof UserRole],
-      }, tx);
+      const updatedUser = await this.userRepository.update(
+        userId,
+        {
+          role: UserRole[newRole as keyof typeof UserRole],
+        },
+        tx,
+      );
 
       const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
 
@@ -265,10 +273,14 @@ export class AdminUserService {
 
     // Logic to restore the user by updating their status to ACTIVE and clearing the deletedAt timestamp
     const restoredUser = await this.transactionService.run(async (tx) => {
-      const restoredUser = await this.userRepository.update(userId, {
-        status: UserStatus.ACTIVE,
-        deletedAt: null,
-      }, tx);
+      const restoredUser = await this.userRepository.update(
+        userId,
+        {
+          status: UserStatus.ACTIVE,
+          deletedAt: null,
+        },
+        tx,
+      );
 
       const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
 
@@ -316,6 +328,6 @@ export class AdminUserService {
     const provider = await this.oauthRepository.findByUserId(userId);
 
     // Return the user object if found
-    return {user, provider: provider[0]?.provider || 'LOCAL'};
+    return { user, provider: provider[0]?.provider || 'LOCAL' };
   }
 }

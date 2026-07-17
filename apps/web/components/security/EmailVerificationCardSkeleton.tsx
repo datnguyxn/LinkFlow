@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MailCheck, CheckCircle2 } from 'lucide-react';
 
@@ -18,9 +12,7 @@ export default function EmailVerificationCardSkeleton() {
           <div>
             <CardTitle>Email Verification</CardTitle>
 
-            <CardDescription>
-              Verify your email address.
-            </CardDescription>
+            <CardDescription>Verify your email address.</CardDescription>
           </div>
         </div>
       </CardHeader>

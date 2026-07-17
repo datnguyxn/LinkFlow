@@ -14,7 +14,6 @@ export default function SettingsPage() {
       <ProfileHeader />
 
       <div className="mx-auto max-w-6xl space-y-10 px-8 py-8">
-
         {/* ================= Profile ================= */}
 
         <section className="space-y-6">
@@ -74,7 +73,6 @@ export default function SettingsPage() {
 
           <DangerZoneCard />
         </section>
-
       </div>
     </div>
   );

@@ -33,7 +33,10 @@ export class AdminUserController {
     const result = await this.adminUserService.getAllUsers(page, limit);
     return ResponseHandler.success(
       reply,
-      UserSerializer.serializeMany(result.data, result.data[0]?.oauthAccounts?.[0]?.provider || 'local'),
+      UserSerializer.serializeMany(
+        result.data,
+        result.data[0]?.oauthAccounts?.[0]?.provider || 'local',
+      ),
       request.t('user.usersFetchedSuccessfully'),
       HTTP_STATUS.OK,
       result.pagination,
@@ -191,7 +194,7 @@ export class AdminUserController {
   async getUserById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const { id } = request.params;
     // Logic to fetch user by ID
-    const {user, provider} = await this.adminUserService.getUserById(id);
+    const { user, provider } = await this.adminUserService.getUserById(id);
 
     if (!user) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
