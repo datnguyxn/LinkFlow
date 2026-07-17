@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AuthService > checkUserStatus > should throw when user is BANNED 1`] = `[ForbiddenError: auth.login.userSuspended]`;

@@ -80,6 +80,7 @@ describe('AuthService', () => {
 
       expect(fixture.emailVerificationRepository.delete).toHaveBeenCalledWith(
         verificationRecord.id,
+        expect.any(Object),
       );
 
       expect(fixture.authPublisher.emailVerified).toHaveBeenCalledWith({

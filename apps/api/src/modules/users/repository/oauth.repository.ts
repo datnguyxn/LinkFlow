@@ -1,5 +1,5 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
-import { OAuthProvider, Prisma } from '@prisma/client';
+import { OAuthProvider, Prisma, PrismaClient } from '@prisma/client';
 
 /**
  * Repository for managing OAuth accounts in the database.
@@ -29,9 +29,9 @@ export class OAuthRepository {
    * @param userId - The ID of the user.
    * @returns A list of OAuth accounts associated with the user.
    */
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string, db: PrismaClient | Prisma.TransactionClient = prisma) {
     // Use Prisma to find all OAuth accounts for the given user ID
-    return prisma.oAuthAccount.findMany({
+    return db.oAuthAccount.findMany({
       where: {
         userId,
       },

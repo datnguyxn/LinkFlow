@@ -19,9 +19,13 @@ export const verifyEmailSwagger: FastifySchema = {
   response: createSwaggerResponse(
     200,
     Type.Object({
-      message: Type.String({
-        description: 'A message indicating the result of the verification process',
-        example: 'Email verified successfully.',
+      accessToken: Type.String({
+        description: 'Access token for authenticated requests',
+        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      }),
+      refreshToken: Type.String({
+        description: 'Refresh token for obtaining new access tokens',
+        example: 'dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4gZXhhbXBsZQ==',
       }),
     }),
     [400, 401, 403, 404, 500],

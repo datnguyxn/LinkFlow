@@ -1,5 +1,5 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 /**
  * Repository for managing email verification tokens in the database.
@@ -45,9 +45,9 @@ export class EmailVerificationRepository {
    * @param id - The ID of the email verification token to delete.
    * @returns The deleted email verification token record.
    */
-  async delete(id: string) {
+  async delete(id: string, db: Prisma.TransactionClient | PrismaClient = prisma) {
     // Use the Prisma client to delete an email verification token from the database by its ID
-    return await prisma.emailVerificationToken.delete({
+    return await db.emailVerificationToken.delete({
       where: {
         id: id,
       },

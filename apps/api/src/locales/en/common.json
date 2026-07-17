@@ -38,10 +38,10 @@
     },
     "login": {
       "emailNotVerified": "Email not verified. Please check your inbox for the verification email.",
-      "auth.login.userInactive": "User account is inactive. Please contact support.",
-      "auth.login.userSuspended": "User account is banned. Please contact support.",
-      "auth.login.userDeleted": "User account has been deleted.",
-      "auth.login.userUnavailable": "User account is unavailable. Please contact support."
+      "userInactive": "User account is inactive. Please contact support.",
+      "userSuspended": "User account is banned. Please contact support.",
+      "userDeleted": "User account has been deleted. Please contact support.",
+      "userUnavailable": "User account is unavailable. Please contact support."
     },
     "verifyEmail": {
       "tokenExpired": "Token has expired",
@@ -68,6 +68,8 @@
     "userNotFound": "User not found",
     "userUpdatedSuccessfully": "User updated successfully",
     "userDeletedSuccessfully": "User deleted successfully",
-    "oldPasswordIncorrect": "Old password is incorrect"
+    "oldPasswordIncorrect": "Old password is incorrect",
+    "newPasswordSameAsOld": "New password must be different from the current password",
+    "passwordChangedSuccessfully": "Password changed successfully"
   }
 }

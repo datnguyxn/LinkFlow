@@ -23,6 +23,7 @@ export const getMyProfileSwagger: FastifySchema = {
       timezone: Type.String(),
       theme: Type.String(),
       createdAt: Type.String({ format: 'date-time' }),
+      provider: Type.String(),
     }),
     [400, 401, 403, 404, 500],
   ),

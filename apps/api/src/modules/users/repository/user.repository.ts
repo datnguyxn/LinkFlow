@@ -106,6 +106,13 @@ export class UserRepository {
             not: 'admin@linkflow.dev',
           },
         },
+        include: {
+          oauthAccounts: {
+            select: {
+              provider: true,
+            },
+          }
+        },
       }),
       prisma.user.count({
         where: {

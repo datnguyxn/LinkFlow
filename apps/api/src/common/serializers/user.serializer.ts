@@ -10,7 +10,7 @@ export class UserSerializer {
    * @param user - The user object to serialize
    * @returns An object containing the serialized user data
    */
-  static serialize(user: User) {
+  static serialize(user: User, provider: string) {
     return {
       email: user.email,
       fullName: user.fullName,
@@ -21,6 +21,7 @@ export class UserSerializer {
       timezone: user.timezone,
       createdAt: user.createdAt,
       theme: user.theme,
+      provider: provider,
     };
   }
 
@@ -29,7 +30,7 @@ export class UserSerializer {
    * @param users - An array of user objects to serialize
    * @returns An array of serialized user data
    */
-  static serializeMany(users: User[]) {
-    return users.map(this.serialize);
+  static serializeMany(users: User[], provider: string) {
+    return users.map((user) => this.serialize(user, provider));
   }
 }

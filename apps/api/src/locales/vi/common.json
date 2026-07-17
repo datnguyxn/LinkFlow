@@ -38,10 +38,10 @@
     },
     "login": {
       "emailNotVerified": "Email chưa được xác minh. Vui lòng kiểm tra hộp thư đến của bạn để nhận email xác minh.",
-      "auth.login.userInactive": "Tài khoản người dùng đang không hoạt động. Vui lòng liên hệ hỗ trợ.",
-      "auth.login.userSuspended": "Tài khoản người dùng đã bị cấm. Vui lòng liên hệ hỗ trợ.",
-      "auth.login.userDeleted": "Tài khoản người dùng đã bị xóa.",
-      "auth.login.userUnavailable": "Tài khoản người dùng không khả dụng. Vui lòng liên hệ hỗ trợ."
+      "userInactive": "Tài khoản người dùng đang không hoạt động. Vui lòng liên hệ hỗ trợ.",
+      "userSuspended": "Tài khoản người dùng đã bị cấm. Vui lòng liên hệ hỗ trợ.",
+      "userDeleted": "Tài khoản người dùng đã bị xóa. Vui lòng liên hệ hỗ trợ.",
+      "userUnavailable": "Tài khoản người dùng không khả dụng. Vui lòng liên hệ hỗ trợ."
     },
     "verifyEmail": {
       "tokenExpired": "Token đã hết hạn",
@@ -68,6 +68,8 @@
     "userNotFound": "Người dùng không tồn tại",
     "userUpdatedSuccessfully": "Người dùng được cập nhật thành công",
     "userDeletedSuccessfully": "Người dùng được xóa thành công",
-    "oldPasswordIncorrect": "Mật khẩu cũ không chính xác"
+    "oldPasswordIncorrect": "Mật khẩu cũ không chính xác",
+    "newPasswordSameAsOld": "Mật khẩu mới phải khác với mật khẩu hiện tại",
+    "passwordChangedSuccessfully": "Mật khẩu đã được thay đổi thành công"
   }
 }

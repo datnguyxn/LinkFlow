@@ -1,5 +1,5 @@
 import { UserRepository } from '../repository/user.repository.ts';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserStatus } from '@prisma/client';
 import { hashPassword, comparePassword } from '../../../utils/password.util.ts';
 import { ConflictError } from '../../../common/errors/index.ts';
 import { ERROR_CODE } from '../../../common/constants/index.ts';
@@ -8,6 +8,7 @@ import { validateAvatar } from '../validator/image.validator.ts';
 import { MinioStorageService, STORAGE_FOLDER } from '../../../infrastructure/storage/index.ts';
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
+import { OAuthRepository } from '../repository/oauth.repository.ts';
 
 /**
  * UserService class provides methods for managing user profiles,
@@ -21,7 +22,8 @@ export class UserService {
   constructor(
     private userRepository: UserRepository = new UserRepository(),
     private storageService: MinioStorageService = new MinioStorageService(),
-  ) {}
+    private oauthRepository: OAuthRepository = new OAuthRepository(),
+  ) { }
 
   /**
    * Update user profile information
@@ -62,6 +64,12 @@ export class UserService {
     if (!isOldPasswordValid) {
       throw new ConflictError('user.oldPasswordIncorrect', ERROR_CODE.INVALID_CREDENTIALS);
     }
+
+    const isNewPasswordSameAsOld = await comparePassword(newPassword, user.passwordHash || '');
+    if (isNewPasswordSameAsOld) {
+      throw new ConflictError('user.newPasswordSameAsOld', ERROR_CODE.INVALID_CREDENTIALS);
+    }
+
     // Hash the new password and update it in the database
     const hashedNewPassword = await hashPassword(newPassword);
 
@@ -87,11 +95,14 @@ export class UserService {
     }
 
     // Logic to delete user account from the database
-    const deletedUser = await this.userRepository.delete(userId);
+    const deletedUser = await this.userRepository.update(userId, { status: UserStatus.DELETED, deletedAt: new Date() });
+    
+    // If the user had an avatar, delete it from the storage service
     if (!deletedUser) {
       throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
     }
 
+    // Return the deleted user object
     return deletedUser;
   }
 
@@ -108,7 +119,9 @@ export class UserService {
       throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
     }
 
-    return user;
+    const provider = await this.oauthRepository.findByUserId(userId);
+
+    return { user, provider: provider[0]?.provider || 'LOCAL' };
   }
 
   /**

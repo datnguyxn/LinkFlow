@@ -39,7 +39,7 @@ export class AuthService {
     private emailVerificationRepository = new EmailVerificationRepository(),
     private passwordResetRepository = new PasswordResetRepository(),
     private authPublisher = new AuthPublisher(new Publisher()),
-  ) {}
+  ) { }
 
   /**
    * Register a new user
@@ -68,6 +68,11 @@ export class AuthService {
 
     // If user exists and is active or email is verified, throw conflict error
     if (existingUser) {
+
+      // Check user status and throw appropriate error if not active
+      this.checkUserStatus(existingUser);
+
+      // If the user exists but is inactive or email not verified, resend verification email
       if (existingUser.emailVerified || existingUser.status === UserStatus.ACTIVE) {
         throw new ConflictError('auth.userAlreadyExists', ERROR_CODE.USER_ALREADY_EXISTS);
       }
@@ -355,10 +360,12 @@ export class AuthService {
       ? config.JWT_REFRESH_REMEMBER_EXPIRES_IN
       : config.JWT_REFRESH_EXPIRES_IN;
 
+    // Determine refresh token expiration time based on rememberMe option
     const refreshTokenMs = options.rememberMe
       ? config.JWT_REFRESH_REMEMBER_EXPIRES_MS
       : config.JWT_REFRESH_EXPIRES_MS;
 
+    // Generate refresh token with appropriate expiration
     const refreshToken = this.jwtService.generateRefreshToken(
       {
         id: user.id,
@@ -368,6 +375,7 @@ export class AuthService {
       },
       refreshExpiresIn,
     );
+
     // Save refresh token
     await this.refreshTokenRepository.create({
       userId: user.id,
@@ -508,7 +516,7 @@ export class AuthService {
       });
 
       // 3. Delete the verification token after successful verification
-      await this.emailVerificationRepository.delete(verificationRecord.id);
+      await this.emailVerificationRepository.delete(verificationRecord.id, tx);
     });
 
     // Publish an email verified event to notify other services or components
