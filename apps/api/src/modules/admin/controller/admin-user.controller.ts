@@ -30,13 +30,13 @@ export class AdminUserController {
   ) {
     const { page = 1, limit = 10 } = request.query;
     // Logic to fetch all users
-    const users = await this.adminUserService.getAllUsers(page, limit);
+    const result = await this.adminUserService.getAllUsers(page, limit);
     return ResponseHandler.success(
       reply,
-      UserSerializer.serializeMany(users.data),
+      UserSerializer.serializeMany(result.data, result.data[0]?.oauthAccounts?.[0]?.provider || 'local'),
       request.t('user.usersFetchedSuccessfully'),
       HTTP_STATUS.OK,
-      users.pagination,
+      result.pagination,
     );
   }
 
@@ -56,15 +56,15 @@ export class AdminUserController {
     const ipAddress = request.ip; // Capture the IP address of the admin performing the action
 
     // Logic to ban user
-    const bannedUser = await this.adminUserService.banUser(id, adminId, ipAddress);
+    const result = await this.adminUserService.banUser(id, adminId, ipAddress);
 
-    if (!bannedUser) {
+    if (!result.userUpdated) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
     }
 
     return ResponseHandler.success(
       reply,
-      UserSerializer.serialize(bannedUser),
+      UserSerializer.serialize(result.userUpdated, result.provider),
       request.t('user.userUpdatedSuccessfully'),
     );
   }
@@ -85,15 +85,15 @@ export class AdminUserController {
     const ipAddress = request.ip; // Capture the IP address of the admin performing the action
 
     // Logic to unban user
-    const unbannedUser = await this.adminUserService.unbanUser(id, adminId, ipAddress);
+    const result = await this.adminUserService.unbanUser(id, adminId, ipAddress);
 
-    if (!unbannedUser) {
+    if (!result.userUpdated) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
     }
 
     return ResponseHandler.success(
       reply,
-      UserSerializer.serialize(unbannedUser),
+      UserSerializer.serialize(result.userUpdated, result.provider),
       request.t('user.userUpdatedSuccessfully'),
     );
   }
@@ -119,15 +119,15 @@ export class AdminUserController {
     const ipAddress = request.ip;
 
     // Logic to change user role
-    const updatedUser = await this.adminUserService.changeRole(adminId, id, newRole, ipAddress);
+    const result = await this.adminUserService.changeRole(adminId, id, newRole, ipAddress);
 
-    if (!updatedUser) {
+    if (!result.userUpdated) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
     }
 
     return ResponseHandler.success(
       reply,
-      UserSerializer.serialize(updatedUser),
+      UserSerializer.serialize(result.userUpdated, result.provider),
       request.t('user.userUpdatedSuccessfully'),
     );
   }
@@ -169,13 +169,13 @@ export class AdminUserController {
     // Logic to restore user
     const restoredUser = await this.adminUserService.restoreUser(id, adminId, ipAddress);
 
-    if (!restoredUser) {
+    if (!restoredUser.userUpdated) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
     }
 
     return ResponseHandler.success(
       reply,
-      UserSerializer.serialize(restoredUser),
+      UserSerializer.serialize(restoredUser.userUpdated, restoredUser.provider),
       request.t('user.userUpdatedSuccessfully'),
     );
   }
@@ -191,7 +191,7 @@ export class AdminUserController {
   async getUserById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const { id } = request.params;
     // Logic to fetch user by ID
-    const user = await this.adminUserService.getUserById(id);
+    const {user, provider} = await this.adminUserService.getUserById(id);
 
     if (!user) {
       return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.userNotFound'));
@@ -199,7 +199,7 @@ export class AdminUserController {
 
     return ResponseHandler.success(
       reply,
-      UserSerializer.serialize(user),
+      UserSerializer.serialize(user, provider),
       request.t('user.usersFetchedSuccessfully'),
     );
   }

@@ -8,6 +8,7 @@ import { Publisher } from '../../../infrastructure/queue/index.ts';
 import { UserAction } from '../../../common/enums/user-action.enum.ts';
 import type { UserActionEvent } from '../../../events/index.ts';
 import { TransactionService } from '../../../infrastructure/database/index.ts';
+import { OAuthRepository } from '../../users/repository/oauth.repository.ts';
 
 /**
  * AdminUserService class provides methods for managing user accounts from an admin perspective.
@@ -26,7 +27,8 @@ export class AdminUserService {
     private refreshTokenRepository: RefreshTokenRepository = new RefreshTokenRepository(),
     private adminUserPublisher: AdminUserPublisher = new AdminUserPublisher(new Publisher()),
     private transactionService: TransactionService = new TransactionService(),
-  ) {}
+    private oauthRepository: OAuthRepository = new OAuthRepository(),
+  ) { }
 
   /**
    * Fetch all users with pagination
@@ -69,7 +71,9 @@ export class AdminUserService {
       // Revoke all refresh tokens for the banned user
       await this.refreshTokenRepository.revokeAllByUserId(userId, tx);
 
-      return userUpdated;
+      const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
+
+      return { userUpdated, provider: oauthAccounts[0]?.provider || 'LOCAL' };
     });
 
     // Create a user action event for banning the user
@@ -114,7 +118,13 @@ export class AdminUserService {
     }
 
     // Logic to unban the user by updating their status to ACTIVE
-    const updatedUser = await this.userRepository.update(userId, { status: UserStatus.ACTIVE });
+    const updatedUser = await this.transactionService.run(async (tx) => {
+      const userUpdated = await this.userRepository.update(userId, { status: UserStatus.ACTIVE }, tx);
+
+      const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
+
+      return { userUpdated, provider: oauthAccounts[0]?.provider || 'LOCAL' };
+    });
 
     // Create a user action event for unbanning the user
     const event: UserActionEvent = {
@@ -158,8 +168,14 @@ export class AdminUserService {
       throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
     }
     // Logic to change the user's role in the database
-    const updatedUser = await this.userRepository.update(userId, {
-      role: UserRole[newRole as keyof typeof UserRole],
+    const updatedUser = await this.transactionService.run(async (tx) => {
+      const updatedUser = await this.userRepository.update(userId, {
+        role: UserRole[newRole as keyof typeof UserRole],
+      }, tx);
+
+      const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
+
+      return { userUpdated: updatedUser, provider: oauthAccounts[0]?.provider || 'LOCAL' };
     });
 
     // Create a user action event for changing the user's role
@@ -248,9 +264,15 @@ export class AdminUserService {
     }
 
     // Logic to restore the user by updating their status to ACTIVE and clearing the deletedAt timestamp
-    const restoredUser = await this.userRepository.update(userId, {
-      status: UserStatus.ACTIVE,
-      deletedAt: null,
+    const restoredUser = await this.transactionService.run(async (tx) => {
+      const restoredUser = await this.userRepository.update(userId, {
+        status: UserStatus.ACTIVE,
+        deletedAt: null,
+      }, tx);
+
+      const oauthAccounts = await this.oauthRepository.findByUserId(userId, tx);
+
+      return { userUpdated: restoredUser, provider: oauthAccounts[0]?.provider || 'LOCAL' };
     });
 
     // Create a user action event for restoring the user
@@ -291,7 +313,9 @@ export class AdminUserService {
       throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
     }
 
+    const provider = await this.oauthRepository.findByUserId(userId);
+
     // Return the user object if found
-    return user;
+    return {user, provider: provider[0]?.provider || 'LOCAL'};
   }
 }
