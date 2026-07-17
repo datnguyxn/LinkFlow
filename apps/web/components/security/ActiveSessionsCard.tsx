@@ -1,9 +1,20 @@
+'use client';
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 import Button from '@/components/ui/button';
 import { Laptop } from 'lucide-react';
+import ActiveSessionsCardSkeleton from './ActiveSessionsCardSkeleton';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ActiveSessionsCard() {
+
+    const { loading } = useAuth();
+
+  if (loading) {
+    return <ActiveSessionsCardSkeleton />;
+  } 
+
   return (
     <Card className="mx-8 shadow-lg dark:bg-slate-900">
       <CardHeader>
@@ -25,7 +36,7 @@ export default function ActiveSessionsCard() {
           <p className="text-sm text-muted-foreground">Current device</p>
         </div>
 
-        <Button>Sign Out All Devices</Button>
+        <Button variant="outline">Sign Out All Devices</Button>
       </CardContent>
     </Card>
   );
