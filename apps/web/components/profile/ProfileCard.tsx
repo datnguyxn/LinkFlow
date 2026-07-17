@@ -6,11 +6,16 @@ import ProfileAvatar from './ProfileAvatar';
 
 import { useAuth } from '@/hooks/useAuth';
 
-import { BadgeCheck, CircleCheck } from 'lucide-react';
+import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ProfileCardSkeleton from './ProfileCardSkeleton';
 
 export default function ProfileCard() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <ProfileCardSkeleton />;
+  }
 
   const memberSince = user?.createdAt
     ? new Intl.DateTimeFormat('en-US', {
@@ -61,7 +66,7 @@ export default function ProfileCard() {
   const status = statusConfig();
 
   return (
-    <Card className="-mt-12 mx-8 shadow-lg dark:bg-slate-900">
+    <Card className="-mt-20 mx-8 shadow-lg dark:bg-slate-900">
       <CardContent
         className="
             flex

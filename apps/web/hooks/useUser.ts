@@ -19,9 +19,10 @@ export function useUser() {
     updateUser,
     setUser,
     clearUser,
-
+    uploadAvatar: userService.uploadAvatar.bind(userService),
     updateUserProfile: userService.updateUserProfile.bind(userService),
     deleteAccount: userService.deleteAccount.bind(userService),
     changePassword: userService.changePassword.bind(userService),
+    getAvatar: userService.getAvatar.bind(userService),
   };
 }

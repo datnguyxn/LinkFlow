@@ -6,9 +6,15 @@ import Button from '@/components/ui/button';
 import Input from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
+import { appToast } from '@/lib/toast';
+import { useAuthStore } from '@/stores/auth.store';
+import PersonalInfoCardSkeleton from './PersonalInfoCardSkeleton';
 
 export default function PersonalInfoCard() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  const { updateUserProfile, updateUser } = useUser();
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -37,11 +43,25 @@ export default function PersonalInfoCard() {
 
   const handleSave = async () => {
     try {
-      // await userService.updateProfile(form);
+      await updateUserProfile(form);
+
+      updateUser({
+        fullName: form.fullName,
+        timezone: form.timezone,
+      });
+
+      useAuthStore.getState().setUser({
+        ...user!,
+        fullName: form.fullName,
+        timezone: form.timezone,
+      });
+
+      appToast.success('Profile updated successfully');
 
       setIsEditing(false);
     } catch (error) {
       console.error(error);
+      appToast.error('Failed to update profile');
     }
   };
 
@@ -55,8 +75,12 @@ export default function PersonalInfoCard() {
     setIsEditing(false);
   };
 
+  if (loading) {
+    return <PersonalInfoCardSkeleton />;
+  }
+
   return (
-    <Card className="shadow-lg dark:bg-slate-900">
+    <Card className="shadow-lg dark:bg-slate-900 mx-8">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Personal Information</CardTitle>
 

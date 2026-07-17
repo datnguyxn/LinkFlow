@@ -1,8 +1,19 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { Link, BarChart, CreditCard } from 'lucide-react';
 
+import { useAuth } from '@/hooks/useAuth';
+import QuickActionsSkeleton from './QuickActionsSkeleton';
+
 export default function QuickActions() {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <QuickActionsSkeleton />;
+  }
+
   const actions = [
     {
       title: 'Create Link',
@@ -19,7 +30,7 @@ export default function QuickActions() {
   ];
 
   return (
-    <Card className="shadow-lg dark:bg-slate-900">
+    <Card className="shadow-lg dark:bg-slate-900 mx-8">
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>

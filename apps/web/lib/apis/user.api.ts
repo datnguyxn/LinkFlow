@@ -44,4 +44,18 @@ export const userApi = {
   getProfile() {
     return api.get<ProfileResponse>(`${PREFIX}/user/me`);
   },
+
+  /**
+   * Upload user avatar
+   */
+  uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return api.patch(`${PREFIX}/user/me/avatar`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
