@@ -11,6 +11,7 @@ import { appToast } from '@/lib/toast';
 import { useMe } from '@/hooks/queries/useMe';
 import { useDelete } from '@/hooks/mutations/useDelete';
 import { useLogout } from '@/hooks/mutations/useLogout';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 export default function DangerZoneCard() {
   const { data: user, isLoading: loading, isError } = useMe();
@@ -57,13 +58,30 @@ export default function DangerZoneCard() {
           <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
         </div>
 
-        <Button
+        {/* <Button
           variant="outline"
           className="border-red-600 text-red-600 hover:bg-red-100 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-600"
           onClick={handleDeleteAccount}
         >
           Delete Account
-        </Button>
+        </Button> */}
+
+        <ConfirmDialog
+          title="Delete your account?"
+          description="This action is permanent and cannot be undone. All of your links, analytics, QR codes, and account data will be permanently deleted."
+          confirmText="Delete Account"
+          loading={deleteAccount.isPending}
+          variant="destructive"
+          onConfirm={handleDeleteAccount}
+          trigger={
+            <Button
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-100 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-600"
+            >
+              Delete Account
+            </Button>
+          }
+        />
       </CardContent>
     </Card>
   );

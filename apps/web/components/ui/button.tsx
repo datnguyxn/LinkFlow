@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  asChild?: boolean;
 }
 
 export default function Button({ loading, children, className, variant, ...props }: Props) {
