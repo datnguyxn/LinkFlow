@@ -32,6 +32,7 @@ export function createAuthServiceFixture() {
     findActiveByIdAndUserId: vi.fn(),
     findActiveByUserId: vi.fn(),
     revokeAllByUserId: vi.fn(),
+    revokeAllByUserIdExcept: vi.fn(),
   };
 
   const jwtService = {

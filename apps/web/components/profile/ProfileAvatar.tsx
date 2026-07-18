@@ -17,7 +17,7 @@ export default function ProfileAvatar() {
 
   const uploadAvatar = useUploadAvatar();
 
-  const { data: avatarUrl } = useAvatar();
+  const { data: avatarUrl } = useAvatar(user?.avatarUrl);
 
   const [preview, setPreview] = useState<string>();
 

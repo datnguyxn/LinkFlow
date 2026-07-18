@@ -574,17 +574,6 @@ describe('UserService', () => {
       });
     });
 
-    it('should throw if avatar not found', async () => {
-      userRepository.findById.mockResolvedValue({
-        id: 'user-id',
-        avatarUrl: null,
-      });
-
-      await expect(userService.getMyAvatar('user-id')).rejects.toMatchObject({
-        code: ERROR_CODE.NOT_FOUND,
-      });
-    });
-
     it('should throw if get file stream failed', async () => {
       userRepository.findById.mockResolvedValue({
         id: 'user-id',

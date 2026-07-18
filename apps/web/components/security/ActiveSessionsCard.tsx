@@ -1,5 +1,4 @@
 'use client';
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 
@@ -13,20 +12,59 @@ import { useState } from 'react';
 import { useActiveSessions } from '@/hooks/queries/useActiveSessions';
 import { useSignOutSession } from '@/hooks/mutations/useSignOutSession';
 import { useSignOutAllOtherSessions } from '@/hooks/mutations/useSignOutAllOtherSessions';
+import { useLogout } from '@/hooks/mutations/useLogout';
+import { tokenStorage } from '@/lib/storage/token.storage';
+import { queryClient } from '@/lib/query-client';
+import { useMe } from '@/hooks/queries/useMe';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 export default function ActiveSessionsCard() {
   const [open, setOpen] = useState(false);
 
-  const { data: sessions = [], isLoading } = useActiveSessions();
+  const { isLoading: userLoading } = useMe();
+
+  const { data: sessions = [], isLoading: sessionsLoading } = useActiveSessions();
+  const logout = useLogout();
 
   const signOutSession = useSignOutSession();
   const signOutAllOtherSessions = useSignOutAllOtherSessions();
 
-  if (isLoading) {
+  const handleSignOutSession = async (sessionId: string, current: boolean) => {
+    try {
+      await signOutSession.mutateAsync(sessionId);
+
+      // Nếu vừa sign out chính session hiện tại thì logout luôn
+      if (current) {
+        await logout.mutateAsync();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSignOutAllOtherSessions = async () => {
+    try {
+      await signOutAllOtherSessions.mutateAsync();
+
+      // Backend đã revoke toàn bộ session khác,
+      // session hiện tại cũng nên logout theo yêu cầu của bạn
+      await logout.mutateAsync();
+
+      queryClient.clear();
+
+      tokenStorage.clear();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const currentSession = sessions.find((session: { current: boolean }) => session.current);
+
+  console.log('sessions', sessions);
+  console.log('currentSession', currentSession);
+  if (userLoading || sessionsLoading) {
     return <ActiveSessionsCardSkeleton />;
   }
-
-  const currentSession = sessions.find((session: { isCurrent: boolean }) => session.isCurrent);
 
   return (
     <>
@@ -38,7 +76,7 @@ export default function ActiveSessionsCard() {
             <div>
               <CardTitle>Active Sessions</CardTitle>
 
-              <CardDescription>Devices currently signed into your account.</CardDescription>
+              <CardDescription>Devices currently signed into your account</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -84,13 +122,22 @@ export default function ActiveSessionsCard() {
             View all sessions ({sessions.length})
           </Button>
 
-          <Button
-            variant="outline"
+          <ConfirmDialog
+            title="Sign out of all other sessions?"
+            description="This will sign you out of all other devices except the current one."
+            confirmText="Sign Out Others"
             loading={signOutAllOtherSessions.isPending}
-            onClick={() => signOutAllOtherSessions.mutate()}
-          >
-            Sign Out All Other Devices
-          </Button>
+            variant="destructive"
+            onConfirm={handleSignOutAllOtherSessions}
+            trigger={
+              <Button
+                variant="outline"
+                className="border-red-600 text-red-600 hover:bg-red-100 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-600"
+              >
+                Sign Out All Other Sessions
+              </Button>
+            }
+          />
         </CardContent>
       </Card>
 
@@ -98,8 +145,8 @@ export default function ActiveSessionsCard() {
         open={open}
         onOpenChange={setOpen}
         sessions={sessions}
-        onSignOut={(id) => signOutSession.mutate(id)}
-        onSignOutOthers={() => signOutAllOtherSessions.mutate()}
+        onSignOut={(id) => handleSignOutSession(id, id === currentSession?.id)}
+        onSignOutOthers={() => handleSignOutAllOtherSessions()}
       />
     </>
   );

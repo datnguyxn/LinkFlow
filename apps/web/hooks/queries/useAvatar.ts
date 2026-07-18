@@ -1,14 +1,42 @@
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+
 import { userService } from '@/services/user.service';
 
-export function useAvatar() {
-  return useQuery({
-    queryKey: ['avatar'],
-    queryFn: async () => {
-      const response = await userService.getAvatar();
+const DEFAULT_AVATAR = '/avatars/default-avt.jpg';
 
-      return URL.createObjectURL(response);
+export function useAvatar(avatarUrl?: string) {
+  return useQuery({
+    queryKey: ['avatar', avatarUrl],
+
+    queryFn: async () => {
+      // Avatar Google hoặc URL ngoài
+      if (avatarUrl?.startsWith('http')) {
+        return avatarUrl;
+      }
+
+      try {
+        const blob = await userService.getAvatar();
+
+        // Phòng trường hợp service trả undefined/null khi 204
+        if (!blob || blob.size === 0) {
+          return DEFAULT_AVATAR;
+        }
+
+        return URL.createObjectURL(blob);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status;
+
+          if (status === 204 || status === 404) {
+            return DEFAULT_AVATAR;
+          }
+        }
+
+        throw error;
+      }
     },
-    staleTime: 1000 * 60 * 10,
+
+    staleTime: 10 * 60 * 1000,
   });
 }

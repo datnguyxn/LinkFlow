@@ -363,6 +363,6 @@ export const authRoutes = async (app: FastifyInstance) => {
       },
       preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
     },
-    controller.logoutAllSessions.bind(controller), // Bind controller context
+    controller.logoutAllOtherSessions.bind(controller), // Bind controller context
   );
 };

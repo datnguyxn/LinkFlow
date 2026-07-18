@@ -200,7 +200,7 @@ export class UserService {
 
     // If the user does not have an avatar, throw a ConflictError
     if (!user.avatarUrl) {
-      throw new ConflictError('user.avatarNotFound', ERROR_CODE.NOT_FOUND);
+      return null;
     }
 
     // Fetch the avatar file stream and metadata from the storage service

@@ -225,7 +225,12 @@ export class UserController {
 
     // Check if the avatar data is found; if not, return a not found error
     if (!avatarData) {
-      return ResponseHandler.error(reply, HTTP_STATUS.NOT_FOUND, request.t('user.avatar.notFound'));
+      return ResponseHandler.success(
+        reply,
+        null,
+        request.t('user.avatar.notFound'),
+        HTTP_STATUS.NO_CONTENT,
+      );
     }
 
     reply.header(

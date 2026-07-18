@@ -625,9 +625,11 @@ export class AuthController {
    * @param reply - FastifyReply to send the response
    * @returns A promise that resolves to a success response or an error response
    */
-  async logoutAllSessions(request: FastifyRequest, reply: FastifyReply) {
+  async logoutAllOtherSessions(request: FastifyRequest, reply: FastifyReply) {
     // Extract the user ID from the authenticated request
     const userId = request.user?.id;
+
+    const sessionId = request.user.sessionId;
 
     // Handle case: missing user ID (unauthenticated request)
     if (!userId) {
@@ -639,7 +641,7 @@ export class AuthController {
     }
 
     // Call service layer to logout all sessions for the user
-    await this.authService.logoutAllSessions(userId);
+    await this.authService.logoutAllOtherSessions(userId, sessionId);
 
     // Successful logout of all sessions
     return ResponseHandler.success(

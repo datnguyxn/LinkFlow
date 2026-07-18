@@ -12,7 +12,7 @@ export default function ActiveSessionsCardSkeleton() {
           <div>
             <CardTitle>Active Sessions</CardTitle>
 
-            <CardDescription>Devices signed in.</CardDescription>
+            <CardDescription>Devices currently signed into your account</CardDescription>
           </div>
         </div>
       </CardHeader>

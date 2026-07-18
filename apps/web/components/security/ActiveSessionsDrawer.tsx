@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import Button from '@/components/ui/button';
 import {
@@ -13,6 +11,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+
+import ConfirmDialog from '../common/ConfirmDialog';
 
 export interface Session {
   id: string;
@@ -29,8 +29,9 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   sessions: Session[];
 
-  onSignOut?: (id: string) => void;
-  onSignOutOthers?: () => void;
+  onSignOut: (id: string) => void;
+  onSignOutOthers: () => void;
+  signingOutOthers?: boolean;
 }
 
 export default function ActiveSessionsDrawer({
@@ -39,27 +40,22 @@ export default function ActiveSessionsDrawer({
   sessions,
   onSignOut,
   onSignOutOthers,
+  signingOutOthers = false,
 }: Props) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-w-xl ml-auto h-full rounded-l-2xl rounded-r-none">
+      <DrawerContent className="ml-auto h-full max-w-xl rounded-l-2xl rounded-r-none">
         <DrawerHeader>
           <DrawerTitle>Active Sessions</DrawerTitle>
 
           <DrawerDescription>Devices currently signed in to your account.</DrawerDescription>
         </DrawerHeader>
 
-        <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-3">
+        <div className="flex-1 space-y-3 overflow-y-auto px-5 pb-4">
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="
-                rounded-xl
-                border
-                p-4
-                transition-colors
-                hover:bg-muted/40
-              "
+              className="rounded-xl border p-4 transition-colors hover:bg-muted/40"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -81,8 +77,8 @@ export default function ActiveSessionsDrawer({
                 ) : (
                   <Button
                     variant="ghost"
-                    className="text-xs text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-800 w-20"
-                    onClick={() => onSignOut?.(session.id)}
+                    className="w-20 text-xs text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-800"
+                    onClick={() => onSignOut(session.id)}
                   >
                     Sign out
                   </Button>
@@ -93,14 +89,25 @@ export default function ActiveSessionsDrawer({
         </div>
 
         <DrawerFooter>
-          <Button variant="outline" onClick={onSignOutOthers}>
-            Sign Out All Other Devices
-          </Button>
+          <ConfirmDialog
+            title="Sign out of all other sessions?"
+            description="This will sign you out of all other devices except the current one."
+            confirmText="Sign Out Others"
+            variant="destructive"
+            loading={signingOutOthers}
+            onConfirm={onSignOutOthers}
+            trigger={
+              <Button
+                variant="outline"
+                className="border-red-600 text-red-600 hover:bg-red-100 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-600"
+              >
+                Sign Out All Other Sessions
+              </Button>
+            }
+          />
 
           <DrawerClose asChild>
-            <Button variant="ghost" className="ml-auto">
-              Close
-            </Button>
+            <Button variant="ghost">Close</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

@@ -51,15 +51,19 @@ describe('AuthService', () => {
     });
   });
 
-  describe('logoutAllSessions', () => {
-    it('should revoke all active sessions of user', async () => {
+  describe('logoutAllOtherSessions', () => {
+    it('should revoke all active sessions of user except the specified session', async () => {
       const userId = 'user-123';
+      const sessionId = 'session-123';
 
-      fixture.refreshTokenRepository.revokeAllByUserId.mockResolvedValue(undefined);
+      fixture.refreshTokenRepository.revokeAllByUserIdExcept.mockResolvedValue(undefined);
 
-      await fixture.authService.logoutAllSessions(userId);
+      await fixture.authService.logoutAllOtherSessions(userId, sessionId);
 
-      expect(fixture.refreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(userId);
+      expect(fixture.refreshTokenRepository.revokeAllByUserIdExcept).toHaveBeenCalledWith(
+        userId,
+        sessionId,
+      );
     });
   });
 });

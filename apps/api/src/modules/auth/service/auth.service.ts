@@ -897,8 +897,8 @@ export class AuthService {
    * @param userId - The unique ID of the user
    * @returns void
    */
-  async logoutAllSessions(userId: string): Promise<void> {
+  async logoutAllOtherSessions(userId: string, sessionId: string): Promise<void> {
     // Revoke all active sessions for the user to log them out from all devices
-    await this.refreshTokenRepository.revokeAllByUserId(userId);
+    await this.refreshTokenRepository.revokeAllByUserIdExcept(userId, sessionId);
   }
 }

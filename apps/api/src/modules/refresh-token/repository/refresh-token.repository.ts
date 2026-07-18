@@ -110,6 +110,33 @@ export class RefreshTokenRepository {
   }
 
   /**
+   * Revoke all refresh tokens associated with a specific user ID, except for a specified token ID.
+   * @param userId - The ID of the user whose refresh tokens should be revoked.
+   * @param exceptTokenId - The ID of the refresh token that should not be revoked.
+   * @param db - The Prisma transaction client or Prisma client for database operations (default is the main Prisma client).
+   * @returns The result of the update operation, including the count of revoked records.
+   */
+  async revokeAllByUserIdExcept(
+    userId: string,
+    exceptTokenId: string,
+    db: Prisma.TransactionClient | PrismaClient = prisma,
+  ) {
+    // Use the provided transaction client or Prisma client to update all refresh tokens in the database that are associated with the provided user ID, except for the specified token ID, setting their revoked status to true and recording the revocation time
+    return db.refreshToken.updateMany({
+      where: {
+        userId,
+        NOT: {
+          id: exceptTokenId,
+        },
+      },
+      data: {
+        revoked: true,
+        revokedAt: new Date(),
+      },
+    });
+  }
+
+  /**
    * Delete all expired refresh tokens.
    * @returns The result of the delete operation, including the count of deleted records.
    */
