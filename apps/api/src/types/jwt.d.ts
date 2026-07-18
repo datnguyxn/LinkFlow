@@ -7,6 +7,7 @@ declare module '@fastify/jwt' {
       email: string;
       language: string;
       role: string;
+      sessionId: string;
     };
 
     user: {
@@ -14,6 +15,7 @@ declare module '@fastify/jwt' {
       email: string;
       language: string;
       role: string;
+      sessionId: string;
     };
   }
 }

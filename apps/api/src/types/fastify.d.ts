@@ -19,6 +19,7 @@ declare module 'fastify' {
       id: string;
       email: string;
       language: string;
+      sessionId: string;
     };
   }
 

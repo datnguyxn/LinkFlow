@@ -535,4 +535,118 @@ export class AuthController {
       HTTP_STATUS.OK,
     );
   }
+
+  /**
+   * Handle request to fetch all active sessions for the authenticated user.
+   * Flow:
+   * 1. Extract user ID from the authenticated request.
+   * 2. Call service to fetch all active sessions for the user.
+   * 3. Return success response with session details.
+   *
+   * @param request - FastifyRequest containing the authenticated user's information
+   * @param reply - FastifyReply to send the response
+   * @returns A promise that resolves to an array of session objects or an error response
+   */
+  async findAllSessions(request: FastifyRequest, reply: FastifyReply) {
+    // Extract the user ID from the authenticated request
+    const userId = request.user?.id;
+
+    const sessionId = request.user.sessionId;
+
+    // Handle case: missing user ID (unauthenticated request)
+    if (!userId) {
+      return ResponseHandler.error(
+        reply,
+        HTTP_STATUS.UNAUTHORIZED,
+        request.t('auth.middleware.unauthorized'),
+      );
+    }
+
+    // Call service layer to fetch all active sessions for the user
+    const sessions = await this.authService.findAllSessions(userId, sessionId);
+
+    // Successful retrieval of active sessions
+    return ResponseHandler.success(
+      reply,
+      sessions,
+      request.t('common.successData'),
+      HTTP_STATUS.OK,
+    );
+  }
+
+  /**
+   * Handle request to logout a specific session for the authenticated user.
+   * Flow:
+   * 1. Extract user ID and session ID from the authenticated request.
+   * 2. Call service to logout the specific session for the user.
+   * 3. Return success response.
+   *
+   * @param request - FastifyRequest containing the authenticated user's information and session ID in params
+   * @param reply - FastifyReply to send the response
+   * @returns A promise that resolves to a success response or an error response
+   */
+  async logoutSession(
+    request: FastifyRequest<{ Params: { sessionId: string } }>,
+    reply: FastifyReply,
+  ) {
+    // Extract the user ID and session ID from the authenticated request
+    const userId = request.user?.id;
+    const sessionId = request.params.sessionId;
+
+    // Handle case: missing user ID (unauthenticated request)
+    if (!userId) {
+      return ResponseHandler.error(
+        reply,
+        HTTP_STATUS.UNAUTHORIZED,
+        request.t('auth.middleware.unauthorized'),
+      );
+    }
+
+    // Call service layer to logout the specific session for the user
+    await this.authService.logoutSession(userId, sessionId);
+
+    // Successful logout of the specified session
+    return ResponseHandler.success(
+      reply,
+      null,
+      request.t('auth.logoutSessionSuccess'),
+      HTTP_STATUS.OK,
+    );
+  }
+
+  /**
+   * Handle request to logout all active sessions for the authenticated user.
+   * Flow:
+   * 1. Extract user ID from the authenticated request.
+   * 2. Call service to logout all sessions for the user.
+   * 3. Return success response.
+   *
+   * @param request - FastifyRequest containing the authenticated user's information
+   * @param reply - FastifyReply to send the response
+   * @returns A promise that resolves to a success response or an error response
+   */
+  async logoutAllSessions(request: FastifyRequest, reply: FastifyReply) {
+    // Extract the user ID from the authenticated request
+    const userId = request.user?.id;
+
+    // Handle case: missing user ID (unauthenticated request)
+    if (!userId) {
+      return ResponseHandler.error(
+        reply,
+        HTTP_STATUS.UNAUTHORIZED,
+        request.t('auth.middleware.unauthorized'),
+      );
+    }
+
+    // Call service layer to logout all sessions for the user
+    await this.authService.logoutAllSessions(userId);
+
+    // Successful logout of all sessions
+    return ResponseHandler.success(
+      reply,
+      null,
+      request.t('auth.logoutAllSessionsSuccess'),
+      HTTP_STATUS.OK,
+    );
+  }
 }

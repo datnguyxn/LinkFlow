@@ -18,6 +18,9 @@ import {
   resetPasswordSchema,
   type ResetPasswordBody,
 } from '../validator/reset-password.validator.ts';
+import { authMiddleware } from '../../../common/middleware/index.ts';
+import { UserRole } from '@prisma/client';
+import { roleGuard } from '../../../common/guards/index.ts';
 
 // Initialize controller instance
 const controller = new AuthController();
@@ -295,5 +298,71 @@ export const authRoutes = async (app: FastifyInstance) => {
       schema: resetPasswordSwagger, // Swagger documentation for this route
     },
     controller.resetPassword.bind(controller), // Bind controller context
+  );
+
+  /**
+   * GET /sessions
+   *
+   * Features:
+   * - Lists all active sessions for the authenticated user
+   * - Rate limiting to prevent abuse
+   * - Requires authentication and role-based access control
+   */
+  app.get(
+    '/sessions',
+    {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
+    },
+    controller.findAllSessions.bind(controller), // Bind controller context
+  );
+
+  /**
+   * GET /sessions/:sessionId/logout
+   *
+   * Features:
+   * - Logs out a specific session for the authenticated user
+   * - Rate limiting to prevent abuse
+   * - Requires authentication and role-based access control
+   */
+  app.get<{ Params: { sessionId: string } }>(
+    '/sessions/:sessionId/logout',
+    {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
+    },
+    controller.logoutSession.bind(controller), // Bind controller context
+  );
+
+  /**
+   * GET /sessions/logout-all
+   *
+   * Features:
+   * - Logs out all sessions for the authenticated user
+   * - Rate limiting to prevent abuse
+   * - Requires authentication and role-based access control
+   */
+  app.get(
+    '/sessions/logout-all',
+    {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
+    },
+    controller.logoutAllSessions.bind(controller), // Bind controller context
   );
 };

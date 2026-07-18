@@ -29,5 +29,6 @@ export async function authMiddleware(request: FastifyRequest) {
     email: payload.email,
     language: payload.language,
     role: payload.role,
+    sessionId: payload.sessionId,
   };
 }

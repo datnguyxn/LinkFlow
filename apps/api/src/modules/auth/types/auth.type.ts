@@ -8,6 +8,7 @@ export interface JwtPayload {
   email: string;
   role: string;
   language: string;
+  sessionId: string;
 }
 
 export interface AuthToken {

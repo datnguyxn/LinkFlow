@@ -16,13 +16,14 @@ import type {
   UserLogoutEvent,
   PasswordResetRequestedEvent,
 } from '../../../events/index.ts';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { AuthPublisher } from '../../../publishers/auth/auth.publisher.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
 import { UserStatus, type User } from '@prisma/client';
 import type { LoginOptions } from '../types/login-option.type.ts';
 import { PasswordResetRepository } from '../../password-reset/index.ts';
 import type { PasswordResetToken } from '@prisma/client';
+import { parseUserAgent } from '../../../utils/user-agent.util.ts';
 
 /**
  * AuthService handles business logic related to authentication.
@@ -216,12 +217,15 @@ export class AuthService {
       ? config.JWT_REFRESH_REMEMBER_EXPIRES_IN
       : config.JWT_REFRESH_EXPIRES_IN;
 
+    const newSessionId = randomUUID();
+
     // Generate new tokens
     const accessToken = this.jwtService.generateAccessToken({
       id: user.id,
       email: user.email,
       role: user.role,
-      language: user.language || LANGUAGE.EN, // default language
+      language: user.language || LANGUAGE.EN, // default language,
+      sessionId: newSessionId,
     });
 
     const newRefreshToken = this.jwtService.generateRefreshToken(
@@ -229,7 +233,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         role: user.role,
-        language: user.language || LANGUAGE.EN, // default language
+        language: user.language || LANGUAGE.EN, // default language,
+        sessionId: newSessionId,
       },
       refreshExpiresIn,
     );
@@ -240,6 +245,7 @@ export class AuthService {
       // Save new refresh token
       await this.refreshTokenRepository.create(
         {
+          id: newSessionId,
           userId: user.id,
           token: {
             tokenHash: newRefreshTokenHash,
@@ -346,12 +352,16 @@ export class AuthService {
    * @returns A promise that resolves to an AuthResponse containing access and refresh tokens
    */
   async completeLogin(user: User, options: LoginOptions, method: string): Promise<AuthResponse> {
+    // Generate new session ID for the login session
+    const newSessionId = randomUUID();
+
     // Generate access token
     const accessToken = await this.jwtService.generateAccessToken({
       id: user.id,
       email: user.email,
       role: user.role,
-      language: user.language || LANGUAGE.EN, // default language
+      language: user.language || LANGUAGE.EN, // default language,
+      sessionId: newSessionId,
     });
 
     // Generate refresh token
@@ -370,13 +380,15 @@ export class AuthService {
         id: user.id,
         email: user.email,
         role: user.role,
-        language: user.language || LANGUAGE.EN, // default language
+        language: user.language || LANGUAGE.EN, // default language,
+        sessionId: newSessionId,
       },
       refreshExpiresIn,
     );
 
     // Save refresh token
     await this.refreshTokenRepository.create({
+      id: newSessionId,
       userId: user.id,
       token: {
         tokenHash: await this.jwtService.hashRefreshToken(refreshToken),
@@ -442,7 +454,8 @@ export class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
-      language: user.language || LANGUAGE.EN, // default language
+      language: user.language || LANGUAGE.EN, // default language,
+      sessionId: payload.sessionId,
     });
 
     // Return the new access token and user information
@@ -820,5 +833,72 @@ export class AuthService {
   async validateResetPasswordToken(token: string): Promise<void> {
     // Call the validatePasswordResetToken method to check the validity of the token
     await this.validatePasswordResetToken(token);
+  }
+
+  /**
+   * Find all active sessions for a user
+   * - Fetch all active sessions from the refresh token repository
+   * - Parse the user agent string to extract device, OS, and browser information
+   * - Return an array of session objects containing relevant session details
+   * @param userId  - The unique ID of the user for whom to find active sessions
+   * @returns An array of session objects containing session details such as ID, IP address, user agent, device, OS, browser, expiration time, and creation time
+   * @throws UnauthorizedError if the user is not found
+   */
+  async findAllSessions(userId: string, sessionId: string) {
+    // Fetch all active sessions for the user from the refresh token repository
+    const sessions = await this.refreshTokenRepository.findActiveByUserId(userId);
+
+    // Map the sessions to include parsed user agent information
+    return sessions.map((session) => {
+      // Parse the user agent string to extract device, OS, and browser information
+      const device = parseUserAgent(session.userAgent || '');
+
+      // Return an object containing session details along with parsed device information
+      return {
+        current: session.id === sessionId,
+        id: session.id,
+        ipAddress: session.ipAddress,
+        userAgent: session.userAgent,
+        device: device.device,
+        os: device.os,
+        browser: device.browser,
+        expiresAt: session.expiresAt,
+        createdAt: session.createdAt,
+      };
+    });
+  }
+
+  /**
+   * Logout a specific session for a user
+   * - Find the session by user ID and session ID
+   * - If the session is not found, throw an UnauthorizedError
+   * - Revoke the session to log the user out
+   * @param userId - The unique ID of the user
+   * @param sessionId - The unique ID of the session to log out
+   * @returns void
+   * @throws UnauthorizedError if the session is not found or invalid
+   */
+  async logoutSession(userId: string, sessionId: string): Promise<void> {
+    // Find the session by user ID and session ID
+    const session = await this.refreshTokenRepository.findActiveByIdAndUserId(sessionId, userId);
+
+    // If the session is not found, throw an UnauthorizedError
+    if (!session) {
+      throw new UnauthorizedError('auth.middleware.invalidSession', ERROR_CODE.INVALID_SESSION);
+    }
+
+    // Revoke the session to log the user out
+    await this.refreshTokenRepository.revoke(session.id);
+  }
+
+  /**
+   * Logout all active sessions for a user
+   * - Revoke all active sessions for the user to log them out from all devices
+   * @param userId - The unique ID of the user
+   * @returns void
+   */
+  async logoutAllSessions(userId: string): Promise<void> {
+    // Revoke all active sessions for the user to log them out from all devices
+    await this.refreshTokenRepository.revokeAllByUserId(userId);
   }
 }

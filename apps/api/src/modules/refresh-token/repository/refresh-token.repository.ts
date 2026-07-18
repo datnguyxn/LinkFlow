@@ -14,6 +14,7 @@ export class RefreshTokenRepository {
    */
   async create(
     data: {
+      id: string;
       token: Prisma.RefreshTokenCreateInput;
       userId: string;
       ipAddress?: string;
@@ -25,6 +26,7 @@ export class RefreshTokenRepository {
     // Use the provided transaction client or Prisma client to create a new refresh token in the database
     return db.refreshToken.create({
       data: {
+        id: data.id,
         tokenHash: data.token.tokenHash,
         userId: data.userId,
         expiresAt: data.token.expiresAt,
@@ -133,6 +135,47 @@ export class RefreshTokenRepository {
     return db.refreshToken.deleteMany({
       where: {
         userId,
+      },
+    });
+  }
+
+  /**
+   * Find all active (not revoked and not expired) refresh tokens for a specific user ID.
+   * @param userId - The ID of the user whose active refresh tokens to find.
+   * @returns An array of found active refresh token records.
+   */
+  async findActiveByUserId(userId: string) {
+    // Use the Prisma client to find all active refresh tokens in the database for the provided user ID (i.e., tokens that are not revoked and have not expired)
+    return prisma.refreshToken.findMany({
+      where: {
+        userId,
+        revokedAt: null,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  /**
+   * Find an active (not revoked and not expired) refresh token by its ID and associated user ID.
+   * @param id - The ID of the refresh token to find.
+   * @param userId - The ID of the user associated with the refresh token.
+   * @returns The found active refresh token record, or null if not found.
+   */
+  async findActiveByIdAndUserId(id: string, userId: string) {
+    // Use the Prisma client to find an active refresh token in the database by its ID and associated user ID (i.e., token that is not revoked and has not expired)
+    return prisma.refreshToken.findFirst({
+      where: {
+        id,
+        userId,
+        revokedAt: null,
+        expiresAt: {
+          gt: new Date(),
+        },
       },
     });
   }
