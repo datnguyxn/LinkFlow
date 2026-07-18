@@ -1,16 +1,16 @@
 'use client';
 
-import { useUser } from '@/hooks/useUser';
-import { useUserStore } from '@/stores/user.store';
+import { useMe } from '@/hooks/queries/useMe';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
 
 export default function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
 
-  const { user, updateUserProfile } = useUser();
+  const { data: user, isLoading: loading, isError } = useMe();
 
-  const updateUser = useUserStore((state) => state.updateUser);
+  const updateProfile = useUpdateProfile();
 
   const handleThemeChange = async () => {
     const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
@@ -19,11 +19,8 @@ export default function ThemeToggle() {
     setTheme(nextTheme);
 
     try {
-      await updateUserProfile({
-        theme: nextTheme === 'dark' ? 'DARK' : 'LIGHT',
-      });
-
-      updateUser({
+      // Cập nhật theme trong profile của user
+      await updateProfile.mutateAsync({
         theme: nextTheme === 'dark' ? 'DARK' : 'LIGHT',
       });
     } catch {

@@ -9,7 +9,6 @@ import Logo from '../common/Logo';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 
 import dynamic from 'next/dynamic';
-import { useAuth } from '@/hooks/useAuth';
 
 const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
   ssr: false,
@@ -36,7 +35,6 @@ const menus = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
 
   return (
     <header

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { ROUTES, PUBLIC_ROUTES, isPublicRoute, isProtectedRoute } from '@/constants/routes';
+import { ROUTES, isPublicRoute, isProtectedRoute } from '@/constants/routes';
 
 export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refreshToken')?.value;

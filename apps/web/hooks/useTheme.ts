@@ -2,39 +2,32 @@
 
 import { useTheme } from 'next-themes';
 
-import { useUser } from '@/hooks/useUser';
+import { useMe } from '@/hooks/queries/useMe';
+import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
 
 export function useAppTheme() {
   const { setTheme } = useTheme();
 
-  const {
-    user,
+  const { data: user } = useMe();
 
-    updateUser,
-
-    updateUserProfile,
-  } = useUser();
+  const updateUserProfile = useUpdateProfile();
 
   const changeTheme = async (theme: 'LIGHT' | 'DARK' | 'SYSTEM') => {
     if (!user) return;
 
     setTheme(theme);
 
-    updateUser({
-      ...user,
-
-      theme,
-    });
-
     try {
-      await updateUserProfile({
-        ...user,
+      await updateUserProfile.mutateAsync({
         theme,
       });
     } catch {
       setTheme(user.theme);
 
-      updateUser(user);
+      // rollback
+      await updateUserProfile.mutateAsync({
+        theme: user.theme,
+      });
     }
   };
 

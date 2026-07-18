@@ -2,39 +2,35 @@
 
 import i18n, { LANGUAGE_STORAGE_KEY } from '@/i18n';
 
-import { useUser } from '@/hooks/useUser';
+import { useMe } from '@/hooks/queries/useMe';
+import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
 
 export function useLanguage() {
-  const { user, updateUser, updateUserProfile } = useUser();
+  const { data: user } = useMe();
 
-  const changeLanguage = async (lang: string) => {
-    if (!user) return;
+  const updateProfile = useUpdateProfile();
 
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+  const changeLanguage = async (language: 'en' | 'vi') => {
+    if (!user || user.language === language) return;
 
-    i18n.changeLanguage(lang);
-
-    updateUser({
-      ...user,
-      language: lang,
-    });
+    // Update UI ngay lập tức
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    i18n.changeLanguage(language);
 
     try {
-      await updateUserProfile({
-        language: lang,
+      await updateProfile.mutateAsync({
+        language,
       });
     } catch {
+      // rollback
       localStorage.setItem(LANGUAGE_STORAGE_KEY, user.language);
-
       i18n.changeLanguage(user.language);
-
-      updateUser(user);
     }
   };
 
   return {
     language: user?.language ?? 'en',
-
     changeLanguage,
+    isPending: updateProfile.isPending,
   };
 }

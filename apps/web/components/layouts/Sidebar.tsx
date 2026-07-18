@@ -8,7 +8,6 @@ import {
   Home,
   Link2,
   BarChart3,
-  User,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -16,11 +15,6 @@ import {
   LogOut,
   ChevronDown,
   QrCode,
-  Languages,
-  Moon,
-  Monitor,
-  Sun,
-  Check,
   Globe,
 } from 'lucide-react';
 
@@ -32,11 +26,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
 import { appToast } from '@/lib/toast';
 import dynamic from 'next/dynamic';
 import { useSidebarStore } from '@/stores/sidebar.store';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useMe } from '@/hooks/queries/useMe';
+import { useLogout } from '@/hooks/mutations/useLogout';
+import { useAvatar } from '@/hooks/queries/useAvatar';
 
 const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
   ssr: false,
@@ -52,13 +48,17 @@ export default function Sidebar() {
 
   const [open, setOpen] = useState(false);
 
-  const { user, logout } = useAuth();
+  const { data: user, isLoading: loading, isError } = useMe();
+
+  const { data: avatarUrl } = useAvatar();
+
+  const logout = useLogout();
 
   const { language, changeLanguage } = useLanguage();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      logout();
+      await logout.mutateAsync();
 
       appToast.success('Logged out successfully');
     } catch (error) {
@@ -342,7 +342,7 @@ export default function Sidebar() {
           "
           >
             <img
-              src={user?.avatarUrl}
+              src={avatarUrl || user?.avatarUrl}
               alt={user?.fullName}
               className="
               h-11
@@ -412,7 +412,7 @@ export default function Sidebar() {
           "
           >
             <img
-              src={user?.avatarUrl}
+              src={avatarUrl || user?.avatarUrl}
               alt={user?.fullName}
               className="h-12 w-12 rounded-full object-cover"
             />
@@ -425,22 +425,6 @@ export default function Sidebar() {
           </div>
 
           <DropdownMenuSeparator />
-
-          <DropdownMenuItem
-            asChild
-            className="
-            h-11
-            cursor-pointer
-            rounded-xl
-            hover:dark:bg-slate-800
-          "
-          >
-            <Link href="/dashboard/profile" className="flex items-center">
-              <User className="mr-3 h-4 w-4" />
-              View Profile
-            </Link>
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             asChild
             className="
