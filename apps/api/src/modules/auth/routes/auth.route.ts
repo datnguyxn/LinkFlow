@@ -12,6 +12,8 @@ import {
   resetPasswordValidateSwagger,
   resendVerificationEmailSwagger,
   verifyEmailSwagger,
+  logoutAllOtherSessionsSwagger,
+  logoutSessionSwagger,
 } from '../../../swaggers/index.ts';
 import { loginSchema, type LoginBody } from '../validator/login.validator.ts';
 import {
@@ -21,6 +23,7 @@ import {
 import { authMiddleware } from '../../../common/middleware/index.ts';
 import { UserRole } from '@prisma/client';
 import { roleGuard } from '../../../common/guards/index.ts';
+import { sessionsSwagger } from '../../../swaggers/auth/sessions.swagger.ts';
 
 // Initialize controller instance
 const controller = new AuthController();
@@ -317,6 +320,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: sessionsSwagger, // Swagger documentation for this route
       preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
     },
     controller.findAllSessions.bind(controller), // Bind controller context
@@ -339,6 +343,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: logoutSessionSwagger, // Swagger documentation for this route
       preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
     },
     controller.logoutSession.bind(controller), // Bind controller context
@@ -361,6 +366,7 @@ export const authRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: logoutAllOtherSessionsSwagger, // Swagger documentation for this route
       preHandler: [app.authenticate, authMiddleware, roleGuard(UserRole.ADMIN, UserRole.USER)], // Ensure the user is authenticated before accessing this route
     },
     controller.logoutAllOtherSessions.bind(controller), // Bind controller context

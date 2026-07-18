@@ -7,6 +7,8 @@ export * from './auth/forgot-password.swagger.ts';
 export * from './auth/reset-password.swagger.ts';
 export * from './auth/reset-password-validate.swagger.ts';
 export * from './auth/resend-verification-email.swagger.ts';
+export * from './auth/logout-session.swagger.ts';
+export * from './auth/logout-all-other-sessions.swagger.ts';
 
 export * from './users/get-profile.swagger.ts';
 export * from './users/update-profile.swagger.ts';
