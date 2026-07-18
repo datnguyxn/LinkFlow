@@ -7,17 +7,17 @@ import { Trash2 } from 'lucide-react';
 
 import DangerZoneCardSkeleton from './DangerZoneCardSkeleton';
 
-import { useUser } from '@/hooks/useUser';
 import { appToast } from '@/lib/toast';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useMe } from '@/hooks/queries/useMe';
+import { useDelete } from '@/hooks/mutations/useDelete';
+import { useLogout } from '@/hooks/mutations/useLogout';
 
 export default function DangerZoneCard() {
-  const { loading, deleteAccount } = useUser();
+  const { data: user, isLoading: loading, isError } = useMe();
 
-  const { logout } = useAuth();
+  const deleteAccount = useDelete();
 
-  const route = useRouter();
+  const logout = useLogout();
 
   if (loading) {
     return <DangerZoneCardSkeleton />;
@@ -25,12 +25,12 @@ export default function DangerZoneCard() {
 
   const handleDeleteAccount = async () => {
     try {
-      await deleteAccount();
+      await deleteAccount.mutateAsync();
 
       appToast.success('Account deleted successfully');
 
       // Optionally, you can redirect the user to a different page after account deletion
-      await logout();
+      await logout.mutateAsync();
     } catch (error) {
       console.error('Error deleting account:', error);
     }

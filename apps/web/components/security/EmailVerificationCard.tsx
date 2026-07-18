@@ -1,15 +1,14 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useMe } from '@/hooks/queries/useMe';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 import Button from '@/components/ui/button';
 import { MailCheck, CheckCircle2 } from 'lucide-react';
 import EmailVerificationCardSkeleton from './EmailVerificationCardSkeleton';
-
 export default function EmailVerificationCard() {
-  const { loading, user } = useAuth();
+  const { data: user, isLoading: loading, isError } = useMe();
 
   if (loading) {
     return <EmailVerificationCardSkeleton />;

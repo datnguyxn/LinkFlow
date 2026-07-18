@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { Link, BarChart, CreditCard } from 'lucide-react';
 
-import { useAuth } from '@/hooks/useAuth';
 import QuickActionsSkeleton from './QuickActionsSkeleton';
+import { useMe } from '@/hooks/queries/useMe';
 
 export default function QuickActions() {
-  const { loading } = useAuth();
+  const { data: user, isLoading: loading, isError } = useMe();
 
   if (loading) {
     return <QuickActionsSkeleton />;

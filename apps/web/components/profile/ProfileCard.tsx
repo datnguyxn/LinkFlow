@@ -4,14 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 
 import ProfileAvatar from './ProfileAvatar';
 
-import { useAuth } from '@/hooks/useAuth';
-
 import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProfileCardSkeleton from './ProfileCardSkeleton';
+import { useMe } from '@/hooks/queries/useMe';
 
 export default function ProfileCard() {
-  const { user, loading } = useAuth();
+  const { data: user, isLoading: loading, isError } = useMe();
 
   if (loading) {
     return <ProfileCardSkeleton />;

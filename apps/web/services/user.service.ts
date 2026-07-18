@@ -1,5 +1,4 @@
 import { userApi } from '@/lib/apis/user.api';
-import { useAuthStore } from '@/stores/auth.store';
 import { ApiResponse } from '@/types/api';
 import type { UserProfile } from '@/types/auth';
 
@@ -7,13 +6,9 @@ class UserService {
   /**
    * Get user avatar
    */
-  async getAvatar(user: UserProfile): Promise<void> {
+  async getAvatar() {
     const response = await userApi.getAvatar();
-
-    const blob = response.data;
-    const imageUrl = URL.createObjectURL(blob);
-    useAuthStore.getState().setUser(user);
-    useAuthStore.getState().setAvatarUrl(imageUrl);
+    return response.data;
   }
 
   /**

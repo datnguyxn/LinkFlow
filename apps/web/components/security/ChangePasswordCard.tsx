@@ -10,19 +10,21 @@ import { ChangePasswordForm, changePasswordSchema } from '@/lib/validators/user.
 import { zodResolver } from '@hookform/resolvers/zod/dist/zod.js';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
-import { useUser } from '@/hooks/useUser';
+
 import { appToast } from '@/lib/toast';
-import { useAuth } from '@/hooks/useAuth';
 import ChangePasswordCardSkeleton from './ChangePasswordCardSkeleton';
+import { useLogout } from '@/hooks/mutations/useLogout';
+import { useChangePassword } from '@/hooks/mutations/useChangePassword';
+import { useMe } from '@/hooks/queries/useMe';
 
 export default function ChangePasswordCard() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { changePassword } = useUser();
-
-  const { user, loading, logout } = useAuth();
+  const { data: user, isLoading: loading } = useMe();
+  const changePassword = useChangePassword();
+  const logout = useLogout();
 
   const isGoogleAccount = user?.provider === 'GOOGLE';
 
@@ -36,14 +38,17 @@ export default function ChangePasswordCard() {
 
   const onSubmit = async (data: ChangePasswordForm) => {
     try {
-      const response = await changePassword(data.oldPassword, data.newPassword);
+      const response = await changePassword.mutateAsync({
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
+      });
 
       // Handle success (e.g., show a success message)
       console.log('Password changed successfully');
 
       appToast.success(response.data.message || 'Password changed successfully');
 
-      await logout(); // Log the user out after changing the password
+      await logout.mutateAsync(); // Log the user out after changing the password
     } catch (error) {
       console.error('Error changing password:', error);
     }

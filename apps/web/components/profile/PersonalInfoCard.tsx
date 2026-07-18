@@ -5,16 +5,17 @@ import { useState } from 'react';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import { useUser } from '@/hooks/useUser';
+
 import { appToast } from '@/lib/toast';
-import { useAuthStore } from '@/stores/auth.store';
+
 import PersonalInfoCardSkeleton from './PersonalInfoCardSkeleton';
+import { useMe } from '@/hooks/queries/useMe';
+import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
 
 export default function PersonalInfoCard() {
-  const { user, loading } = useAuth();
+  const { data: user, isLoading: loading, isError } = useMe();
 
-  const { updateUserProfile, updateUser } = useUser();
+  const updateProfile = useUpdateProfile();
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -43,15 +44,8 @@ export default function PersonalInfoCard() {
 
   const handleSave = async () => {
     try {
-      await updateUserProfile(form);
-
-      updateUser({
-        fullName: form.fullName,
-        timezone: form.timezone,
-      });
-
-      useAuthStore.getState().setUser({
-        ...user!,
+      await updateProfile.mutateAsync({
+        email: form.email,
         fullName: form.fullName,
         timezone: form.timezone,
       });
