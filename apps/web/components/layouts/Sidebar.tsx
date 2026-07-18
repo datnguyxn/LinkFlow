@@ -33,6 +33,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useMe } from '@/hooks/queries/useMe';
 import { useLogout } from '@/hooks/mutations/useLogout';
 import { useAvatar } from '@/hooks/queries/useAvatar';
+import Image from 'next/image';
 
 const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
   ssr: false,
@@ -50,7 +51,7 @@ export default function Sidebar() {
 
   const { data: user, isLoading: loading, isError } = useMe();
 
-  const { data: avatarUrl } = useAvatar();
+  const { data: avatarUrl } = useAvatar(user?.avatarUrl);
 
   const logout = useLogout();
 
@@ -341,20 +342,22 @@ export default function Sidebar() {
             cursor-pointer
           "
           >
-            <img
-              src={avatarUrl || user?.avatarUrl}
-              alt={user?.fullName}
+            <Image
+              src={avatarUrl || '/avatars/default-avt.jpg'}
+              alt={user?.fullName ?? 'Avatar'}
+              width={44}
+              height={44}
               className="
-              h-11
-              w-11
-              rounded-full
-              object-cover
-              ring-2
-              ring-slate-200
-              transition
-              group-hover:ring-blue-500
-              dark:ring-slate-700
-            "
+                  h-11
+                  w-11
+                  rounded-full
+                  object-cover
+                  ring-2
+                  ring-slate-200
+                  transition
+                  group-hover:ring-blue-500
+                  dark:ring-slate-700
+                "
             />
 
             {!collapsed && (
@@ -411,9 +414,11 @@ export default function Sidebar() {
             dark:bg-slate-800
           "
           >
-            <img
-              src={avatarUrl || user?.avatarUrl}
-              alt={user?.fullName}
+            <Image
+              src={avatarUrl || '/avatars/default-avt.jpg'}
+              alt={user?.fullName ?? 'Avatar'}
+              width={48}
+              height={48}
               className="h-12 w-12 rounded-full object-cover"
             />
 
