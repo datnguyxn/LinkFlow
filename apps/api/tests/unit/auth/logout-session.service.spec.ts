@@ -1,0 +1,65 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+
+describe('AuthService', () => {
+  let fixture: ReturnType<typeof createAuthServiceFixture>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    fixture = createAuthServiceFixture();
+  });
+
+  describe('logoutSession', () => {
+    it('should revoke session successfully', async () => {
+      const userId = 'user-123';
+      const sessionId = 'session-123';
+
+      const mockSession = {
+        id: sessionId,
+        userId,
+        userAgent: 'Chrome',
+        ipAddress: '127.0.0.1',
+        expiresAt: new Date(),
+        createdAt: new Date(),
+      };
+
+      fixture.refreshTokenRepository.findActiveByIdAndUserId.mockResolvedValue(mockSession);
+
+      fixture.refreshTokenRepository.revoke.mockResolvedValue(undefined);
+
+      await fixture.authService.logoutSession(userId, sessionId);
+
+      expect(fixture.refreshTokenRepository.findActiveByIdAndUserId).toHaveBeenCalledWith(
+        sessionId,
+        userId,
+      );
+
+      expect(fixture.refreshTokenRepository.revoke).toHaveBeenCalledWith(sessionId);
+    });
+
+    it('should throw UnauthorizedError when session does not exist', async () => {
+      const userId = 'user-123';
+      const sessionId = 'session-invalid';
+
+      fixture.refreshTokenRepository.findActiveByIdAndUserId.mockResolvedValue(null);
+
+      await expect(fixture.authService.logoutSession(userId, sessionId)).rejects.toThrow();
+
+      expect(fixture.refreshTokenRepository.revoke).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('logoutAllSessions', () => {
+    it('should revoke all active sessions of user', async () => {
+      const userId = 'user-123';
+
+      fixture.refreshTokenRepository.revokeAllByUserId.mockResolvedValue(undefined);
+
+      await fixture.authService.logoutAllSessions(userId);
+
+      expect(fixture.refreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(userId);
+    });
+  });
+});

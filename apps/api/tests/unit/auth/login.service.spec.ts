@@ -214,6 +214,7 @@ describe('AuthService', () => {
         email: user.email,
         role: user.role,
         language: 'en',
+        sessionId: expect.any(String),
       });
 
       expect(fixture.jwtService.generateRefreshToken).toHaveBeenCalledWith(
@@ -222,6 +223,7 @@ describe('AuthService', () => {
           email: user.email,
           role: user.role,
           language: 'en',
+          sessionId: expect.any(String),
         },
         expect.anything(),
       );
@@ -229,6 +231,7 @@ describe('AuthService', () => {
       expect(fixture.jwtService.hashRefreshToken).toHaveBeenCalledWith('refresh-token');
 
       expect(fixture.refreshTokenRepository.create).toHaveBeenCalledWith({
+        id: expect.any(String),
         userId: user.id,
         token: expect.objectContaining({
           tokenHash: 'hashed-refresh-token',

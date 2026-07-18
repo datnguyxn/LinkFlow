@@ -28,6 +28,10 @@ export function createAuthServiceFixture() {
     deleteByUserId: vi.fn(),
     findByTokenHash: vi.fn(),
     revoke: vi.fn(),
+    findByUserIdAndRevoked: vi.fn(),
+    findActiveByIdAndUserId: vi.fn(),
+    findActiveByUserId: vi.fn(),
+    revokeAllByUserId: vi.fn(),
   };
 
   const jwtService = {
