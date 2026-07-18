@@ -111,4 +111,25 @@ export const authApi = {
   resetPassword(data: { token: string; password: string }) {
     return api.post(`${PREFIX}/auth/reset-password`, data);
   },
+
+  /**
+   * List Active Sessions
+   */
+  listActiveSessions() {
+    return api.get(`${PREFIX}/auth/sessions`);
+  },
+
+  /**
+   * Sign Out Session
+   */
+  signOutSession(sessionId: string) {
+    return api.get(`${PREFIX}/auth/sessions/${sessionId}/logout`);
+  },
+
+  /**
+   * Sign Out All Other Sessions
+   */
+  signOutAllOtherSessions() {
+    return api.get(`${PREFIX}/auth/sessions/logout-all`);
+  },
 };

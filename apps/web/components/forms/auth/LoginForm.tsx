@@ -4,40 +4,42 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { appToast } from '@/lib/toast';
-
-import { loginSchema, type LoginForm } from '@/lib/validators/auth.validator';
+import { useRouter } from 'next/navigation';
 
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-
 import { FcGoogle } from 'react-icons/fc';
 
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/button';
+
+import { appToast } from '@/lib/toast';
 import { loginWithGoogle } from '@/lib/apis/auth.api';
-import { authService } from '@/services/auth.service';
-import { useRouter } from 'next/navigation';
+import { loginSchema, type LoginForm } from '@/lib/validators/auth.validator';
+
+import { useLogin } from '@/hooks/mutations/useLogin';
 
 export default function LoginForm() {
   const [show, setShow] = useState(false);
 
+  const router = useRouter();
+
+  const login = useLogin();
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
 
-  const router = useRouter();
-
   const onSubmit = async (data: LoginForm) => {
     try {
-      console.log('Login form submitted with data:', data);
-
-      const result = await authService.login(data.email, data.password, data.rememberMe);
-
-      console.log('Login successful:', result);
+      await login.mutateAsync({
+        email: data.email,
+        password: data.password,
+        remember: data.rememberMe,
+      });
 
       appToast.success('Login successfully');
 
@@ -49,17 +51,9 @@ export default function LoginForm() {
 
   return (
     <motion.form
-      initial={{
-        opacity: 0,
-        y: 30,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      transition={{
-        duration: 0.5,
-      }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6"
     >
@@ -67,25 +61,11 @@ export default function LoginForm() {
         type="button"
         onClick={loginWithGoogle}
         className="
-        flex
-        h-14
-        w-full
-        items-center
-        justify-center
-        gap-3
-        rounded-2xl
-        border
-        bg-white
-        font-semibold
-        text-slate-700
-        hover:bg-slate-100
-        transition
-        cursor-pointer
-        dark:border-slate-700
-        dark:bg-slate-900
-        dark:hover:bg-slate-800
-        dark:text-white
-      "
+          flex h-14 w-full items-center justify-center gap-3 rounded-2xl
+          border bg-white font-semibold text-slate-700 transition
+          hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900
+          dark:text-white dark:hover:bg-slate-800
+        "
       >
         <FcGoogle size={24} />
         Continue with Google
@@ -93,9 +73,7 @@ export default function LoginForm() {
 
       <div className="flex items-center gap-4">
         <div className="h-px flex-1 bg-slate-700" />
-
         <span className="text-slate-400">or continue with email</span>
-
         <div className="h-px flex-1 bg-slate-700" />
       </div>
 
@@ -103,17 +81,9 @@ export default function LoginForm() {
         <div>
           <label
             htmlFor="email"
-            className="
-              mb-2
-              block
-              text-sm
-              font-medium
-              text-slate-700
-              dark:text-slate-200
-            "
+            className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200"
           >
-            Email
-            <span className="ml-1 text-red-500">*</span>
+            Email <span className="ml-1 text-red-500">*</span>
           </label>
 
           <Input
@@ -128,17 +98,9 @@ export default function LoginForm() {
         <div>
           <label
             htmlFor="password"
-            className="
-              mb-2
-              block
-              text-sm
-              font-medium
-              text-slate-700
-              dark:text-slate-200
-            "
+            className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200"
           >
-            Password
-            <span className="ml-1 text-red-500">*</span>
+            Password <span className="ml-1 text-red-500">*</span>
           </label>
 
           <Input
@@ -149,7 +111,11 @@ export default function LoginForm() {
             error={errors.password?.message}
             {...register('password')}
             right={
-              <button type="button" onClick={() => setShow(!show)} className="cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setShow((prev) => !prev)}
+                className="cursor-pointer"
+              >
                 {show ? <EyeOff className="text-slate-500" /> : <Eye className="text-slate-500" />}
               </button>
             }
@@ -165,14 +131,14 @@ export default function LoginForm() {
 
         <button
           type="button"
-          className="text-blue-500 cursor-pointer"
+          className="cursor-pointer text-blue-500"
           onClick={() => router.push('/forgot-password')}
         >
           Forgot password
         </button>
       </div>
 
-      <Button loading={isSubmitting}>Sign In</Button>
+      <Button loading={login.isPending}>Sign In</Button>
     </motion.form>
   );
 }

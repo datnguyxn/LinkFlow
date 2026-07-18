@@ -81,3 +81,15 @@ export interface ProfileResponse {
     requestId: 'string';
   };
 }
+
+export interface ActiveSession {
+  id: string;
+  current: boolean;
+  ipAddress: string;
+  userAgent: string;
+  device: string;
+  os: string;
+  browser: string;
+  createdAt: string;
+  expiresAt: string;
+}

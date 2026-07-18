@@ -6,12 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { authEvents } from '@/events/auth.event';
 import { authService } from '@/services/auth.service';
-import { useAuthStore } from '@/stores/auth.store';
 import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
 import { appToast } from '@/lib/toast';
 import { ROUTES, isProtectedRoute } from '@/constants/routes';
-import { useAppTheme } from '@/services/theme.service';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   children: ReactNode;
@@ -23,10 +20,6 @@ export default function AuthProvider({ children }: Props) {
   const router = useRouter();
 
   const pathname = usePathname();
-
-  const loading = useAuthStore((state) => state.loading);
-
-  const { applyTheme } = useAppTheme();
 
   /**
    * Handle logout event
