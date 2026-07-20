@@ -4,7 +4,9 @@
 
 This document defines the REST API endpoints for the Workspace module.
 
-The API allows authenticated users to create and manage workspaces. Each workspace serves as the root container for all business resources, including members, URLs, tags, API keys, and future modules.
+The API allows authenticated users to create and manage workspaces. Each workspace acts as an isolated container for resources such as members, invitations, URLs, tags, API keys, and future modules.
+
+Workspace membership and invitation management are handled by their respective modules.
 
 All responses follow the standard API response format used by the system.
 
@@ -22,9 +24,9 @@ All Workspace APIs require JWT Authentication.
 |---------|----------|----------------|-------------|
 | POST | /workspaces | ✅ | Create Workspace |
 | GET | /workspaces | ✅ | List My Workspaces |
-| GET | /workspaces/:id | ✅ | Get Workspace Details |
-| PATCH | /workspaces/:id | ✅ | Update Workspace |
-| DELETE | /workspaces/:id | ✅ | Delete Workspace |
+| GET | /workspaces/:workspaceId | ✅ | Get Workspace Details |
+| PATCH | /workspaces/:workspaceId | ✅ | Update Workspace |
+| DELETE | /workspaces/:workspaceId | ✅ | Delete Workspace |
 
 ---
 
@@ -34,7 +36,7 @@ All Workspace APIs require JWT Authentication.
 
 Creates a new workspace.
 
-The authenticated user automatically becomes the workspace owner and the first workspace member.
+The authenticated user automatically becomes the workspace owner and is added as the first workspace member with the **OWNER** role.
 
 ### Request
 
@@ -58,9 +60,15 @@ POST /workspaces
 
 Returns
 
-- Workspace ID
 - Workspace information
 - Owner information
+
+Business Rules
+
+- Slug must be unique.
+- Reserved slugs are not allowed.
+- Workspace creation automatically creates an OWNER membership.
+- The workspace owner is also stored in `Workspace.ownerId`.
 
 ---
 
@@ -85,8 +93,8 @@ GET /workspaces
 Returns
 
 - Workspace list
-- User role
-- Workspace information
+- Current user role
+- Owner information
 
 ---
 
@@ -96,12 +104,12 @@ Returns
 
 Returns detailed information about a workspace.
 
-The user must be a member of the workspace.
+The requester must be an active workspace member.
 
 ### Request
 
 ```http
-GET /workspaces/{id}
+GET /workspaces/{workspaceId}
 ```
 
 ### Success Response
@@ -115,6 +123,7 @@ Returns
 - Workspace information
 - Owner information
 - Member count
+- Created date
 
 ---
 
@@ -124,12 +133,12 @@ Returns
 
 Updates workspace information.
 
-Only the workspace owner may update workspace settings.
+Only the workspace owner may perform this action.
 
 ### Request
 
 ```http
-PATCH /workspaces/{id}
+PATCH /workspaces/{workspaceId}
 ```
 
 ### Editable Fields
@@ -146,7 +155,12 @@ PATCH /workspaces/{id}
 
 Returns
 
-- Updated workspace
+- Updated workspace information
+
+Business Rules
+
+- Slug must remain unique.
+- Reserved slugs cannot be used.
 
 ---
 
@@ -161,7 +175,7 @@ Only the workspace owner may perform this operation.
 ### Request
 
 ```http
-DELETE /workspaces/{id}
+DELETE /workspaces/{workspaceId}
 ```
 
 ### Success Response
@@ -175,6 +189,7 @@ Business Rules
 Deleting a workspace also removes:
 
 - Workspace Members
+- Pending Invitations
 - URLs
 - Tags
 - API Keys
@@ -199,8 +214,8 @@ Deletion is handled through database cascade rules.
 # Permission Matrix
 
 | Feature | Member | Owner |
-|----------|--------|-------|
-| List Workspaces | ✅ | ✅ |
+|----------|:------:|:-----:|
+| List My Workspaces | ✅ | ✅ |
 | View Workspace | ✅ | ✅ |
 | Create Workspace | ✅ | ✅ |
 | Update Workspace | ❌ | ✅ |
@@ -210,22 +225,23 @@ Deletion is handled through database cascade rules.
 
 # Validation Rules
 
-## Name
+## Workspace Name
 
 Requirements
 
 - Required
 - 3–50 characters
+- Trim leading and trailing whitespace
 
 ---
 
-## Slug
+## Workspace Slug
 
 Requirements
 
 - Required
 - Globally unique
-- Lowercase
+- Lowercase only
 - Supports
 
 ```
@@ -256,7 +272,7 @@ root
 
 # Rate Limiting
 
-To prevent abuse, the following limits should be applied.
+To prevent abuse, the following limits are recommended.
 
 | Endpoint | Recommendation |
 |----------|----------------|

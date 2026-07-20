@@ -4,9 +4,9 @@
 
 The Workspace lifecycle defines the state transitions of a workspace throughout its lifetime.
 
-A workspace is created by an authenticated user and remains ACTIVE until it is deleted. During its lifetime, the workspace manages members, URLs, tags, API keys, and other resources.
+A workspace is created by an authenticated user and becomes the root container for all business resources in LinkFlow. During its lifetime, the workspace manages members, invitations, URLs, tags, API keys, analytics, and future modules.
 
-Deleting a workspace removes all associated resources through cascading deletion.
+Deleting a workspace permanently removes all associated resources through cascading deletion.
 
 ---
 
@@ -32,11 +32,13 @@ DELETED --> [*]
 
 ## ACTIVE
 
-The workspace is available for normal use.
+The workspace is fully operational.
 
 Characteristics
 
 - Members can access the workspace.
+- Pending invitations can be accepted.
+- New members can be invited.
 - URLs can be created and managed.
 - Tags can be managed.
 - API Keys can be created.
@@ -47,13 +49,13 @@ Characteristics
 
 ## UPDATED
 
-The workspace information has been modified.
+Workspace information has been modified.
 
 Typical changes
 
 - Workspace name
-- Workspace logo
 - Workspace slug
+- Workspace logo
 
 After the update completes successfully, the workspace returns to the ACTIVE state.
 
@@ -65,14 +67,15 @@ The workspace has been permanently removed.
 
 Characteristics
 
-- Members lose access immediately.
-- All URLs become unavailable.
-- All API Keys are revoked.
-- Tags are removed.
-- Workspace members are removed.
-- Analytics are no longer accessible.
+- All members lose access immediately.
+- All pending invitations are deleted.
+- URLs become unavailable.
+- API Keys are revoked.
+- Tags are deleted.
+- Workspace members are deleted.
+- Analytics are deleted together with their URLs.
 
-Deletion is performed through database cascading relationships.
+Deletion is handled through database cascade rules.
 
 ---
 
@@ -97,7 +100,7 @@ Create Workspace
 
 ↓
 
-Create OWNER Member
+Create OWNER Membership
 
 ↓
 
@@ -109,6 +112,8 @@ Conditions
 - User is authenticated.
 - Workspace name is valid.
 - Workspace slug is unique.
+
+The creator automatically becomes the workspace owner and the first active member.
 
 ---
 
@@ -139,7 +144,71 @@ Editable fields
 Conditions
 
 - User is the workspace owner.
-- Slug remains unique.
+- Slug remains globally unique.
+
+---
+
+## Invite Member
+
+Inviting members does **not** change the workspace lifecycle.
+
+Instead, it creates a new Workspace Invitation.
+
+```
+Workspace
+
+↓
+
+Create Invitation
+
+↓
+
+Send Email
+
+↓
+
+Pending Invitation
+```
+
+If the invited email already belongs to a registered user:
+
+- An in-app notification is created.
+- An invitation email is sent.
+
+If the email has not registered yet:
+
+- Only the invitation email is sent.
+
+Workspace access is **not** granted until the invitation is accepted.
+
+---
+
+## Accept Invitation
+
+Accepting an invitation does **not** change the workspace lifecycle.
+
+```
+Pending Invitation
+
+↓
+
+Validate Invitation
+
+↓
+
+Create Workspace Member
+
+↓
+
+Mark Invitation Accepted
+```
+
+Effects
+
+- Member joins the workspace.
+- Invitation becomes ACCEPTED.
+- Workspace member is created.
+- Access is granted immediately.
 
 ---
 
@@ -159,46 +228,96 @@ Workspace owner deletes the workspace.
 
 Effects
 
-- Remove Workspace
-- Remove Workspace Members
-- Remove URLs
-- Remove Tags
-- Remove API Keys
+- Delete Workspace
+- Delete Workspace Members
+- Delete Workspace Invitations
+- Delete URLs
+- Delete Tags
+- Delete API Keys
+- Delete Analytics
 
-All related resources are deleted through cascading relations.
+All related resources are removed through cascading foreign key relationships.
 
 ---
 
 # Member Lifecycle
 
-When a workspace is created
+Creating a workspace automatically creates the first membership.
 
 ```
 Workspace
 
 ↓
 
-Create OWNER Member
+OWNER Member
 ```
 
-Initial role
+Additional members join only after accepting a valid invitation.
 
 ```
-OWNER
+Invitation
+
+↓
+
+Accepted
+
+↓
+
+Workspace Member
 ```
 
-Additional members may join later through the Workspace Member module.
+---
+
+# Invitation Lifecycle
+
+Invitations are managed independently from the workspace lifecycle.
+
+```
+Create Invitation
+
+↓
+
+PENDING
+
+↓
+
+Accepted
+
+↓
+
+Workspace Member
+```
+
+Possible future states
+
+```
+PENDING
+
+↓
+
+DECLINED
+
+↓
+
+EXPIRED
+
+↓
+
+CANCELLED
+```
 
 ---
 
 # Resource Lifecycle
 
-A workspace owns multiple business resources.
+Every workspace owns its business resources.
 
 ```
 Workspace
 
 ├── Members
+
+├── Invitations
 
 ├── URLs
 
@@ -218,19 +337,21 @@ Deleting the workspace automatically removes all owned resources.
 # Access Behavior
 
 | State | Accessible |
-|---------|------------|
+|---------|:----------:|
 | ACTIVE | ✅ |
 | UPDATED | ✅ |
 | DELETED | ❌ |
 
-Only authenticated users who belong to the workspace may access its resources.
+Only active workspace members may access workspace resources.
+
+Pending invitations do not grant access.
 
 ---
 
 # Update Behavior
 
 | State | Editable |
-|---------|----------|
+|---------|:--------:|
 | ACTIVE | ✅ |
 | UPDATED | ✅ |
 | DELETED | ❌ |
@@ -241,47 +362,48 @@ Editable fields include
 - Workspace Slug
 - Workspace Logo
 
+Only the workspace owner may update workspace settings.
+
 ---
 
 # Delete Strategy
 
 Workspace deletion is permanent.
 
-The system relies on database cascade deletion.
-
-Affected resources
+The database automatically removes dependent resources.
 
 ```
 Workspace
 
-↓
+├── Members
 
-Workspace Members
+├── Invitations
 
-↓
+├── URLs
 
-URLs
+├── Tags
 
-↓
+├── API Keys
 
-Tags
-
-↓
-
-API Keys
+└── Analytics
 ```
 
-Historical analytics are removed together with their related URLs.
+Benefits
+
+- No orphan records
+- Referential integrity
+- Simplified cleanup
+- Consistent tenant isolation
 
 ---
 
 # Lifecycle Summary
 
-| State | Accessible | Editable | Create Resources |
-|---------|------------|----------|------------------|
-| ACTIVE | ✅ | ✅ | ✅ |
-| UPDATED | ✅ | ✅ | ✅ |
-| DELETED | ❌ | ❌ | ❌ |
+| State | Accessible | Editable | Invite Members | Create Resources |
+|---------|:----------:|:--------:|:--------------:|:----------------:|
+| ACTIVE | ✅ | ✅ | ✅ | ✅ |
+| UPDATED | ✅ | ✅ | ✅ | ✅ |
+| DELETED | ❌ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -289,11 +411,15 @@ Historical analytics are removed together with their related URLs.
 
 Possible future lifecycle extensions include
 
-- Workspace archive
-- Workspace restore
-- Transfer workspace ownership
-- Suspend workspace
-- Scheduled deletion
-- Soft delete
-- Workspace export
-- Organization migration
+- Workspace Archive
+- Workspace Restore
+- Soft Delete
+- Scheduled Deletion
+- Transfer Ownership
+- Organization Support
+- Billing Suspension
+- Workspace Export
+- Organization Migration
+- Invitation Expiration
+- Invitation Reminder
+- Invitation Cancellation

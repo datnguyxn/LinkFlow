@@ -2,22 +2,23 @@
 
 ## Overview
 
-The Workspace Member module is responsible for managing user membership within a workspace.
+The Workspace Member module is responsible for managing workspace membership and access control.
 
-It controls who can access a workspace, what role each member has, and who is authorized to manage workspace resources.
+It allows workspace owners to invite users, manage member roles, and remove members, while allowing members to access workspace resources and leave the workspace.
 
-Every member belongs to exactly one workspace and references exactly one user.
+Users join a workspace only after accepting an invitation sent via email.
 
 Supported features:
 
 - Invite Member
+- Accept Invitation
 - List Members
 - Get Member Details
 - Update Member Role
 - Remove Member
 - Leave Workspace
 
-All endpoints require authentication.
+All endpoints require authentication, except invitation acceptance when using an invitation token.
 
 ---
 
@@ -30,7 +31,11 @@ User
 
 User --> Workspace
 
-Workspace --> WorkspaceMember
+Workspace --> WorkspaceInvitation
+
+WorkspaceInvitation --> MailService
+
+WorkspaceInvitation --> WorkspaceMember
 
 WorkspaceMember --> Role
 
@@ -50,41 +55,45 @@ Workspace --> ApiKey
 ```mermaid
 flowchart TD
 
-A[Authenticated User]
+A[Workspace Owner]
 
-A --> B[Invite Member]
+A --> Invite[Invite Member]
 
-A --> C[List Members]
+Invite --> Validate[Validate Request]
 
-A --> D[View Member]
+Validate --> CheckUser[Check User Exists]
 
-A --> E[Update Member Role]
+CheckUser --> CheckMember[Check Existing Member]
 
-A --> F[Remove Member]
+CheckMember --> CreateInvitation[Create Invitation]
 
-A --> G[Leave Workspace]
+CreateInvitation --> SendMail[Send Invitation Email]
 
-B --> Validate[Validate Request]
+SendMail --> WaitAccept[Waiting For Acceptance]
 
-Validate --> UserExists[Check User Exists]
+WaitAccept --> Accept[Accept Invitation]
 
-UserExists --> MemberExists[Check Membership]
+Accept --> CreateMember[Create Workspace Member]
 
-MemberExists --> DB[(Database)]
+CreateMember --> DB[(Database)]
 
-C --> DB
+Member[Workspace Member]
 
-D --> DB
+Member --> List[List Members]
 
-E --> Permission
+Member --> View[View Member]
 
-Permission --> DB
+Member --> Update[Update Member Role]
 
-F --> Permission
+Member --> Remove[Remove Member]
 
-Permission --> DB
+Member --> Leave[Leave Workspace]
 
-G --> DB
+List --> DB
+View --> DB
+Update --> DB
+Remove --> DB
+Leave --> DB
 ```
 
 ---
@@ -96,42 +105,54 @@ flowchart TD
 
 Workspace
 
-Workspace --> WorkspaceMember1[OWNER]
+Workspace --> Owner[OWNER]
 
-Workspace --> WorkspaceMember2[MEMBER]
+Workspace --> Member1[MEMBER]
 
-WorkspaceMember1 --> User1
+Workspace --> Member2[MEMBER]
 
-WorkspaceMember2 --> User2
+Owner --> User1
+
+Member1 --> User2
+
+Member2 --> User3
 ```
 
 Business Rules
 
 - A workspace has exactly one owner.
 - A workspace can have multiple members.
-- A user can join multiple workspaces.
-- A user cannot join the same workspace more than once.
+- A user can belong to multiple workspaces.
+- A user cannot belong to the same workspace more than once.
+- Membership is created only after an invitation is accepted.
 - Every member has exactly one role.
-- Every member references one user.
 
 ---
 
 # Membership Lifecycle
 
 ```
-User
+Owner
 
 ↓
 
-Invited
+Invite User
 
 ↓
 
-Joined Workspace
+Invitation Email Sent
 
 ↓
 
-Member
+User Accepts Invitation
+
+↓
+
+Workspace Member Created
+
+↓
+
+Active Member
 
 ↓
 
@@ -139,7 +160,11 @@ Role Updated (Optional)
 
 ↓
 
-Removed
+Leave Workspace
+
+or
+
+Removed By Owner
 ```
 
 ---
@@ -154,35 +179,36 @@ OWNER
 MEMBER
 ```
 
-Responsibilities
-
 ### OWNER
+
+Responsibilities
 
 - Manage workspace
 - Invite members
-- Remove members
 - Update member roles
+- Remove members
 - Delete workspace
+- Transfer workspace ownership
+
+---
 
 ### MEMBER
+
+Responsibilities
 
 - Access workspace
 - Create and manage URLs
 - View analytics
-- Manage tags (subject to future permissions)
+- Leave workspace
 
 ---
 
-# Member Invitation
+# Invitation Flow
 
-A workspace owner can invite an existing user into the workspace.
+A workspace owner invites an existing user by email.
 
 ```
 Owner
-
-↓
-
-Invite User
 
 ↓
 
@@ -190,14 +216,25 @@ Validate User
 
 ↓
 
-Create WorkspaceMember
+Create Invitation
 
 ↓
 
-User Becomes Member
+Send Invitation Email
+
+↓
+
+User Accepts Invitation
+
+↓
+
+Create Workspace Member
 ```
 
-A user cannot be invited twice to the same workspace.
+A user cannot:
+
+- Receive duplicate pending invitations.
+- Join the same workspace multiple times.
 
 ---
 
@@ -218,40 +255,40 @@ Workspace B
 ├── David
 ```
 
-Users can only access workspaces where they are members.
+Users can only access workspaces where they are active members.
 
 ---
 
 # Permission Model
 
-Only workspace owners can:
+Workspace owners can:
 
 - Invite members
+- Update member roles
 - Remove members
-- Change member roles
+- Transfer ownership
 
-All members can:
+Workspace members can:
 
-- View workspace members
-- Leave the workspace (except the owner)
+- View members
+- Leave the workspace
 
 ---
 
 # Membership Validation
 
-The following validations are performed during member management.
-
 ## User
 
 - User must exist.
 - User must not already belong to the workspace.
+- User must not have a pending invitation.
 
 ---
 
 ## Workspace
 
 - Workspace must exist.
-- User must have permission.
+- Requester must have permission.
 
 ---
 
@@ -272,11 +309,12 @@ MEMBER
 | Field | Description |
 |---------|-----------------------------|
 | id | Membership identifier |
-| workspaceId | Workspace |
-| userId | User |
-| role | Member role |
-| invitedAt | Invitation timestamp |
+| workspaceId | Workspace identifier |
+| userId | Member identifier |
+| role | Workspace role |
 | joinedAt | Join timestamp |
+
+> Invitation information is stored separately in the Workspace Invitation module.
 
 ---
 
@@ -285,7 +323,9 @@ MEMBER
 - JWT Authentication
 - Workspace membership validation
 - Workspace ownership validation
+- Invitation token validation
 - Duplicate membership validation
+- Duplicate invitation validation
 - Role validation
 - Input sanitization
 
@@ -295,15 +335,15 @@ MEMBER
 
 Possible future improvements include:
 
-- Email Invitations
-- Invitation Tokens
-- Pending Invitations
 - Invitation Expiration
+- Invitation Cancellation
+- Invitation Resend
+- Email Verification
 - Role-Based Access Control (RBAC)
 - Admin Role
 - Viewer Role
-- Activity Logs
-- Transfer Workspace Ownership
+- Audit Logs
+- Member Activity History
 
 ---
 
@@ -312,8 +352,11 @@ Possible future improvements include:
 | Feature | Authentication Required |
 |----------------------|-------------------------|
 | Invite Member | ✅ |
+| Accept Invitation | ❌* |
 | List Members | ✅ |
 | Get Member Details | ✅ |
 | Update Member Role | ✅ |
 | Remove Member | ✅ |
 | Leave Workspace | ✅ |
+
+\* Invitation acceptance may use a secure invitation token instead of JWT authentication.

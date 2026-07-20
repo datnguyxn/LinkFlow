@@ -6,9 +6,11 @@ The Workspace module is the foundation of LinkFlow's multi-tenant architecture.
 
 A workspace represents an organization, team, or personal environment where users collaborate and manage resources.
 
-Every business resource in LinkFlow belongs to exactly one workspace, including URLs, Tags, API Keys, Analytics, and future Billing data.
+Every business resource in LinkFlow belongs to exactly one workspace, including URLs, Tags, API Keys, Analytics, and future Billing resources.
 
-Each workspace has one owner and can contain multiple members with different roles.
+Each workspace has exactly one owner and may contain multiple members.
+
+Workspace membership and invitation management are handled by dedicated modules.
 
 Supported features:
 
@@ -17,8 +19,6 @@ Supported features:
 - Get Workspace Details
 - Update Workspace
 - Delete Workspace
-- Manage Workspace Members
-- Manage Workspace Settings
 
 All endpoints require authentication.
 
@@ -34,6 +34,8 @@ User
 User --> Workspace
 
 Workspace --> WorkspaceMember
+
+Workspace --> WorkspaceInvitation
 
 Workspace --> URL
 
@@ -65,31 +67,29 @@ A --> E[Update Workspace]
 
 A --> F[Delete Workspace]
 
-A --> G[Manage Members]
-
-A --> H[Workspace Settings]
-
 B --> Validate[Validate Request]
 
 Validate --> Slug[Generate or Validate Slug]
 
-Slug --> DB[(Database)]
+Slug --> CreateWorkspace[Create Workspace]
+
+CreateWorkspace --> CreateOwner[Create OWNER Membership]
+
+CreateOwner --> DB[(Database)]
 
 C --> DB
 
-D --> DB
+D --> Permission
 
-E --> DB
+Permission --> DB
+
+E --> Permission
+
+Permission --> DB
 
 F --> Permission
 
 Permission --> DB
-
-G --> Permission
-
-Permission --> MemberDB[(Workspace Members)]
-
-H --> DB
 ```
 
 ---
@@ -101,40 +101,44 @@ flowchart TD
 
 User
 
-User --> WorkspaceA[Workspace]
+User --> Workspace
 
-WorkspaceA --> Owner[OWNER]
+Workspace --> Owner[OWNER]
 
-WorkspaceA --> Member1[MEMBER]
+Workspace --> Members[Workspace Members]
 
-WorkspaceA --> Member2[MEMBER]
+Workspace --> Invitations[Workspace Invitations]
 
-WorkspaceA --> URL
+Workspace --> URL
 
-WorkspaceA --> Tag
+Workspace --> Tag
 
-WorkspaceA --> ApiKey
+Workspace --> ApiKey
+
+Workspace --> Analytics
 ```
 
-Business Rules:
+Business Rules
 
 - A user can own multiple workspaces.
 - A user can join multiple workspaces.
 - A workspace has exactly one owner.
-- A workspace can contain multiple members.
-- Every workspace owns its resources.
-- Members can only access resources within workspaces they belong to.
+- A workspace can contain multiple active members.
+- A workspace can have multiple pending invitations.
+- Every resource belongs to exactly one workspace.
+- Members may only access resources within workspaces they belong to.
 
 ---
 
 # Workspace Structure
 
-Each workspace consists of:
+Each workspace serves as the root container for all business resources.
 
 ```
 Workspace
 
 ├── Members
+├── Invitations
 ├── URLs
 ├── Tags
 ├── API Keys
@@ -147,83 +151,99 @@ Workspace
 
 ## Workspace Creation
 
-Users can create their own workspace.
+Authenticated users can create new workspaces.
 
-During creation:
+During creation
 
 ```
 Create Workspace
 
 ↓
 
-Create OWNER Member
+Create OWNER Membership
 
 ↓
 
-Ready to use
+Workspace Ready
 ```
 
-The creator automatically becomes the workspace owner.
+The creator automatically becomes
+
+- Workspace Owner
+- First Workspace Member
 
 ---
 
-## Workspace Members
+## Workspace Ownership
 
-Each workspace supports multiple members.
+Each workspace has exactly one owner.
 
-Current roles:
+The owner is responsible for
+
+- Updating workspace information
+- Deleting the workspace
+- Managing members
+- Managing invitations
+
+Ownership is stored using
 
 ```
-OWNER
-
-MEMBER
+Workspace.ownerId
 ```
 
-Future roles:
+---
 
-```
-ADMIN
+## Workspace Resources
 
-EDITOR
+Each workspace owns all business resources.
 
-VIEWER
-```
+Examples
+
+- Members
+- Invitations
+- URLs
+- Tags
+- API Keys
+- Analytics
+
+All resources are isolated between workspaces.
 
 ---
 
 ## Workspace Settings
 
-Workspace settings include:
+Workspace settings include
 
 - Workspace Name
 - Workspace Slug
 - Workspace Logo
 
-Additional settings may be added in future releases.
+Additional settings may be introduced in future releases.
 
 ---
 
 ## Workspace Isolation
 
-All workspace data is isolated.
+All data is isolated by workspace.
 
 Example
 
 ```
 Workspace A
 
-├── URL A
-├── URL B
-└── Members
+├── Members
+├── URLs
+├── Tags
 
 
 Workspace B
 
-├── URL C
-└── Members
+├── Members
+├── URLs
+├── Tags
 ```
 
-Members of one workspace cannot access another workspace unless they belong to it.
+Members of one workspace cannot access resources belonging to another workspace.
 
 ---
 
@@ -231,7 +251,7 @@ Members of one workspace cannot access another workspace unless they belong to i
 
 The following validations are performed during workspace creation.
 
-## Name
+## Workspace Name
 
 Requirements
 
@@ -240,13 +260,15 @@ Requirements
 
 ---
 
-## Slug
+## Workspace Slug
 
 Requirements
 
-- Unique
-- Lowercase
-- Supports
+- Required
+- Globally unique
+- Lowercase only
+
+Supported characters
 
 ```
 a-z
@@ -261,9 +283,9 @@ Examples
 ```
 marketing
 
-company
+engineering
 
-engineering-team
+company-team
 ```
 
 Reserved slugs cannot be used.
@@ -311,15 +333,14 @@ root
 
 # Future Enhancements
 
-Possible future improvements include:
+Possible future improvements include
 
-- Workspace Invitation
-- Role-Based Access Control (RBAC)
 - Workspace Audit Logs
-- Workspace Settings
+- Role-Based Access Control (RBAC)
 - Billing & Subscription
+- Workspace Settings
 - Custom Domains
-- Organization Support
+- Organization Policies
 - SSO Integration
 
 ---
@@ -333,5 +354,3 @@ Possible future improvements include:
 | Get Workspace Details | ✅ |
 | Update Workspace | ✅ |
 | Delete Workspace | ✅ |
-| Manage Members | ✅ |
-| Workspace Settings | ✅ |

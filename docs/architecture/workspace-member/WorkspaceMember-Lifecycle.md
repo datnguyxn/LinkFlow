@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Workspace Member lifecycle defines the state transitions of a member within a workspace.
+The Workspace Member lifecycle defines the state transitions of a workspace member after an invitation has been accepted.
 
-A member is created when they join a workspace and remains active until they leave the workspace or are removed by the workspace owner.
+A workspace member is created only when an invited user accepts the invitation. The member remains active until leaving the workspace or being removed by the workspace owner.
 
 The lifecycle ensures consistent permission management and workspace access.
 
@@ -15,17 +15,18 @@ The lifecycle ensures consistent permission management and workspace access.
 ```mermaid
 stateDiagram-v2
 
-[*] --> INVITED : Invite Member
+[*] --> INVITED : Send Invitation Email
 
-INVITED --> ACTIVE : Join Workspace
+INVITED --> ACTIVE : Accept Invitation
 
-ACTIVE --> UPDATED : Update Role
-UPDATED --> ACTIVE
+ACTIVE --> ACTIVE : Update Role
 
 ACTIVE --> REMOVED : Remove Member
+
 ACTIVE --> LEFT : Leave Workspace
 
 REMOVED --> [*]
+
 LEFT --> [*]
 ```
 
@@ -35,66 +36,32 @@ LEFT --> [*]
 
 ## INVITED
 
-The member has been invited to join the workspace.
+The user has received a workspace invitation.
 
 Characteristics
 
-- Invitation exists.
-- User has not joined yet.
-- No workspace access.
-- Invitation may expire in future versions.
+- Invitation email has been sent.
+- User has not accepted the invitation.
+- Workspace membership does not yet exist.
+- Workspace access is denied.
 
-> **Note**
->
-> With the current implementation, `INVITED` is represented by:
->
-> ```
-> invitedAt != null
-> joinedAt == null
-> ```
->
-> No additional status field is required.
+Business Note
+
+This state belongs to the Workspace Invitation, not the WorkspaceMember record.
 
 ---
 
 ## ACTIVE
 
-The member has successfully joined the workspace.
+The invitation has been accepted and the user has joined the workspace.
 
 Characteristics
 
 - Workspace access granted.
 - Permissions determined by role.
-- Can access workspace resources.
-- Can leave the workspace.
-
----
-
-## UPDATED
-
-The member's role has changed.
-
-Typical changes
-
-```
-MEMBER
-
-↓
-
-OWNER
-```
-
-or
-
-```
-OWNER
-
-↓
-
-MEMBER
-```
-
-After the update completes successfully, the member returns to the ACTIVE state.
+- Member can access workspace resources.
+- Member may leave the workspace.
+- Workspace owner may update the member's role.
 
 ---
 
@@ -104,9 +71,9 @@ The member has been removed from the workspace.
 
 Characteristics
 
-- Workspace access revoked.
-- Membership record deleted.
-- User can no longer access workspace resources.
+- Membership deleted.
+- Workspace access revoked immediately.
+- User must receive a new invitation to rejoin.
 
 ---
 
@@ -116,10 +83,11 @@ The member voluntarily leaves the workspace.
 
 Characteristics
 
+- Membership deleted.
 - Workspace access revoked.
-- Membership record deleted.
+- User may be invited again in the future.
 
-The workspace owner cannot leave without first transferring ownership.
+The workspace owner must transfer ownership before leaving.
 
 ---
 
@@ -148,7 +116,11 @@ Check Existing Membership
 
 ↓
 
-Create Membership
+Create Invitation
+
+↓
+
+Send Invitation Email
 
 ↓
 
@@ -160,27 +132,34 @@ Conditions
 - Workspace exists.
 - User exists.
 - User is not already a member.
+- No pending invitation exists.
 - Requester is the workspace owner.
 
 ---
 
-## Join Workspace
+## Accept Invitation
 
 ```
 INVITED
 
 ↓
 
+Validate Invitation
+
+↓
+
+Create Workspace Member
+
+↓
+
+joinedAt = Current Timestamp
+
+↓
+
 ACTIVE
 ```
 
-Changes
-
-```
-joinedAt = Current Timestamp
-```
-
-The invited user becomes an active workspace member.
+The invited user officially becomes a workspace member.
 
 ---
 
@@ -191,7 +170,7 @@ ACTIVE
 
 ↓
 
-UPDATED
+Update Role
 
 ↓
 
@@ -202,11 +181,10 @@ Trigger
 
 Workspace owner updates a member's role.
 
-Conditions
+Effects
 
-- Target member exists.
-- New role is valid.
-- Owner permissions verified.
+- Member permissions change immediately.
+- Notification email may be sent.
 
 ---
 
@@ -214,6 +192,14 @@ Conditions
 
 ```
 ACTIVE
+
+↓
+
+Delete Membership
+
+↓
+
+Send Removal Email
 
 ↓
 
@@ -227,7 +213,10 @@ Workspace owner removes a member.
 Effects
 
 - Membership deleted.
-- Workspace access revoked immediately.
+- Workspace access revoked.
+- Notification email sent.
+
+Business Rule
 
 The workspace owner cannot remove themselves.
 
@@ -240,17 +229,26 @@ ACTIVE
 
 ↓
 
+Delete Membership
+
+↓
+
+Notify Workspace Owner
+
+↓
+
 LEFT
 ```
 
 Trigger
 
-Member chooses to leave the workspace.
+Member leaves the workspace.
 
 Effects
 
 - Membership deleted.
 - Workspace access revoked.
+- Workspace owner receives a notification email.
 
 Business Rule
 
@@ -264,7 +262,6 @@ The workspace owner must transfer ownership before leaving.
 |---------|------------------|
 | INVITED | ❌ |
 | ACTIVE | ✅ |
-| UPDATED | ✅ |
 | REMOVED | ❌ |
 | LEFT | ❌ |
 
@@ -285,18 +282,18 @@ Permissions
 | Action | OWNER | MEMBER |
 |---------|:-----:|:------:|
 | View Members | ✅ | ✅ |
-| Invite Member | ✅ | ❌ |
+| Invite Members | ✅ | ❌ |
 | Update Roles | ✅ | ❌ |
 | Remove Members | ✅ | ❌ |
 | Leave Workspace | ❌* | ✅ |
 
-\* The owner must transfer ownership before leaving.
+\* The workspace owner must transfer ownership before leaving.
 
 ---
 
 # Membership Strategy
 
-Membership is represented by a single record.
+Membership is represented by a single WorkspaceMember record.
 
 ```
 Workspace
@@ -310,36 +307,35 @@ WorkspaceMember
 User
 ```
 
-A user may belong to multiple workspaces.
+Business Rules
 
-A workspace may contain multiple users.
-
-A user cannot have multiple memberships within the same workspace.
+- A workspace can contain multiple members.
+- A user can belong to multiple workspaces.
+- A user cannot join the same workspace more than once.
 
 ---
 
 # Delete Strategy
 
-Removing or leaving a workspace deletes the membership record.
+Removing or leaving a workspace permanently deletes the membership record.
 
 Benefits
 
-- Simpler permission checks.
+- Simple authorization checks.
 - No inactive memberships.
 - Prevent duplicate memberships.
-- Keeps the membership table lightweight.
+- Lightweight membership table.
 
 ---
 
 # Lifecycle Summary
 
-| State | Workspace Access | Editable | Exists |
-|---------|------------------|----------|--------|
-| INVITED | ❌ | ❌ | ✅ |
-| ACTIVE | ✅ | ✅ | ✅ |
-| UPDATED | ✅ | ✅ | ✅ |
-| REMOVED | ❌ | ❌ | ❌ |
-| LEFT | ❌ | ❌ | ❌ |
+| State | Workspace Access | Membership Exists |
+|---------|------------------|-------------------|
+| INVITED | ❌ | ❌ |
+| ACTIVE | ✅ | ✅ |
+| REMOVED | ❌ | ❌ |
+| LEFT | ❌ | ❌ |
 
 ---
 
@@ -348,10 +344,11 @@ Benefits
 Possible future lifecycle extensions include
 
 - Invitation Expiration
-- Pending Invitation
 - Reject Invitation
-- Suspend Member
-- Temporary Access
+- Resend Invitation
+- Cancel Invitation
 - Transfer Ownership
 - Workspace Admin Role
+- Role-Based Access Control (RBAC)
 - Audit Logs
+- Member Suspension

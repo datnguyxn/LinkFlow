@@ -4,11 +4,13 @@
 
 The Workspace Member module manages the relationship between users and workspaces.
 
-It determines which users belong to a workspace and defines their role within that workspace.
+It determines which users have access to a workspace and defines their role within that workspace.
 
-Each membership represents a single user participating in a single workspace.
+A membership record is created only after a user successfully joins a workspace.
 
-The module is the foundation of LinkFlow's authorization model.
+Invitation management is handled separately by the Workspace Invitation module.
+
+The Workspace Member module serves as the foundation of LinkFlow's authorization model.
 
 ---
 
@@ -60,7 +62,7 @@ A workspace can contain multiple members.
 
 Each membership belongs to exactly one workspace.
 
-Every workspace must have one owner.
+Every workspace has exactly one owner.
 
 ---
 
@@ -76,7 +78,7 @@ A user can own multiple workspaces.
 
 Ownership is stored separately from membership.
 
-The owner is also represented as a WorkspaceMember with the OWNER role.
+The workspace owner is also represented as a WorkspaceMember with the OWNER role.
 
 ---
 
@@ -86,7 +88,7 @@ The owner is also represented as a WorkspaceMember with the OWNER role.
 
 Purpose
 
-Stores workspace membership.
+Stores active workspace memberships.
 
 Primary Key
 
@@ -99,7 +101,6 @@ Important Fields
 - workspaceId
 - userId
 - role
-- invitedAt
 - joinedAt
 
 Relations
@@ -174,7 +175,9 @@ User
 
 A user may participate in multiple workspaces.
 
-A workspace may contain multiple users.
+A workspace may contain multiple members.
+
+Only active members are stored in the WorkspaceMember table.
 
 ---
 
@@ -214,39 +217,29 @@ VIEWER
 
 ---
 
-# Invitation Strategy
+# Join Strategy
 
-Membership records support invitation tracking.
-
-```
-invitedAt
-```
-
-Stores the time when the invitation was created.
+A membership is created only after the user successfully joins the workspace.
 
 ```
-joinedAt
+User
+
+↓
+
+Accept Invitation
+or
+Create Workspace
+
+↓
+
+Create WorkspaceMember
+
+↓
+
+joinedAt = Current Timestamp
 ```
 
-Stores the time when the member joined the workspace.
-
-Examples
-
-Invited
-
-```
-invitedAt != null
-
-joinedAt == null
-```
-
-Joined
-
-```
-invitedAt != null
-
-joinedAt != null
-```
+Users who have only been invited are not stored in this table.
 
 ---
 
@@ -284,7 +277,7 @@ Role
 Permission
 ```
 
-This avoids checking ownership directly for every request.
+Only active memberships are considered during authorization.
 
 ---
 
@@ -320,7 +313,22 @@ Benefits
 
 - Flexible permission model
 - Supports future RBAC
-- Simpler authorization checks
+- Simple authorization checks
+
+---
+
+## Active Membership Only
+
+WorkspaceMember stores only users who have already joined the workspace.
+
+Pending invitations are managed separately by the Workspace Invitation module.
+
+Benefits
+
+- Cleaner data model
+- Simpler permission validation
+- Faster member queries
+- Easier invitation management
 
 ---
 
@@ -355,11 +363,11 @@ Benefits
 Benefits
 
 - Prevent duplicate memberships
-- Simplify invitation logic
 - Guarantee data consistency
+- Simplify authorization logic
 
 ---
 
 # Summary
 
-The Workspace Member database design establishes the relationship between users and workspaces. It provides the foundation for authentication, authorization, and collaboration by using membership records, role-based permissions, foreign key constraints, indexes, and cascade deletion to ensure consistency, scalability, and maintainability.
+The Workspace Member database design manages active memberships between users and workspaces. It provides the foundation for LinkFlow's authorization model by storing only joined members, while invitation management is delegated to the Workspace Invitation module. Foreign keys, composite constraints, indexes, and role-based permissions ensure data consistency, efficient authorization, and future scalability.

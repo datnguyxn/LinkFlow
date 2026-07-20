@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Workspace module is the foundation of LinkFlow's multi-tenant architecture.
+The Workspace module is the tenant boundary of LinkFlow.
 
-It provides logical isolation between organizations, teams, and users by grouping business resources into independent workspaces.
+A workspace groups users and all business resources into an isolated environment. Every URL, Tag, API Key, Invitation, and future resources belong to exactly one workspace.
 
-Each workspace has exactly one owner and can contain multiple members. Every business resource, including URLs, Tags, and API Keys, belongs to a workspace.
+Each workspace has exactly one owner and may contain multiple members. Collaboration is managed through the WorkspaceMember table, while invitations are handled separately by the WorkspaceInvitation table.
 
 ---
 
@@ -20,6 +20,10 @@ erDiagram
     User ||--o{ WorkspaceMember : joins
 
     Workspace ||--o{ WorkspaceMember : contains
+
+    Workspace ||--o{ WorkspaceInvitation : has
+
+    User ||--o{ WorkspaceInvitation : receives
 
     Workspace ||--o{ Url : contains
 
@@ -46,9 +50,10 @@ Each workspace has exactly one owner.
 
 Purpose
 
-- Ownership
-- Billing
+- Workspace ownership
 - Administration
+- Billing
+- Organization management
 
 ---
 
@@ -60,9 +65,11 @@ Relationship
 One-to-Many
 ```
 
-A user may belong to multiple workspaces.
+A user can belong to multiple workspaces.
 
 Membership determines which workspaces the user can access.
+
+Each membership belongs to exactly one workspace.
 
 ---
 
@@ -76,7 +83,7 @@ One-to-Many
 
 A workspace may contain multiple members.
 
-Each member has a role that defines their permissions.
+Each member has a single role.
 
 Current roles
 
@@ -85,6 +92,51 @@ OWNER
 
 MEMBER
 ```
+
+WorkspaceMember only stores users that have accepted the invitation and joined the workspace.
+
+---
+
+## Workspace → WorkspaceInvitation
+
+Relationship
+
+```
+One-to-Many
+```
+
+A workspace may create multiple invitations.
+
+Each invitation belongs to exactly one workspace.
+
+Invitations exist independently from memberships.
+
+Purpose
+
+- Email invitation
+- Invitation acceptance
+- Invitation tracking
+- Invitation expiration
+
+---
+
+## User → WorkspaceInvitation
+
+Relationship
+
+```
+One-to-Many
+(Optional)
+```
+
+If the invited email already belongs to a registered user, the invitation references that user.
+
+Otherwise the invitation is linked only by email.
+
+This supports both scenarios:
+
+- Existing user
+- User not yet registered
 
 ---
 
@@ -96,7 +148,7 @@ Relationship
 One-to-Many
 ```
 
-A workspace can contain multiple shortened URLs.
+Each workspace manages multiple shortened URLs.
 
 Every URL belongs to exactly one workspace.
 
@@ -110,9 +162,9 @@ Relationship
 One-to-Many
 ```
 
-Tags are isolated within a workspace.
+Tags are isolated inside a workspace.
 
-Tag names are unique only inside the same workspace.
+Tag names are unique only within the same workspace.
 
 ---
 
@@ -126,7 +178,7 @@ One-to-Many
 
 API Keys belong to a workspace.
 
-They are used to authenticate external integrations.
+They authenticate external applications.
 
 ---
 
@@ -155,6 +207,7 @@ Relations
 
 - Owner
 - Members
+- Invitations
 - URLs
 - Tags
 - API Keys
@@ -165,7 +218,7 @@ Relations
 
 Purpose
 
-Stores workspace membership.
+Stores active workspace members.
 
 Primary Key
 
@@ -178,7 +231,6 @@ Important Fields
 - workspaceId
 - userId
 - role
-- invitedAt
 - joinedAt
 
 Relations
@@ -192,7 +244,83 @@ Unique Constraint
 (workspaceId, userId)
 ```
 
-This prevents duplicate memberships.
+Only users who have joined the workspace are stored here.
+
+---
+
+## WorkspaceInvitation
+
+Purpose
+
+Stores pending and accepted workspace invitations.
+
+Primary Key
+
+```
+id
+```
+
+Important Fields
+
+- workspaceId
+- invitedBy
+- userId (nullable)
+- email
+- role
+- token
+- status
+- expiresAt
+- acceptedAt
+
+Relations
+
+- Workspace
+- Inviter
+- User (optional)
+
+Status
+
+```
+PENDING
+
+ACCEPTED
+
+DECLINED
+
+EXPIRED
+
+CANCELLED
+```
+
+---
+
+# Invitation Strategy
+
+Invitations are stored separately from memberships.
+
+```
+Workspace
+
+↓
+
+WorkspaceInvitation
+
+↓
+
+Accept Invitation
+
+↓
+
+WorkspaceMember
+```
+
+Benefits
+
+- Invite users without accounts
+- Track invitation history
+- Support email verification
+- Prevent duplicate invitations
+- Allow invitation expiration
 
 ---
 
@@ -203,42 +331,13 @@ This prevents duplicate memberships.
 | Workspace | User | Cascade |
 | WorkspaceMember | Workspace | Cascade |
 | WorkspaceMember | User | Cascade |
+| WorkspaceInvitation | Workspace | Cascade |
+| WorkspaceInvitation | User | Set Null |
 | URL | Workspace | Cascade |
 | Tag | Workspace | Cascade |
 | ApiKey | Workspace | Cascade |
 
-Deleting a workspace automatically removes all dependent resources.
-
----
-
-# Index Strategy
-
-## Workspace
-
-Indexes
-
-- ownerId
-- slug
-
-Purpose
-
-- Fast owner lookup
-- Fast workspace lookup by slug
-
----
-
-## WorkspaceMember
-
-Indexes
-
-- workspaceId
-- userId
-
-Purpose
-
-- Fast member listing
-- Fast workspace lookup for a user
-- Permission validation
+Deleting a workspace automatically removes all members, invitations, and related resources.
 
 ---
 
@@ -254,16 +353,6 @@ slug
 
 Each workspace slug must be globally unique.
 
-Examples
-
-```
-marketing
-
-engineering
-
-my-company
-```
-
 ---
 
 ## WorkspaceMember
@@ -274,34 +363,77 @@ Composite Unique Constraint
 (workspaceId, userId)
 ```
 
-Ensures that a user cannot join the same workspace more than once.
+Prevents duplicate memberships.
 
 ---
 
-# Cascade Delete Strategy
+## WorkspaceInvitation
 
-Workspace is the root aggregate of tenant data.
+Recommended Constraints
 
 ```
-Workspace
-
-├── Workspace Members
-
-├── URLs
-
-├── Tags
-
-└── API Keys
+token
 ```
 
-Deleting a workspace automatically deletes all owned resources through foreign key cascade.
+Unique
 
-Benefits
+```
+(workspaceId, email)
+```
 
-- No orphan records
-- Consistent data
-- Simpler cleanup
-- Referential integrity
+Unique only while the invitation is pending.
+
+This prevents sending multiple active invitations to the same email.
+
+---
+
+# Index Strategy
+
+## Workspace
+
+Indexes
+
+- ownerId
+- slug
+
+Purpose
+
+- Fast owner lookup
+- Fast workspace lookup
+
+---
+
+## WorkspaceMember
+
+Indexes
+
+- workspaceId
+- userId
+
+Purpose
+
+- Member listing
+- Permission validation
+- Workspace lookup
+
+---
+
+## WorkspaceInvitation
+
+Indexes
+
+- workspaceId
+- email
+- token
+- status
+- expiresAt
+
+Purpose
+
+- Invitation lookup
+- Accept invitation
+- Expired invitation cleanup
+- Notification queries
 
 ---
 
@@ -312,25 +444,31 @@ Every business resource belongs to exactly one workspace.
 ```
 Workspace A
 
+├── Members
+├── Invitations
 ├── URLs
 ├── Tags
-└── Members
+└── API Keys
 
 
 Workspace B
 
+├── Members
+├── Invitations
 ├── URLs
 ├── Tags
-└── Members
+└── API Keys
 ```
 
-Resources from one workspace cannot be accessed by members of another workspace unless they are explicitly added.
+Users can only access workspaces where they are active members.
+
+Pending invitations do not grant workspace access.
 
 ---
 
 # Ownership Strategy
 
-Workspace ownership is stored separately from membership.
+Workspace ownership is stored independently.
 
 ```
 Workspace
@@ -344,63 +482,69 @@ ownerId
 User
 ```
 
-The owner is also automatically inserted into the WorkspaceMember table with the OWNER role.
+The owner is also inserted into WorkspaceMember during workspace creation.
 
-Benefits
-
-- Simpler permission checks
-- Consistent role management
-- Easier future RBAC implementation
+Ownership determines administrative authority, while authorization is performed through WorkspaceMember roles.
 
 ---
 
 # Design Decisions
 
-## Multi-Tenant Design
+## Multi-Tenant Architecture
 
-Workspace acts as the tenant boundary.
+Workspace is the tenant boundary.
 
 Benefits
 
 - Resource isolation
 - Team collaboration
-- Future billing support
 - Enterprise scalability
+- Future billing support
 
 ---
 
 ## Membership-Based Authorization
 
-Permissions are determined through WorkspaceMember rather than direct ownership.
+Permissions are determined through WorkspaceMember.
 
 Benefits
 
-- Flexible role management
-- Easy invitation system
-- Supports future RBAC
+- Fast authorization
+- Flexible RBAC
+- Consistent permission checks
 
 ---
 
-## Globally Unique Slug
+## Invitation-Based Onboarding
 
-Workspace slugs are globally unique.
+WorkspaceInvitation manages the invitation lifecycle.
 
 Benefits
 
-- Human-readable URLs
-- Easy workspace identification
-- Simple routing
+- Invite by email
+- Invite existing users
+- Email verification
+- Notification support
+- Invitation history
+- Invitation expiration
 
-Example
+---
 
-```
-https://app.linkflow.io/marketing
+## Separate Membership and Invitation
 
-https://app.linkflow.io/company
-```
+WorkspaceMember stores active users.
+
+WorkspaceInvitation stores pending invitations.
+
+Benefits
+
+- Cleaner data model
+- Simpler authorization
+- Easier invitation management
+- Better auditability
 
 ---
 
 # Summary
 
-The Workspace database design establishes the tenant boundary for LinkFlow. It separates organizations through isolated workspaces, manages membership using role-based relationships, and provides a scalable foundation for URLs, Tags, API Keys, Analytics, Billing, and future enterprise features. Foreign keys, unique constraints, indexes, and cascade deletion ensure consistency, performance, and maintainability.
+The Workspace database design establishes the tenant architecture for LinkFlow. Workspaces isolate business resources, WorkspaceMember manages active collaboration, and WorkspaceInvitation handles the complete invitation lifecycle for both existing and new users. Together they provide a scalable foundation for secure collaboration, permission management, and future enterprise features such as RBAC, billing, organizations, and audit logging.
