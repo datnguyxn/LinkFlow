@@ -1,7 +1,12 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, UserStatus } from '@prisma/client';
 import { buildPagination, buildPaginationMeta } from '../../../utils/pagination.util.ts';
 
+/**
+ * UserRepository class provides methods to interact with the user data in the database.
+ * It includes methods for finding, creating, updating, and deleting users, as well as
+ * handling pagination and last login updates.
+ */
 export class UserRepository {
   /**
    * Find a user by their email address
@@ -15,6 +20,7 @@ export class UserRepository {
       },
     });
   }
+  
   /**
    * Create a new user and assign role inside a transaction
    *
@@ -22,6 +28,10 @@ export class UserRepository {
    * 1. Create user record
    * 2. Create user-role mapping
    * 3. Ensure both operations succeed or both rollback
+   * 
+   * @param data - The data for the new user
+   * @param db - The Prisma transaction client or Prisma client for database operations (default is the main Prisma client)
+   * @returns The created user record
    */
   async createUser(
     data: Prisma.UserCreateInput,

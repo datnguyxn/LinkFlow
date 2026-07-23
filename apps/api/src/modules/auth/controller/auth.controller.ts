@@ -592,6 +592,7 @@ export class AuthController {
     // Extract the user ID and session ID from the authenticated request
     const userId = request.user?.id;
     const sessionId = request.params.sessionId;
+    const ipAddress = request.ip;
 
     // Handle case: missing user ID (unauthenticated request)
     if (!userId) {
@@ -603,7 +604,7 @@ export class AuthController {
     }
 
     // Call service layer to logout the specific session for the user
-    await this.authService.logoutSession(userId, sessionId);
+    await this.authService.logoutSession(userId, sessionId, ipAddress);
 
     // Successful logout of the specified session
     return ResponseHandler.success(
@@ -641,7 +642,7 @@ export class AuthController {
     }
 
     // Call service layer to logout all sessions for the user
-    await this.authService.logoutAllOtherSessions(userId, sessionId);
+    await this.authService.logoutAllOtherSessions(userId, sessionId, request.ip);
 
     // Successful logout of all sessions
     return ResponseHandler.success(

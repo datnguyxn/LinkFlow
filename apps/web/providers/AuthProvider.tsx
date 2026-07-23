@@ -1,55 +1,36 @@
 'use client';
 
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
-
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
+import { AuthContext } from '@/contexts/auth.context';
+import { useInitializeAuth } from '@/hooks/useInitializeAuth';
+import { isProtectedRoute, ROUTES } from '@/constants/routes';
 import { authEvents } from '@/events/auth.event';
-import { authService } from '@/services/auth.service';
 import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';
+import { authService } from '@/services/auth.service';
 import { appToast } from '@/lib/toast';
-import { ROUTES, isProtectedRoute } from '@/constants/routes';
 
-interface Props {
-  children: ReactNode;
-}
-
-const AuthContext = createContext({});
-
-export default function AuthProvider({ children }: Props) {
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const router = useRouter();
 
-  const pathname = usePathname();
+  const auth = useInitializeAuth({
+    enabled: isProtectedRoute(pathname),
+  });
 
-  /**
-   * Handle logout event
-   */
+  const authenticated = auth.user !== null && !auth.loading;
+
   useEffect(() => {
     return authEvents.on('logout', () => {
       router.replace(ROUTES.LOGIN);
     });
   }, [router]);
 
-  /**
-   * Initialize authenticated user
-   */
-  useEffect(() => {
-    if (!isProtectedRoute(pathname)) {
-      return;
-    }
-
-    authService.initialize();
-  }, [pathname]);
-
-  /**
-   * Listen OAuth events
-   */
   useEffect(() => {
     const channel = createAuthChannel();
 
-    if (!channel) {
-      return;
-    }
+    if (!channel) return;
 
     channel.onmessage = async ({ data }) => {
       switch (data?.type) {
@@ -60,40 +41,33 @@ export default function AuthProvider({ children }: Props) {
             router.replace(ROUTES.DASHBOARD);
           } catch {
             appToast.error('Failed to sign in with Google.');
-
             router.replace(ROUTES.LOGIN);
           }
 
           break;
 
         case AUTH_EVENT.GOOGLE_LOGIN_CANCELLED:
-          appToast.error('Google sign in was cancelled.');
-
+          appToast.error('Google login cancelled.');
           router.replace(ROUTES.LOGIN);
-
           break;
 
         case AUTH_EVENT.LOGOUT:
           router.replace(ROUTES.LOGIN);
-
           break;
       }
     };
 
-    return () => {
-      channel.close();
-    };
+    return () => channel.close();
   }, [router]);
 
-  //Nếu muốn hiện loading toàn màn hình thì mở lại.
-
-  // if (!isPublicRoute(pathname) && loading) {
-  //   return <Skeleton />;
-  // }
-
-  return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>;
-}
-
-export function useAuthContext() {
-  return useContext(AuthContext);
+  return (
+    <AuthContext.Provider
+      value={{
+        ...auth,
+        authenticated,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }

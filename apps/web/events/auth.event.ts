@@ -1,5 +1,4 @@
 type AuthEvent = 'logout';
-
 type Listener = () => void;
 
 class AuthEvents {

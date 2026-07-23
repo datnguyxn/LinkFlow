@@ -12,10 +12,28 @@ export function useLogout() {
   return useMutation({
     mutationFn: authService.logout.bind(authService),
 
-    onSuccess() {
-      queryClient.clear();
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: ['me'],
+      });
+
+      // Immediately mark user as unauthenticated
+      queryClient.setQueryData(['me'], null);
+
+      // Stop queries related to the old user
+      queryClient.cancelQueries({
+        queryKey: ['avatar'],
+      });
+
+      queryClient.removeQueries({
+        queryKey: ['avatar'],
+      });
 
       authEvents.emit('logout');
+    },
+
+    onSuccess() {
+      queryClient.clear();
 
       const channel = createAuthChannel();
 

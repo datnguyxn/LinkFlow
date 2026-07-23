@@ -1,6 +1,7 @@
 'use client';
 
 import Sidebar from '@/components/layouts/Sidebar';
+import AuthProvider from '@/providers/AuthProvider';
 import { useSidebarStore } from '@/stores/sidebar.store';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         `}
       >
         {children}
+        {/* <AuthProvider>
+          {children}
+        </AuthProvider> */}
       </main>
     </div>
   );

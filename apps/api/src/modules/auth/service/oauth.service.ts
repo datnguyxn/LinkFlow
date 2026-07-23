@@ -10,6 +10,7 @@ import type { User } from '@prisma/client';
 import { oauthConfig } from '../../../config/oauth.config.ts';
 import crypto from 'node:crypto';
 import type { LoginOptions } from '../types/login-option.type.ts';
+import { WorkspaceRepository } from '../../workspace/index.ts';
 
 /**
  * OAuthService handles OAuth authentication flows for different providers.
@@ -24,6 +25,7 @@ export class OAuthService {
     private userRepository = new UserRepository(),
     private authService = new AuthService(),
     private transactionService = new TransactionService(),
+    private workspaceRepository = new WorkspaceRepository(),
   ) {}
 
   /**
@@ -119,6 +121,11 @@ export class OAuthService {
         },
         tx,
       );
+
+      await this.workspaceRepository.create({
+        name: profile.fullName || 'Default Workspace',
+        ownerId: user.id,
+      }, tx);
 
       return user;
     });

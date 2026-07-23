@@ -77,8 +77,11 @@ export class UserController {
     // Extract the update data from the request body
     const updateData = request.body;
 
+    // Extract the IP address from the request for auditing purposes
+    const ipAddress = request.ip;
+
     // Logic to update user by ID
-    const updatedUser = await this.userService.updateProfile(id, updateData);
+    const updatedUser = await this.userService.updateProfile(id, updateData, ipAddress);
 
     // Check if the user was found and updated; if not, return a not found error
     if (!updatedUser) {
@@ -107,8 +110,11 @@ export class UserController {
     // Extract the user ID from the authenticated request
     const id = request.user.id;
 
+    // Extract the IP address from the request for auditing purposes
+    const ipAddress = request.ip;
+
     // Logic to delete user by ID
-    const deletedUser = await this.userService.deleteMyAccount(id);
+    const deletedUser = await this.userService.deleteMyAccount(id, ipAddress);
 
     // Check if the user was found and deleted; if not, return a not found error
     if (!deletedUser) {
@@ -145,7 +151,7 @@ export class UserController {
     const { oldPassword, newPassword } = request.body;
 
     // Logic to change user password
-    const updatedUser = await this.userService.changePassword(id, oldPassword, newPassword);
+    const updatedUser = await this.userService.changePassword(id, oldPassword, newPassword, request.ip);
 
     // Check if the user was found and the password was changed; if not, return a not found error
     if (!updatedUser) {
@@ -191,8 +197,11 @@ export class UserController {
     // Extract the user ID from the authenticated request
     const id = request.user.id;
 
+    // Extract the IP address from the request for auditing purposes
+    const ipAddress = request.ip;
+
     // Call the service to handle the avatar upload and update the user's profile
-    const updatedUser = await this.userService.uploadAvatar(id, file);
+    const updatedUser = await this.userService.uploadAvatar(id, file, ipAddress);
 
     // Return a success response with the updated user data and a success message
     return ResponseHandler.success(

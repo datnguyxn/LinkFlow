@@ -21,7 +21,9 @@ import { prismaPlugin } from './infrastructure/database/index.ts';
 import { rabbitMQPlugin } from './infrastructure/queue/index.ts';
 import { redisPlugin } from './infrastructure/cache/index.ts';
 import { registerWorkers } from './bootstrap/workers.ts';
+import { registerJobs } from './bootstrap/jobs.ts';
 import { storagePlugin } from './infrastructure/storage/index.ts';
+import { websocketPlugin } from './infrastructure/websocket/index.ts';
 
 export async function buildApp() {
   await registerI18n();
@@ -34,8 +36,11 @@ export async function buildApp() {
   await app.register(rabbitMQPlugin);
   await app.register(redisPlugin);
   await app.register(storagePlugin);
+  await app.register(jwtPlugin);
+  await app.register(websocketPlugin);
 
   await registerWorkers();
+  const jobs = await registerJobs();
 
   await app.register(swaggerPlugin);
   await app.register(corsPlugin);
@@ -45,7 +50,6 @@ export async function buildApp() {
   await app.register(multipartPlugin);
 
   await app.register(cookiePlugin);
-  await app.register(jwtPlugin);
   await app.register(rateLimitPlugin);
   await app.register(errorPlugin);
   await app.register(staticPlugin);
@@ -56,6 +60,12 @@ export async function buildApp() {
     prefix: config.API_PREFIX,
   });
   await app.register(healthRoutes);
+
+
+  app.addHook('onClose', async () => {
+    await jobs.workspaceInvitationExpirationJob.stop();
+  });
+
 
   return app;
 }

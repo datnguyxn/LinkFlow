@@ -8,3 +8,4 @@ export * from './rabbitmq.constant.ts';
 export * from './audit.constant.ts';
 export * from './error.constant.ts';
 export * from './upload.constant.ts';
+export * from './redis.constant.ts';

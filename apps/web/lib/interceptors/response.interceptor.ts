@@ -4,6 +4,7 @@ import { api } from '../axios';
 import { authService } from '@/services/auth.service';
 import { appToast } from '@/lib/toast';
 import type { ApiErrorResponse } from '@/types/api';
+import { authEvents } from '@/events/auth.event';
 
 let isRefreshing = false;
 
@@ -33,8 +34,8 @@ export function responseSuccess(response: AxiosResponse) {
 export async function responseError(error: AxiosError<ApiErrorResponse>) {
   const originalRequest = error.config as
     | (InternalAxiosRequestConfig & {
-        _retry?: boolean;
-      })
+      _retry?: boolean;
+    })
     | undefined;
 
   if (!originalRequest) {
@@ -67,7 +68,8 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
   if (
     url.includes('/auth/login') ||
     url.includes('/auth/register') ||
-    url.includes('/auth/refresh-token')
+    url.includes('/auth/refresh-token') ||
+    url.includes('/auth/logout')
   ) {
     if (data) {
       appToast.error(data.errors?.[0]?.message ?? data.message ?? 'Something went wrong.');
@@ -78,7 +80,7 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
 
   // Đã retry rồi
   if (originalRequest._retry) {
-    await authService.logout();
+    authEvents.emit('logout');
 
     return Promise.reject(error);
   }
@@ -111,10 +113,10 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
     return api(originalRequest);
   } catch (err) {
     processQueue(err);
+    
+    authEvents.emit('logout');
 
-    await authService.logout();
-
-    appToast.error('Your session has expired. Please sign in again.');
+    //appToast.error('Your session has expired. Please sign in again.');
 
     return Promise.reject(err);
   } finally {

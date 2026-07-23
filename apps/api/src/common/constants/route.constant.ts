@@ -6,4 +6,5 @@ export const ROUTE = {
   URLS: '/urls',
   ANALYTICS: '/analytics',
   ADMIN: '/admin',
+  WORKSPACE: '/workspaces',
 } as const;

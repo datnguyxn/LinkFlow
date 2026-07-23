@@ -15,6 +15,7 @@ import type {
   UserLoginEvent,
   UserLogoutEvent,
   PasswordResetRequestedEvent,
+  AuthSessionRevokedEvent,
 } from '../../../events/index.ts';
 import { randomUUID } from 'node:crypto';
 import { AuthPublisher } from '../../../publishers/auth/auth.publisher.ts';
@@ -522,10 +523,10 @@ export class AuthService {
       );
 
       // 2. Create default workspace for the new user
-      await this.workspaceRepository.create(tx, {
+      await this.workspaceRepository.create({
         name: newUser.fullName || 'Default Workspace',
         ownerId: newUser.id,
-      });
+      }, tx);
 
       // 3. Delete the verification token after successful verification
       await this.emailVerificationRepository.delete(verificationRecord.id, tx);
@@ -875,10 +876,11 @@ export class AuthService {
    * - Revoke the session to log the user out
    * @param userId - The unique ID of the user
    * @param sessionId - The unique ID of the session to log out
+   * @param ipAddress - Optional IP address of the request
    * @returns void
    * @throws UnauthorizedError if the session is not found or invalid
    */
-  async logoutSession(userId: string, sessionId: string): Promise<void> {
+  async logoutSession(userId: string, sessionId: string, ipAddress: string | null): Promise<void> {
     // Find the session by user ID and session ID
     const session = await this.refreshTokenRepository.findActiveByIdAndUserId(sessionId, userId);
 
@@ -889,16 +891,44 @@ export class AuthService {
 
     // Revoke the session to log the user out
     await this.refreshTokenRepository.revoke(session.id);
+
+    // Create a session revocation event to publish to RabbitMQ
+    const event: AuthSessionRevokedEvent = {
+      userId: userId,
+      sessionId: sessionId,
+      revokedBy: userId,
+      revokedAt: new Date().toISOString(),
+      reason: 'USER_REVOKE',
+      ipAddress: ipAddress,
+    };
+
+    // Publish the session revocation event to RabbitMQ
+    await this.authPublisher.revokeSession(event);
   }
 
   /**
    * Logout all active sessions for a user
    * - Revoke all active sessions for the user to log them out from all devices
    * @param userId - The unique ID of the user
+   * @param sessionId - The unique ID of the current session to exclude from revocation
+   * @param ipAddress - Optional IP address of the request
    * @returns void
    */
-  async logoutAllOtherSessions(userId: string, sessionId: string): Promise<void> {
+  async logoutAllOtherSessions(userId: string, sessionId: string, ipAddress: string | null): Promise<void> {
     // Revoke all active sessions for the user to log them out from all devices
     await this.refreshTokenRepository.revokeAllByUserIdExcept(userId, sessionId);
+
+    // Create a session revocation event to publish to RabbitMQ
+    const event: AuthSessionRevokedEvent = {
+      userId: userId,
+      sessionId: sessionId,
+      revokedBy: userId,
+      revokedAt: new Date().toISOString(),
+      reason: 'USER_REVOKE',
+      ipAddress: ipAddress,
+    };
+
+    // Publish the session revocation event to RabbitMQ
+    await this.authPublisher.revokeSession(event);
   }
 }

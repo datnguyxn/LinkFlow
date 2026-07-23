@@ -9,6 +9,13 @@ import { MinioStorageService, STORAGE_FOLDER } from '../../../infrastructure/sto
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
 import { OAuthRepository } from '../repository/oauth.repository.ts';
+import { Publisher } from '../../../infrastructure/queue/index.ts';
+import { UserPublisher } from '../../../publishers/user/user.publisher.ts';
+import type { 
+  UserProfileUpdatedEvent,
+  UserAccountDeletedEvent, 
+  UserPasswordChangedEvent,
+  UserAvatarUpdatedEvent } from '../../../events/index.ts';
 
 /**
  * UserService class provides methods for managing user profiles,
@@ -23,15 +30,17 @@ export class UserService {
     private userRepository: UserRepository = new UserRepository(),
     private storageService: MinioStorageService = new MinioStorageService(),
     private oauthRepository: OAuthRepository = new OAuthRepository(),
+    private userPublisher = new UserPublisher(new Publisher()),
   ) {}
 
   /**
    * Update user profile information
    * @param userId - The unique ID of the user to update
    * @param updateData - The data to update for the user
+   * @param ipAddress - The IP address of the user performing the update (optional)
    * @returns The updated user object
    */
-  async updateProfile(userId: string, updateData: Prisma.UserUpdateInput) {
+  async updateProfile(userId: string, updateData: Prisma.UserUpdateInput, ipAddress: string | null) {
     // Check if the user exists before attempting to update
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -41,6 +50,19 @@ export class UserService {
     // Logic to update user profile in the database
     const updatedUser = await this.userRepository.update(userId, updateData);
 
+    // Create an event object to log the profile update action
+    const event: UserProfileUpdatedEvent = {
+      userId,
+      changedFields: Object.keys(updateData),
+      updatedAt: new Date(),
+      updatedBy: user.fullName || user.email,
+      ipAddress: ipAddress || null,
+    };
+
+    // Publish the profile update event to RabbitMQ
+    await this.userPublisher.userProfileUpdated(event);
+
+    // Return the updated user object
     return updatedUser;
   }
 
@@ -49,10 +71,11 @@ export class UserService {
    * @param userId - The unique ID of the user changing their password
    * @param oldPassword - The current password of the user
    * @param newPassword - The new password to set for the user
+   * @param ipAddress - The IP address of the user performing the password change (optional)
    * @returns The updated user object with the new password
    * @throws ConflictError if the user is not found or if the old password is incorrect
    */
-  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+  async changePassword(userId: string, oldPassword: string, newPassword: string, ipAddress: string | null) {
     // Check if the user exists before attempting to change the password
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -78,16 +101,29 @@ export class UserService {
       passwordHash: hashedNewPassword,
     });
 
+    // Create an event object to log the password change action
+    const event: UserPasswordChangedEvent = {
+      userId: userId,
+      changedBy: user.fullName || user.email,
+      changedAt: new Date(),
+      ipAddress: ipAddress || null,
+    };
+
+    // Publish the password change event to RabbitMQ
+    await this.userPublisher.userPasswordChanged(event);
+
+    // Return the updated user object
     return updatedUser;
   }
 
   /**
    * Delete user account
    * @param userId - The unique ID of the user to delete
+   * @param ipAddress - The IP address of the user performing the deletion (optional)
    * @returns The deleted user object
    * @throws ConflictError if the user is not found
    */
-  async deleteMyAccount(userId: string) {
+  async deleteMyAccount(userId: string, ipAddress: string | null) {
     // Check if the user exists before attempting to delete
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -104,6 +140,17 @@ export class UserService {
     if (!deletedUser) {
       throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
     }
+
+    // Create an event object to log the account deletion action
+    const event: UserAccountDeletedEvent = {
+      userId: userId,
+      deletedBy: user.fullName || user.email,
+      deletedAt: deletedUser.deletedAt || new Date(),
+      ipAddress: ipAddress || null,
+    };
+
+    // Publish the account deletion event to RabbitMQ
+    await this.userPublisher.userAccountDeleted(event);
 
     // Return the deleted user object
     return deletedUser;
@@ -131,9 +178,10 @@ export class UserService {
    * Upload user avatar
    * @param userId - The unique ID of the user uploading the avatar
    * @param avatarFile - The avatar file to upload
+   * @param ipAddress - The IP address of the user performing the upload (optional)
    * @returns An object containing the public URL of the uploaded avatar
    */
-  async uploadAvatar(userId: string, avatarFile: MultipartFile) {
+  async uploadAvatar(userId: string, avatarFile: MultipartFile, ipAddress: string | null) {
     // Check if the user exists before attempting to upload avatar
     const user = await this.userRepository.findById(userId);
 
@@ -176,6 +224,17 @@ export class UserService {
         throw new ConflictError('user.avatar.deleteFailed', ERROR_CODE.FILE_DELETE_FAILED);
       }
     }
+
+    // Create an event object to log the avatar update action
+    const event: UserAvatarUpdatedEvent = {
+      userId: userId,
+      updatedBy: userId,
+      updatedAt: new Date(),
+      ipAddress: ipAddress,
+    };
+
+    // Publish the avatar update event to RabbitMQ
+    await this.userPublisher.userAvatarUpdated(event);
 
     // Return the public URL of the uploaded avatar
     return {
