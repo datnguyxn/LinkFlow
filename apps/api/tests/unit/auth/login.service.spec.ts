@@ -9,7 +9,7 @@ import { comparePassword } from '../../../src/utils/password.util';
 import { UserRole, UserStatus } from '@prisma/client';
 import { ERROR_CODE } from '../../../src/common/constants';
 import { config } from '../../../src/config/env';
-import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+import { createAuthServiceFixture } from '../fixtures/auth.service.fixture';
 
 describe('AuthService', () => {
   let fixture: ReturnType<typeof createAuthServiceFixture>;

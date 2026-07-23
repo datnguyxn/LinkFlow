@@ -15,14 +15,15 @@ import { appToast } from '@/lib/toast';
 import ChangePasswordCardSkeleton from './ChangePasswordCardSkeleton';
 import { useLogout } from '@/hooks/mutations/useLogout';
 import { useChangePassword } from '@/hooks/mutations/useChangePassword';
-import { useMe } from '@/hooks/queries/useMe';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export default function ChangePasswordCard() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { data: user, isLoading: loading } = useMe();
+  const { user, loading } = useAuthContext();
+
   const changePassword = useChangePassword();
   const logout = useLogout();
 

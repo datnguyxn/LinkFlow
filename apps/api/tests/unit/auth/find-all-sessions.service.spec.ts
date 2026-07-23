@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+import { createAuthServiceFixture } from '../fixtures/auth.service.fixture';
 
 vi.mock('@/utils/user-agent', () => ({
   parseUserAgent: vi.fn(() => ({

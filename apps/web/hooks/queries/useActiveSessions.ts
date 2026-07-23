@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { authService } from '@/services/auth.service';
-import { useMe } from '@/hooks/queries/useMe';
 
-export function useActiveSessions() {
-  const { data: user } = useMe();
-
+export function useActiveSessions(
+    authenticated = false,
+) {
   return useQuery({
     queryKey: ['active-sessions'],
-    queryFn: authService.listActiveSessions.bind(authService),
-    enabled: !!user,
+
+    enabled: authenticated,
+
+    queryFn: authService.listActiveSessions.bind(authService)
   });
 }

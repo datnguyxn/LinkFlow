@@ -7,7 +7,7 @@ vi.mock('../../../src/utils/password.util', () => ({
 
 import { comparePassword, hashPassword } from '../../../src/utils/password.util';
 import { ERROR_CODE } from '../../../src/common/constants';
-import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+import { createAuthServiceFixture } from '../fixtures/auth.service.fixture';
 import { UnauthorizedError } from '../../../src/common/errors';
 
 describe('AuthService', () => {

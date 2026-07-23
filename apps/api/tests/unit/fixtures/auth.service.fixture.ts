@@ -1,14 +1,14 @@
 import { vi } from 'vitest';
 
-import { AuthService } from '../../../../src/modules/auth/service/auth.service';
-import { UserRepository } from '../../../../src/modules/users';
-import { WorkspaceRepository } from '../../../../src/modules/workspace';
-import { RefreshTokenRepository } from '../../../../src/modules/refresh-token';
-import { JwtService } from '../../../../src/modules/auth/service/jwt.service';
-import { TransactionService } from '../../../../src/infrastructure/database';
-import { EmailVerificationRepository } from '../../../../src/modules/email-verification';
-import { PasswordResetRepository } from '../../../../src/modules/password-reset';
-import { AuthPublisher } from '../../../../src/publishers/auth/auth.publisher';
+import { AuthService } from '../../../src/modules/auth/service/auth.service';
+import { UserRepository } from '../../../src/modules/users';
+import { WorkspaceRepository } from '../../../src/modules/workspace';
+import { RefreshTokenRepository } from '../../../src/modules/refresh-token';
+import { JwtService } from '../../../src/modules/auth/service/jwt.service';
+import { TransactionService } from '../../../src/infrastructure/database';
+import { EmailVerificationRepository } from '../../../src/modules/email-verification';
+import { PasswordResetRepository } from '../../../src/modules/password-reset';
+import { AuthPublisher } from '../../../src/publishers/auth/auth.publisher';
 
 export function createAuthServiceFixture() {
   const userRepository = {
@@ -68,6 +68,7 @@ export function createAuthServiceFixture() {
     verificationEmailResent: vi.fn(),
     passwordResetRequested: vi.fn(),
     passwordResetSuccess: vi.fn(),
+    revokeSession: vi.fn(),
   };
 
   const authService = new AuthService(

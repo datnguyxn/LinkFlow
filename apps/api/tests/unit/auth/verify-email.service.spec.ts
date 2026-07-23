@@ -7,7 +7,7 @@ vi.mock('../../../src/utils/password.util', () => ({
 
 import { UserRole, UserStatus } from '@prisma/client';
 import { ERROR_CODE } from '../../../src/common/constants';
-import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+import { createAuthServiceFixture } from '../fixtures/auth.service.fixture';
 
 describe('AuthService', () => {
   let fixture: ReturnType<typeof createAuthServiceFixture>;
@@ -73,10 +73,10 @@ describe('AuthService', () => {
         expect.any(Object),
       );
 
-      expect(fixture.workspaceRepository.create).toHaveBeenCalledWith(expect.any(Object), {
+      expect(fixture.workspaceRepository.create).toHaveBeenCalledWith({
         name: user.fullName,
         ownerId: user.id,
-      });
+      },  expect.any(Object));
 
       expect(fixture.emailVerificationRepository.delete).toHaveBeenCalledWith(
         verificationRecord.id,

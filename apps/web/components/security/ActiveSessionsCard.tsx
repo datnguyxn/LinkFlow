@@ -15,15 +15,16 @@ import { useSignOutAllOtherSessions } from '@/hooks/mutations/useSignOutAllOther
 import { useLogout } from '@/hooks/mutations/useLogout';
 import { tokenStorage } from '@/lib/storage/token.storage';
 import { queryClient } from '@/lib/query-client';
-import { useMe } from '@/hooks/queries/useMe';
 import ConfirmDialog from '../common/ConfirmDialog';
+import { useAuthContext } from '@/contexts/auth.context';
+import { appToast } from '@/lib/toast';
 
 export default function ActiveSessionsCard() {
   const [open, setOpen] = useState(false);
 
-  const { isLoading: userLoading } = useMe();
+  const { loading, authenticated } = useAuthContext();
 
-  const { data: sessions = [], isLoading: sessionsLoading } = useActiveSessions();
+  const { data: sessions = [], isLoading: sessionsLoading } = useActiveSessions(authenticated);
   const logout = useLogout();
 
   const signOutSession = useSignOutSession();
@@ -36,6 +37,8 @@ export default function ActiveSessionsCard() {
       // Nếu vừa sign out chính session hiện tại thì logout luôn
       if (current) {
         await logout.mutateAsync();
+
+        appToast.success('Logged out of current session successfully');
       }
     } catch (error) {
       console.error(error);
@@ -53,6 +56,8 @@ export default function ActiveSessionsCard() {
       queryClient.clear();
 
       tokenStorage.clear();
+
+      appToast.success('Logged out of all other sessions successfully');
     } catch (error) {
       console.error(error);
     }
@@ -62,7 +67,7 @@ export default function ActiveSessionsCard() {
 
   console.log('sessions', sessions);
   console.log('currentSession', currentSession);
-  if (userLoading || sessionsLoading) {
+  if (loading || sessionsLoading) {
     return <ActiveSessionsCardSkeleton />;
   }
 
@@ -118,9 +123,11 @@ export default function ActiveSessionsCard() {
             </div>
           )}
 
-          <Button variant="ghost" onClick={() => setOpen(true)}>
-            View all sessions ({sessions.length})
-          </Button>
+          {sessions.length > 1 && (
+            <Button variant="ghost" onClick={() => setOpen(true)}>
+              View all sessions ({sessions.length})
+            </Button>
+          )}
 
           <ConfirmDialog
             title="Sign out of all other sessions?"

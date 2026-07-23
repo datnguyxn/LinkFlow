@@ -7,7 +7,7 @@ vi.mock('../../../src/utils/password.util', () => ({
 import { hashPassword } from '../../../src/utils/password.util';
 import { UserStatus } from '@prisma/client';
 import { ERROR_CODE } from '../../../src/common/constants/index';
-import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+import { createAuthServiceFixture } from '../fixtures/auth.service.fixture';
 
 describe('AuthService', () => {
   let fixture: ReturnType<typeof createAuthServiceFixture>;

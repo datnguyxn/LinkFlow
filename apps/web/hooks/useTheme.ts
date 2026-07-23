@@ -2,13 +2,13 @@
 
 import { useTheme } from 'next-themes';
 
-import { useMe } from '@/hooks/queries/useMe';
 import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export function useAppTheme() {
   const { setTheme } = useTheme();
 
-  const { data: user } = useMe();
+  const { user } = useAuthContext();
 
   const updateUserProfile = useUpdateProfile();
 

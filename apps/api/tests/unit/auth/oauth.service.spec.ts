@@ -12,6 +12,7 @@ describe('OAuthService', () => {
   let userRepository: any;
   let authService: any;
   let transactionService: any;
+  let workspaceRepository: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,8 +35,13 @@ describe('OAuthService', () => {
     authService = {
       completeLogin: vi.fn(),
     };
+
     transactionService = {
       run: vi.fn(),
+    };
+
+    workspaceRepository = {
+      create: vi.fn(),
     };
 
     oauthService = new OAuthService(
@@ -44,6 +50,7 @@ describe('OAuthService', () => {
       userRepository,
       authService,
       transactionService,
+      workspaceRepository,
     );
   });
 
@@ -210,6 +217,15 @@ describe('OAuthService', () => {
               id: user.id,
             },
           },
+        },
+        expect.any(Object),
+      );
+
+
+      expect(workspaceRepository.create).toHaveBeenCalledWith(
+        {
+          name: profile.fullName || 'Default Workspace',
+          ownerId: user.id,
         },
         expect.any(Object),
       );

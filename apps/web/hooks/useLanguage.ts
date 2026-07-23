@@ -2,11 +2,12 @@
 
 import i18n, { LANGUAGE_STORAGE_KEY } from '@/i18n';
 
-import { useMe } from '@/hooks/queries/useMe';
 import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export function useLanguage() {
-  const { data: user } = useMe();
+  
+  const { user, loading } = useAuthContext();
 
   const updateProfile = useUpdateProfile();
 

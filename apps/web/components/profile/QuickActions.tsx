@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, BarChart, CreditCard } from 'lucide-react';
 
 import QuickActionsSkeleton from './QuickActionsSkeleton';
-import { useMe } from '@/hooks/queries/useMe';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export default function QuickActions() {
-  const { data: user, isLoading: loading, isError } = useMe();
+  const { user, loading } = useAuthContext();
 
   if (loading) {
     return <QuickActionsSkeleton />;

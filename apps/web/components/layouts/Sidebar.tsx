@@ -30,10 +30,11 @@ import { appToast } from '@/lib/toast';
 import dynamic from 'next/dynamic';
 import { useSidebarStore } from '@/stores/sidebar.store';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useMe } from '@/hooks/queries/useMe';
+
 import { useLogout } from '@/hooks/mutations/useLogout';
 import { useAvatar } from '@/hooks/queries/useAvatar';
 import Image from 'next/image';
+import { useAuthContext } from '@/contexts/auth.context';
 
 const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
   ssr: false,
@@ -49,9 +50,9 @@ export default function Sidebar() {
 
   const [open, setOpen] = useState(false);
 
-  const { data: user, isLoading: loading, isError } = useMe();
+  const { user, loading, authenticated } = useAuthContext();
 
-  const { data: avatarUrl } = useAvatar(user?.avatarUrl);
+  const { data: avatarUrl } = useAvatar(user?.avatarUrl, authenticated);
 
   const logout = useLogout();
 
@@ -82,6 +83,11 @@ export default function Sidebar() {
       name: 'Dashboard',
       href: '/dashboard',
       icon: Home,
+    },
+    {
+      name: 'Workspace',
+      href: '/dashboard/workspace',
+      icon: Globe,
     },
     {
       name: 'Links',

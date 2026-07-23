@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { UserRole } from '@prisma/client';
-import { createAuthServiceFixture } from './fixtures/auth-service.fixture';
+import { createAuthServiceFixture } from '../fixtures/auth.service.fixture';
 
 describe('AuthService', () => {
   let fixture: ReturnType<typeof createAuthServiceFixture>;

@@ -9,11 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { appToast } from '@/lib/toast';
 
 import PersonalInfoCardSkeleton from './PersonalInfoCardSkeleton';
-import { useMe } from '@/hooks/queries/useMe';
 import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export default function PersonalInfoCard() {
-  const { data: user, isLoading: loading, isError } = useMe();
+  const { user, loading } = useAuthContext();
 
   const updateProfile = useUpdateProfile();
 

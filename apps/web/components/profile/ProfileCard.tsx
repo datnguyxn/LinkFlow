@@ -7,10 +7,10 @@ import ProfileAvatar from './ProfileAvatar';
 import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProfileCardSkeleton from './ProfileCardSkeleton';
-import { useMe } from '@/hooks/queries/useMe';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export default function ProfileCard() {
-  const { data: user, isLoading: loading, isError } = useMe();
+  const { user, loading } = useAuthContext();
 
   if (loading) {
     return <ProfileCardSkeleton />;

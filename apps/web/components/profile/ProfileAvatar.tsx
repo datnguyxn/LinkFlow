@@ -8,16 +8,18 @@ import { appToast } from '@/lib/toast';
 
 import { useUploadAvatar } from '@/hooks/mutations/useUploadAvatar';
 import { useAvatar } from '@/hooks/queries/useAvatar';
-import { useMe } from '@/hooks/queries/useMe';
+import { useAuthContext } from '@/contexts/auth.context';
 
 export default function ProfileAvatar() {
-  const { data: user } = useMe();
+  const { user, authenticated } = useAuthContext();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadAvatar = useUploadAvatar();
 
-  const { data: avatarUrl } = useAvatar(user?.avatarUrl);
+  const { data: avatarSrc } = useAvatar(user?.avatarUrl, authenticated);
+
+  console.log('avatarSrc', avatarSrc);
 
   const [preview, setPreview] = useState<string>();
 
@@ -54,7 +56,7 @@ export default function ProfileAvatar() {
       }`}
     >
       <Avatar className="h-24 w-24 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-        <AvatarImage src={preview ?? avatarUrl} />
+        <AvatarImage src={preview ?? avatarSrc} />
 
         <AvatarFallback>
           {user?.fullName

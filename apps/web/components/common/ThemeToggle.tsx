@@ -1,14 +1,11 @@
 'use client';
 
-import { useMe } from '@/hooks/queries/useMe';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
 
 export default function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-
-  const { data: user, isLoading: loading, isError } = useMe();
 
   const updateProfile = useUpdateProfile();
 
