@@ -6,7 +6,6 @@ import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export function useLanguage() {
-  
   const { user, loading } = useAuthContext();
 
   const updateProfile = useUpdateProfile();

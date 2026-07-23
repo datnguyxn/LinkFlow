@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
-const RESERVED_CODES = [
-  'api',
-  'admin',
-  'login',
-  'register',
-  'health',
-  'docs',
-];
+const RESERVED_CODES = ['api', 'admin', 'login', 'register', 'health', 'docs'];
 
 export const createUrlSchema = z.object({
   originalUrl: z
@@ -47,20 +40,12 @@ export const createUrlSchema = z.object({
     .min(4)
     .max(20)
     .regex(/^[a-zA-Z0-9_-]+$/)
-    .refine(
-      (value) => !RESERVED_CODES.includes(value.toLowerCase()),
-      'Reserved short code',
-    )
+    .refine((value) => !RESERVED_CODES.includes(value.toLowerCase()), 'Reserved short code')
     .optional(),
 
-  password: z
-    .string()
-    .min(8)
-    .max(100)
-    .optional(),
+  password: z.string().min(8).max(100).optional(),
 
-  expiresAt: z
-    .coerce
+  expiresAt: z.coerce
     .date()
     .refine((date) => date > new Date(), 'Expiration must be in the future')
     .optional(),

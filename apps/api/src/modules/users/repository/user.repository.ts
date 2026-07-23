@@ -1,5 +1,5 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
-import { Prisma, PrismaClient, UserStatus } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { buildPagination, buildPaginationMeta } from '../../../utils/pagination.util.ts';
 
 /**
@@ -20,7 +20,7 @@ export class UserRepository {
       },
     });
   }
-  
+
   /**
    * Create a new user and assign role inside a transaction
    *
@@ -28,7 +28,7 @@ export class UserRepository {
    * 1. Create user record
    * 2. Create user-role mapping
    * 3. Ensure both operations succeed or both rollback
-   * 
+   *
    * @param data - The data for the new user
    * @param db - The Prisma transaction client or Prisma client for database operations (default is the main Prisma client)
    * @returns The created user record

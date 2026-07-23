@@ -47,7 +47,9 @@ describe('AuthService', () => {
 
       fixture.refreshTokenRepository.findActiveByIdAndUserId.mockResolvedValue(null);
 
-      await expect(fixture.authService.logoutSession(userId, sessionId, ipAddress)).rejects.toThrow();
+      await expect(
+        fixture.authService.logoutSession(userId, sessionId, ipAddress),
+      ).rejects.toThrow();
 
       expect(fixture.refreshTokenRepository.revoke).not.toHaveBeenCalled();
     });

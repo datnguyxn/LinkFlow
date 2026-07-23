@@ -336,11 +336,11 @@ Deleting the workspace automatically removes all owned resources.
 
 # Access Behavior
 
-| State | Accessible |
-|---------|:----------:|
-| ACTIVE | ✅ |
-| UPDATED | ✅ |
-| DELETED | ❌ |
+| State   | Accessible |
+| ------- | :--------: |
+| ACTIVE  |     ✅     |
+| UPDATED |     ✅     |
+| DELETED |     ❌     |
 
 Only active workspace members may access workspace resources.
 
@@ -350,11 +350,11 @@ Pending invitations do not grant access.
 
 # Update Behavior
 
-| State | Editable |
-|---------|:--------:|
-| ACTIVE | ✅ |
-| UPDATED | ✅ |
-| DELETED | ❌ |
+| State   | Editable |
+| ------- | :------: |
+| ACTIVE  |    ✅    |
+| UPDATED |    ✅    |
+| DELETED |    ❌    |
 
 Editable fields include
 
@@ -399,11 +399,11 @@ Benefits
 
 # Lifecycle Summary
 
-| State | Accessible | Editable | Invite Members | Create Resources |
-|---------|:----------:|:--------:|:--------------:|:----------------:|
-| ACTIVE | ✅ | ✅ | ✅ | ✅ |
-| UPDATED | ✅ | ✅ | ✅ | ✅ |
-| DELETED | ❌ | ❌ | ❌ | ❌ |
+| State   | Accessible | Editable | Invite Members | Create Resources |
+| ------- | :--------: | :------: | :------------: | :--------------: |
+| ACTIVE  |     ✅     |    ✅    |       ✅       |        ✅        |
+| UPDATED |     ✅     |    ✅    |       ✅       |        ✅        |
+| DELETED |     ❌     |    ❌    |       ❌       |        ❌        |
 
 ---
 

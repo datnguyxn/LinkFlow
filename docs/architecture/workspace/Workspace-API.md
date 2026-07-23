@@ -20,13 +20,13 @@ All Workspace APIs require JWT Authentication.
 
 # API Overview
 
-| Method | Endpoint | Authentication | Description |
-|---------|----------|----------------|-------------|
-| POST | /workspaces | ✅ | Create Workspace |
-| GET | /workspaces | ✅ | List My Workspaces |
-| GET | /workspaces/:workspaceId | ✅ | Get Workspace Details |
-| PATCH | /workspaces/:workspaceId | ✅ | Update Workspace |
-| DELETE | /workspaces/:workspaceId | ✅ | Delete Workspace |
+| Method | Endpoint                 | Authentication | Description           |
+| ------ | ------------------------ | -------------- | --------------------- |
+| POST   | /workspaces              | ✅             | Create Workspace      |
+| GET    | /workspaces              | ✅             | List My Workspaces    |
+| GET    | /workspaces/:workspaceId | ✅             | Get Workspace Details |
+| PATCH  | /workspaces/:workspaceId | ✅             | Update Workspace      |
+| DELETE | /workspaces/:workspaceId | ✅             | Delete Workspace      |
 
 ---
 
@@ -46,11 +46,11 @@ POST /workspaces
 
 ### Request Body
 
-| Field | Required | Description |
-|---------|----------|-------------|
-| name | ✅ | Workspace name |
-| slug | ✅ | Unique workspace slug |
-| logoUrl | ❌ | Workspace logo |
+| Field   | Required | Description           |
+| ------- | -------- | --------------------- |
+| name    | ✅       | Workspace name        |
+| slug    | ✅       | Unique workspace slug |
+| logoUrl | ❌       | Workspace logo        |
 
 ### Success Response
 
@@ -200,26 +200,26 @@ Deletion is handled through database cascade rules.
 
 # Common Error Responses
 
-| Status | Description |
-|---------|-------------|
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Workspace Not Found |
-| 409 | Workspace Slug Already Exists |
-| 500 | Internal Server Error |
+| Status | Description                   |
+| ------ | ----------------------------- |
+| 400    | Bad Request                   |
+| 401    | Unauthorized                  |
+| 403    | Forbidden                     |
+| 404    | Workspace Not Found           |
+| 409    | Workspace Slug Already Exists |
+| 500    | Internal Server Error         |
 
 ---
 
 # Permission Matrix
 
-| Feature | Member | Owner |
-|----------|:------:|:-----:|
-| List My Workspaces | ✅ | ✅ |
-| View Workspace | ✅ | ✅ |
-| Create Workspace | ✅ | ✅ |
-| Update Workspace | ❌ | ✅ |
-| Delete Workspace | ❌ | ✅ |
+| Feature            | Member | Owner |
+| ------------------ | :----: | :---: |
+| List My Workspaces |   ✅   |  ✅   |
+| View Workspace     |   ✅   |  ✅   |
+| Create Workspace   |   ✅   |  ✅   |
+| Update Workspace   |   ❌   |  ✅   |
+| Delete Workspace   |   ❌   |  ✅   |
 
 ---
 
@@ -274,12 +274,12 @@ root
 
 To prevent abuse, the following limits are recommended.
 
-| Endpoint | Recommendation |
-|----------|----------------|
+| Endpoint         | Recommendation     |
+| ---------------- | ------------------ |
 | Create Workspace | 10 requests/minute |
 | Update Workspace | 20 requests/minute |
-| Delete Workspace | 5 requests/minute |
-| List Workspaces | 60 requests/minute |
+| Delete Workspace | 5 requests/minute  |
+| List Workspaces  | 60 requests/minute |
 
 ---
 

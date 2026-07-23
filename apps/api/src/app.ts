@@ -61,11 +61,9 @@ export async function buildApp() {
   });
   await app.register(healthRoutes);
 
-
   app.addHook('onClose', async () => {
     await jobs.workspaceInvitationExpirationJob.stop();
   });
-
 
   return app;
 }

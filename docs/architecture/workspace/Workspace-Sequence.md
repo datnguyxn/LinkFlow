@@ -339,13 +339,13 @@ sequenceDiagram
 
 # Sequence Summary
 
-| Feature | Main Components |
-|----------|-----------------|
-| Create Workspace | API → Database |
-| List My Workspaces | API → Database |
-| Get Workspace Details | API → Database |
-| Update Workspace | API → Database |
-| Delete Workspace | API → Database |
-| Workspace Initialization | API → Database |
-| Workspace Authorization | API → Database |
-| Workspace Ownership Validation | API → Database |
+| Feature                        | Main Components |
+| ------------------------------ | --------------- |
+| Create Workspace               | API → Database  |
+| List My Workspaces             | API → Database  |
+| Get Workspace Details          | API → Database  |
+| Update Workspace               | API → Database  |
+| Delete Workspace               | API → Database  |
+| Workspace Initialization       | API → Database  |
+| Workspace Authorization        | API → Database  |
+| Workspace Ownership Validation | API → Database  |

@@ -258,12 +258,12 @@ The workspace owner must transfer ownership before leaving.
 
 # Permission Behavior
 
-| State | Workspace Access |
-|---------|------------------|
-| INVITED | ❌ |
-| ACTIVE | ✅ |
-| REMOVED | ❌ |
-| LEFT | ❌ |
+| State   | Workspace Access |
+| ------- | ---------------- |
+| INVITED | ❌               |
+| ACTIVE  | ✅               |
+| REMOVED | ❌               |
+| LEFT    | ❌               |
 
 ---
 
@@ -279,13 +279,13 @@ MEMBER
 
 Permissions
 
-| Action | OWNER | MEMBER |
-|---------|:-----:|:------:|
-| View Members | ✅ | ✅ |
-| Invite Members | ✅ | ❌ |
-| Update Roles | ✅ | ❌ |
-| Remove Members | ✅ | ❌ |
-| Leave Workspace | ❌* | ✅ |
+| Action          | OWNER | MEMBER |
+| --------------- | :---: | :----: |
+| View Members    |  ✅   |   ✅   |
+| Invite Members  |  ✅   |   ❌   |
+| Update Roles    |  ✅   |   ❌   |
+| Remove Members  |  ✅   |   ❌   |
+| Leave Workspace |  ❌*  |   ✅   |
 
 \* The workspace owner must transfer ownership before leaving.
 
@@ -330,12 +330,12 @@ Benefits
 
 # Lifecycle Summary
 
-| State | Workspace Access | Membership Exists |
-|---------|------------------|-------------------|
-| INVITED | ❌ | ❌ |
-| ACTIVE | ✅ | ✅ |
-| REMOVED | ❌ | ❌ |
-| LEFT | ❌ | ❌ |
+| State   | Workspace Access | Membership Exists |
+| ------- | ---------------- | ----------------- |
+| INVITED | ❌               | ❌                |
+| ACTIVE  | ✅               | ✅                |
+| REMOVED | ❌               | ❌                |
+| LEFT    | ❌               | ❌                |
 
 ---
 

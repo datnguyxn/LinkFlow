@@ -18,5 +18,4 @@ export const workspaceWithRole = Prisma.validator<Prisma.WorkspaceDefaultArgs>()
   },
 });
 
-export type WorkspaceWithRole =
-  Prisma.WorkspaceGetPayload<typeof workspaceWithRole>;
+export type WorkspaceWithRole = Prisma.WorkspaceGetPayload<typeof workspaceWithRole>;

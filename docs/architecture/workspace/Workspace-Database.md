@@ -326,16 +326,16 @@ Benefits
 
 # Foreign Key Strategy
 
-| Child Table | Parent Table | Delete Strategy |
-|-------------|--------------|-----------------|
-| Workspace | User | Cascade |
-| WorkspaceMember | Workspace | Cascade |
-| WorkspaceMember | User | Cascade |
-| WorkspaceInvitation | Workspace | Cascade |
-| WorkspaceInvitation | User | Set Null |
-| URL | Workspace | Cascade |
-| Tag | Workspace | Cascade |
-| ApiKey | Workspace | Cascade |
+| Child Table         | Parent Table | Delete Strategy |
+| ------------------- | ------------ | --------------- |
+| Workspace           | User         | Cascade         |
+| WorkspaceMember     | Workspace    | Cascade         |
+| WorkspaceMember     | User         | Cascade         |
+| WorkspaceInvitation | Workspace    | Cascade         |
+| WorkspaceInvitation | User         | Set Null        |
+| URL                 | Workspace    | Cascade         |
+| Tag                 | Workspace    | Cascade         |
+| ApiKey              | Workspace    | Cascade         |
 
 Deleting a workspace automatically removes all members, invitations, and related resources.
 

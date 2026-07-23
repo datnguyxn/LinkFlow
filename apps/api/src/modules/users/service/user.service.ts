@@ -11,11 +11,12 @@ import { extname } from 'node:path';
 import { OAuthRepository } from '../repository/oauth.repository.ts';
 import { Publisher } from '../../../infrastructure/queue/index.ts';
 import { UserPublisher } from '../../../publishers/user/user.publisher.ts';
-import type { 
+import type {
   UserProfileUpdatedEvent,
-  UserAccountDeletedEvent, 
+  UserAccountDeletedEvent,
   UserPasswordChangedEvent,
-  UserAvatarUpdatedEvent } from '../../../events/index.ts';
+  UserAvatarUpdatedEvent,
+} from '../../../events/index.ts';
 
 /**
  * UserService class provides methods for managing user profiles,
@@ -40,7 +41,11 @@ export class UserService {
    * @param ipAddress - The IP address of the user performing the update (optional)
    * @returns The updated user object
    */
-  async updateProfile(userId: string, updateData: Prisma.UserUpdateInput, ipAddress: string | null) {
+  async updateProfile(
+    userId: string,
+    updateData: Prisma.UserUpdateInput,
+    ipAddress: string | null,
+  ) {
     // Check if the user exists before attempting to update
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -75,7 +80,12 @@ export class UserService {
    * @returns The updated user object with the new password
    * @throws ConflictError if the user is not found or if the old password is incorrect
    */
-  async changePassword(userId: string, oldPassword: string, newPassword: string, ipAddress: string | null) {
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+    ipAddress: string | null,
+  ) {
     // Check if the user exists before attempting to change the password
     const user = await this.userRepository.findById(userId);
     if (!user) {

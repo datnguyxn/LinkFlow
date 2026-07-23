@@ -151,7 +151,12 @@ export class UserController {
     const { oldPassword, newPassword } = request.body;
 
     // Logic to change user password
-    const updatedUser = await this.userService.changePassword(id, oldPassword, newPassword, request.ip);
+    const updatedUser = await this.userService.changePassword(
+      id,
+      oldPassword,
+      newPassword,
+      request.ip,
+    );
 
     // Check if the user was found and the password was changed; if not, return a not found error
     if (!updatedUser) {

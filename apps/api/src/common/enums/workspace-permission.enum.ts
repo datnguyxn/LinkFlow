@@ -3,7 +3,6 @@ export const WORKSPACE_PERMISSION = {
   WORKSPACE_READ: 'workspace.read',
   WORKSPACE_UPDATE: 'workspace.update',
   WORKSPACE_DELETE: 'workspace.delete',
-  
 
   // Workspace Members
   MEMBER_READ: 'workspace.member.read',
@@ -37,5 +36,4 @@ export const WORKSPACE_PERMISSION = {
   API_KEY_REVOKE: 'workspace.apiKey.revoke',
 } as const;
 
-export type WorkspacePermission =
-  (typeof WORKSPACE_PERMISSION)[keyof typeof WORKSPACE_PERMISSION];
+export type WorkspacePermission = (typeof WORKSPACE_PERMISSION)[keyof typeof WORKSPACE_PERMISSION];

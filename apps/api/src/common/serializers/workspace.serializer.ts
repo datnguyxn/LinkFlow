@@ -16,9 +16,7 @@ export class WorkspaceSerializer {
         name: member.role.name,
       },
 
-      permissions: member.role.permissions.map(
-        (item) => item.permission.name,
-      ),
+      permissions: member.role.permissions.map((item) => item.permission.name),
 
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,

@@ -34,8 +34,8 @@ export function responseSuccess(response: AxiosResponse) {
 export async function responseError(error: AxiosError<ApiErrorResponse>) {
   const originalRequest = error.config as
     | (InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    })
+        _retry?: boolean;
+      })
     | undefined;
 
   if (!originalRequest) {
@@ -113,7 +113,7 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
     return api(originalRequest);
   } catch (err) {
     processQueue(err);
-    
+
     authEvents.emit('logout');
 
     //appToast.error('Your session has expired. Please sign in again.');

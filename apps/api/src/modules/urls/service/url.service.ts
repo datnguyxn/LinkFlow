@@ -15,98 +15,80 @@ import { WorkspaceMemberRepository } from '../../workspace/repository/workspace-
  * handling pagination and other URL-related operations.
  */
 export class UrlService {
+  // The UrlRepository instance is injected into the UrlService class, allowing it to access the repository methods for URL-related database operations.
+  constructor(
+    private urlRepository = new UrlRepository(),
+    private workspaceRepository = new WorkspaceRepository(),
+    private workspaceMemberRepository = new WorkspaceMemberRepository(),
+    private userRepository = new UserRepository(),
+  ) {}
 
-    // The UrlRepository instance is injected into the UrlService class, allowing it to access the repository methods for URL-related database operations.
-    constructor(
-        private urlRepository = new UrlRepository(),
-        private workspaceRepository = new WorkspaceRepository(),
-        private workspaceMemberRepository = new WorkspaceMemberRepository(),
-        private userRepository = new UserRepository(),
-    ) { }
+  async createUrl(userId: string, workspaceId: string, input: CreateUrlInput) {
+    await this.validateWorkspacePermission(workspaceId, userId);
 
-    async createUrl(
-        userId: string,
-        workspaceId: string,
-        input: CreateUrlInput
-    ) {
-        await this.validateWorkspacePermission(workspaceId, userId);
+    const shortCode = await this.resolveShortCode(input.customCode);
 
-        const shortCode = await this.resolveShortCode(input.customCode);
+    const passwordHash = input.password ? await hashPassword(input.password) : null;
 
-        const passwordHash = input.password
-            ? await hashPassword(input.password)
-            : null;
+    // Create the URL record in the database
+    const result = await this.urlRepository.createUrl({
+      shortCode,
+      originalUrl: input.originalUrl,
+      title: input.title,
+      description: input.description,
+      faviconUrl: input.faviconUrl,
+      redirectType: input.redirectType as RedirectType,
+      passwordHash: passwordHash,
+      expiresAt: input.expiresAt,
+      maxClicks: input.maxClicks,
+      clickCount: input.clickCount,
+      workspace: {
+        connect: {
+          id: workspaceId,
+        },
+      },
+      user: {
+        connect: {
+          id: userId,
+        },
+      },
+    });
 
-        // Create the URL record in the database
-        const result = await this.urlRepository.createUrl({
-            shortCode,
-            originalUrl: input.originalUrl,
-            title: input.title,
-            description: input.description,
-            faviconUrl: input.faviconUrl,
-            redirectType: input.redirectType as RedirectType,
-            passwordHash: passwordHash,
-            expiresAt: input.expiresAt,
-            maxClicks: input.maxClicks,
-            clickCount: input.clickCount,
-            workspace: {
-                connect: {
-                    id: workspaceId,
-                },
-            },
-            user: {
-                connect: {
-                    id: userId,
-                },
-            },
-        });
+    return result;
+  }
 
-        return result;
+  private async validateWorkspacePermission(workspaceId: string, userId: string) {
+    const member = await this.workspaceMemberRepository.findRoleByUserId(workspaceId, userId);
+
+    if (!member) {
+      throw new ForbiddenError(
+        'workspace.workspaceMemberNotFound',
+        ERROR_CODE.WORKSPACE_MEMBER_NOT_FOUND,
+      );
     }
 
-    private async validateWorkspacePermission(
-        workspaceId: string,
-        userId: string,
-    ) {
-        const member =
-            await this.workspaceMemberRepository.findRoleByUserId(workspaceId, userId);
+    return member;
+  }
 
-        if (!member) {
-            throw new ForbiddenError(
-                'workspace.workspaceMemberNotFound',
-                ERROR_CODE.WORKSPACE_MEMBER_NOT_FOUND,
-            );
-        }
+  private async resolveShortCode(customCode?: string): Promise<string> {
+    if (customCode) {
+      const exists = await this.urlRepository.findByShortCode(customCode);
 
-        return member;
+      if (exists) {
+        throw new ConflictError('url.shortCodeAlreadyExists', ERROR_CODE.SHORT_CODE_ALREADY_EXISTS);
+      }
+
+      return customCode;
     }
 
-    private async resolveShortCode(
-        customCode?: string,
-    ): Promise<string> {
-        if (customCode) {
-            const exists =
-                await this.urlRepository.findByShortCode(customCode);
+    while (true) {
+      const code = nanoid(7);
 
-            if (exists) {
-                throw new ConflictError(
-                    'url.shortCodeAlreadyExists',
-                    ERROR_CODE.SHORT_CODE_ALREADY_EXISTS,
-                );
-            }
+      const exists = await this.urlRepository.findByShortCode(code);
 
-            return customCode;
-        }
-
-        while (true) {
-            const code = nanoid(7);
-
-            const exists =
-                await this.urlRepository.findByShortCode(code);
-
-            if (!exists) {
-                return code;
-            }
-        }
+      if (!exists) {
+        return code;
+      }
     }
+  }
 }

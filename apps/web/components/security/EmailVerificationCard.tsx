@@ -7,7 +7,6 @@ import { MailCheck, CheckCircle2 } from 'lucide-react';
 import EmailVerificationCardSkeleton from './EmailVerificationCardSkeleton';
 import { useAuthContext } from '@/contexts/auth.context';
 export default function EmailVerificationCard() {
-
   const { user, loading } = useAuthContext();
 
   if (loading) {

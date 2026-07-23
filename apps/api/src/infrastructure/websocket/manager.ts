@@ -1,10 +1,7 @@
 import type { WebSocket } from 'ws';
 
 export class WebSocketManager {
-  private readonly connections = new Map<
-    string,
-    Set<WebSocket>
-  >();
+  private readonly connections = new Map<string, Set<WebSocket>>();
 
   add(userId: string, socket: WebSocket) {
     let sockets = this.connections.get(userId);
@@ -32,18 +29,10 @@ export class WebSocketManager {
     }
   }
 
-  sendToUser(
-    userId: string,
-    message: unknown,
-  ) {
+  sendToUser(userId: string, message: unknown) {
     const sockets = this.connections.get(userId);
 
-    console.log(
-      'SEND TO USER:',
-      userId,
-      'SOCKETS:',
-      sockets?.size,
-    );
+    console.log('SEND TO USER:', userId, 'SOCKETS:', sockets?.size);
 
     if (!sockets) {
       console.log('❌ No active socket for user:', userId);
@@ -59,5 +48,4 @@ export class WebSocketManager {
   }
 }
 
-export const websocketManager =
-  new WebSocketManager();
+export const websocketManager = new WebSocketManager();

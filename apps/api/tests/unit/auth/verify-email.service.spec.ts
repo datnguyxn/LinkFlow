@@ -73,10 +73,13 @@ describe('AuthService', () => {
         expect.any(Object),
       );
 
-      expect(fixture.workspaceRepository.create).toHaveBeenCalledWith({
-        name: user.fullName,
-        ownerId: user.id,
-      },  expect.any(Object));
+      expect(fixture.workspaceRepository.create).toHaveBeenCalledWith(
+        {
+          name: user.fullName,
+          ownerId: user.id,
+        },
+        expect.any(Object),
+      );
 
       expect(fixture.emailVerificationRepository.delete).toHaveBeenCalledWith(
         verificationRecord.id,

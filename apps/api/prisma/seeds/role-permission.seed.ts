@@ -76,19 +76,9 @@ export async function seedRolePermissions() {
 
   const permissions = await prisma.permission.findMany();
 
-  const permissionMap = new Map(
-    permissions.map((permission) => [
-      permission.name,
-      permission.id,
-    ]),
-  );
+  const permissionMap = new Map(permissions.map((permission) => [permission.name, permission.id]));
 
-  const roleMap = new Map(
-    roles.map((role) => [
-      role.name,
-      role.id,
-    ]),
-  );
+  const roleMap = new Map(roles.map((role) => [role.name, role.id]));
 
   // OWNER
   const ownerRoleId = roleMap.get('OWNER');
@@ -114,9 +104,7 @@ export async function seedRolePermissions() {
   }
 
   // ADMIN + MEMBER
-  for (const [roleName, permissionNames] of Object.entries(
-    rolePermissions,
-  )) {
+  for (const [roleName, permissionNames] of Object.entries(rolePermissions)) {
     if (roleName === 'OWNER') {
       continue;
     }
@@ -128,13 +116,10 @@ export async function seedRolePermissions() {
     }
 
     for (const permissionName of permissionNames) {
-      const permissionId =
-        permissionMap.get(permissionName);
+      const permissionId = permissionMap.get(permissionName);
 
       if (!permissionId) {
-        console.warn(
-          `Permission not found: ${permissionName}`,
-        );
+        console.warn(`Permission not found: ${permissionName}`);
 
         continue;
       }

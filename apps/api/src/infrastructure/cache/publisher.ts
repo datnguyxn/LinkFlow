@@ -6,15 +6,10 @@ export class RedisPublisher {
   private client: RedisClientType;
 
   constructor() {
-    this.client = redis
-      .getClient()
-      .duplicate();
+    this.client = redis.getClient().duplicate();
 
     this.client.on('error', (error) => {
-      console.error(
-        '❌ Redis publisher error:',
-        error,
-      );
+      console.error('❌ Redis publisher error:', error);
     });
   }
 
@@ -24,14 +19,8 @@ export class RedisPublisher {
     }
   }
 
-  async publish(
-    channel: string,
-    message: unknown,
-  ) {
-    await this.client.publish(
-      channel,
-      JSON.stringify(message),
-    );
+  async publish(channel: string, message: unknown) {
+    await this.client.publish(channel, JSON.stringify(message));
   }
 
   async disconnect() {
@@ -41,5 +30,4 @@ export class RedisPublisher {
   }
 }
 
-export const redisPublisher =
-  new RedisPublisher();
+export const redisPublisher = new RedisPublisher();

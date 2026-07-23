@@ -527,12 +527,12 @@ sequenceDiagram
 
 # Sequence Summary
 
-| Feature | Main Components |
-|----------|-----------------|
-| Send Invitation | API → Database → Mail → Notification |
-| List Invitations | API → Database |
-| Get Invitation Details | API → Database |
-| Accept Invitation | API → Database → Mail → Notification |
-| Reject Invitation | API → Database → Mail → Notification |
-| Revoke Invitation | API → Database → Mail → Notification |
-| Validate Invitation | API → Database |
+| Feature                | Main Components                      |
+| ---------------------- | ------------------------------------ |
+| Send Invitation        | API → Database → Mail → Notification |
+| List Invitations       | API → Database                       |
+| Get Invitation Details | API → Database                       |
+| Accept Invitation      | API → Database → Mail → Notification |
+| Reject Invitation      | API → Database → Mail → Notification |
+| Revoke Invitation      | API → Database → Mail → Notification |
+| Validate Invitation    | API → Database                       |

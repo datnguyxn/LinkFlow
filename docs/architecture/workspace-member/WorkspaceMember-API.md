@@ -20,13 +20,13 @@ All Workspace Member APIs require JWT Authentication.
 
 # API Overview
 
-| Method | Endpoint | Authentication | Description |
-|---------|----------|----------------|-------------|
-| GET | /workspaces/:workspaceId/members | ✅ | List Members |
-| GET | /workspaces/:workspaceId/members/:userId | ✅ | Get Member Details |
-| PATCH | /workspaces/:workspaceId/members/:userId | ✅ | Update Member Role |
-| DELETE | /workspaces/:workspaceId/members/:userId | ✅ | Remove Member |
-| DELETE | /workspaces/:workspaceId/leave | ✅ | Leave Workspace |
+| Method | Endpoint                                 | Authentication | Description        |
+| ------ | ---------------------------------------- | -------------- | ------------------ |
+| GET    | /workspaces/:workspaceId/members         | ✅             | List Members       |
+| GET    | /workspaces/:workspaceId/members/:userId | ✅             | Get Member Details |
+| PATCH  | /workspaces/:workspaceId/members/:userId | ✅             | Update Member Role |
+| DELETE | /workspaces/:workspaceId/members/:userId | ✅             | Remove Member      |
+| DELETE | /workspaces/:workspaceId/leave           | ✅             | Leave Workspace    |
 
 ---
 
@@ -46,12 +46,12 @@ GET /workspaces/{workspaceId}/members
 
 ### Query Parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| page | Page number |
-| limit | Items per page |
-| search | Search by name or email |
-| role | Filter by member role |
+| Parameter | Description             |
+| --------- | ----------------------- |
+| page      | Page number             |
+| limit     | Items per page          |
+| search    | Search by name or email |
+| role      | Filter by member role   |
 
 ### Success Response
 
@@ -112,9 +112,9 @@ PATCH /workspaces/{workspaceId}/members/{userId}
 
 ### Request Body
 
-| Field | Required | Description |
-|---------|----------|-------------|
-| role | ✅ | New member role |
+| Field | Required | Description     |
+| ----- | -------- | --------------- |
+| role  | ✅       | New member role |
 
 Supported roles
 
@@ -198,26 +198,26 @@ Business Rules
 
 # Common Error Responses
 
-| Status | Description |
-|---------|-------------|
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Workspace or Member Not Found |
-| 409 | Ownership Transfer Required |
-| 500 | Internal Server Error |
+| Status | Description                   |
+| ------ | ----------------------------- |
+| 400    | Bad Request                   |
+| 401    | Unauthorized                  |
+| 403    | Forbidden                     |
+| 404    | Workspace or Member Not Found |
+| 409    | Ownership Transfer Required   |
+| 500    | Internal Server Error         |
 
 ---
 
 # Permission Matrix
 
-| Feature | Member | Owner |
-|----------|:------:|:-----:|
-| List Members | ✅ | ✅ |
-| View Member Details | ✅ | ✅ |
-| Update Member Role | ❌ | ✅ |
-| Remove Member | ❌ | ✅ |
-| Leave Workspace | ✅ | ❌* |
+| Feature             | Member | Owner |
+| ------------------- | :----: | :---: |
+| List Members        |   ✅   |  ✅   |
+| View Member Details |   ✅   |  ✅   |
+| Update Member Role  |   ❌   |  ✅   |
+| Remove Member       |   ❌   |  ✅   |
+| Leave Workspace     |   ✅   |  ❌*  |
 
 \* The workspace owner must transfer ownership before leaving.
 
@@ -259,12 +259,12 @@ MEMBER
 
 To prevent abuse, the following limits should be applied.
 
-| Endpoint | Recommendation |
-|----------|----------------|
-| List Members | 60 requests/minute |
+| Endpoint           | Recommendation     |
+| ------------------ | ------------------ |
+| List Members       | 60 requests/minute |
 | Update Member Role | 20 requests/minute |
-| Remove Member | 10 requests/minute |
-| Leave Workspace | 10 requests/minute |
+| Remove Member      | 10 requests/minute |
+| Leave Workspace    | 10 requests/minute |
 
 ---
 

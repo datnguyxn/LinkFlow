@@ -63,7 +63,7 @@ export interface MailService {
   sendResetPasswordEmail(data: SendResetPasswordEmail): Promise<void>;
 
   sendWorkspaceInvitationEmail(data: SendWorkspaceInvitationEmail): Promise<void>;
-  
+
   sendAcceptanceEmailToInviter(data: SendAcceptanceEmailToInviter): Promise<void>;
 
   sendAcceptanceEmailToInvitee(data: SendAcceptanceEmailToInvitee): Promise<void>;

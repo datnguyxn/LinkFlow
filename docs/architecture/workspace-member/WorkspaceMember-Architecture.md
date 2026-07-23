@@ -306,13 +306,13 @@ MEMBER
 
 # Membership Information
 
-| Field | Description |
-|---------|-----------------------------|
-| id | Membership identifier |
-| workspaceId | Workspace identifier |
-| userId | Member identifier |
-| role | Workspace role |
-| joinedAt | Join timestamp |
+| Field       | Description           |
+| ----------- | --------------------- |
+| id          | Membership identifier |
+| workspaceId | Workspace identifier  |
+| userId      | Member identifier     |
+| role        | Workspace role        |
+| joinedAt    | Join timestamp        |
 
 > Invitation information is stored separately in the Workspace Invitation module.
 
@@ -349,14 +349,14 @@ Possible future improvements include:
 
 # Module Summary
 
-| Feature | Authentication Required |
-|----------------------|-------------------------|
-| Invite Member | ✅ |
-| Accept Invitation | ❌* |
-| List Members | ✅ |
-| Get Member Details | ✅ |
-| Update Member Role | ✅ |
-| Remove Member | ✅ |
-| Leave Workspace | ✅ |
+| Feature            | Authentication Required |
+| ------------------ | ----------------------- |
+| Invite Member      | ✅                      |
+| Accept Invitation  | ❌*                     |
+| List Members       | ✅                      |
+| Get Member Details | ✅                      |
+| Update Member Role | ✅                      |
+| Remove Member      | ✅                      |
+| Leave Workspace    | ✅                      |
 
 \* Invitation acceptance may use a secure invitation token instead of JWT authentication.

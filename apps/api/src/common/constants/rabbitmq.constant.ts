@@ -57,7 +57,7 @@ export const RABBITMQ_QUEUE = {
   EMAIL_WORKSPACE_INVITATION_ACCEPTED: 'email.workspace.invitation.accepted',
   EMAIL_WORKSPACE_INVITATION_REJECTED: 'email.workspace.invitation.rejected',
   EMAIL_WORKSPACE_INVITATION_REVOKED: 'email.workspace.invitation.revoked',
-  
+
   AUDIT_USER_REGISTERED: 'audit.user.registered',
   AUDIT_USER_LOGIN: 'audit.user.login',
   AUDIT_USER_LOGOUT: 'audit.user.logout',
@@ -89,7 +89,7 @@ export const RABBITMQ_QUEUE = {
   ANALYTICS_USER_REGISTERED: 'analytics.user.registered',
 
   AUDIT_SESSION_REVOKED: 'audit.session.revoked',
-  
+
   AUDIT_WORKSPACE_CREATED: 'audit.workspace.created',
   AUDIT_WORKSPACE_UPDATED: 'audit.workspace.updated',
   AUDIT_WORKSPACE_DELETED: 'audit.workspace.deleted',
@@ -99,7 +99,6 @@ export const RABBITMQ_QUEUE = {
   AUDIT_WORKSPACE_INVITATION_REJECTED: 'audit.workspace.invitation.rejected',
   AUDIT_WORKSPACE_INVITATION_REVOKED: 'audit.workspace.invitation.revoked',
   AUDIT_WORKSPACE_INVITATION_EXPIRED: 'audit.workspace.invitation.expired',
-
 
   NOTIFICATION_WORKSPACE_INVITATION_CREATED: 'notification.workspace.invitation.created',
   NOTIFICATION_WORKSPACE_INVITATION_ACCEPTED: 'notification.workspace.invitation.accepted',

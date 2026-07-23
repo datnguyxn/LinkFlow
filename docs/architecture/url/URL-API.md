@@ -20,17 +20,17 @@ Public redirect endpoints do not require authentication.
 
 # API Overview
 
-| Method | Endpoint | Authentication | Description |
-|---------|----------|----------------|-------------|
-| POST | /workspaces/:workspaceId/urls | ✅ | Create URL |
-| GET | /workspaces/:workspaceId/urls | ✅ | List URLs |
-| GET | /urls/:id | ✅ | Get URL Details |
-| PATCH | /urls/:id | ✅ | Update URL |
-| DELETE | /urls/:id | ✅ | Delete URL |
-| GET | /r/:shortCode | ❌ | Redirect URL |
-| POST | /urls/:id/qrcode | ✅ | Generate QR Code |
-| GET | /urls/:id/qrcode | ✅ | Get QR Code |
-| GET | /urls/:id/analytics | ✅ | Get Analytics |
+| Method | Endpoint                      | Authentication | Description      |
+| ------ | ----------------------------- | -------------- | ---------------- |
+| POST   | /workspaces/:workspaceId/urls | ✅             | Create URL       |
+| GET    | /workspaces/:workspaceId/urls | ✅             | List URLs        |
+| GET    | /urls/:id                     | ✅             | Get URL Details  |
+| PATCH  | /urls/:id                     | ✅             | Update URL       |
+| DELETE | /urls/:id                     | ✅             | Delete URL       |
+| GET    | /r/:shortCode                 | ❌             | Redirect URL     |
+| POST   | /urls/:id/qrcode              | ✅             | Generate QR Code |
+| GET    | /urls/:id/qrcode              | ✅             | Get QR Code      |
+| GET    | /urls/:id/analytics           | ✅             | Get Analytics    |
 
 ---
 
@@ -48,16 +48,16 @@ POST /workspaces/{workspaceId}/urls
 
 ### Request Body
 
-| Field | Required | Description |
-|---------|----------|-------------|
-| originalUrl | ✅ | Original destination |
-| shortCode | ❌ | Custom short code |
-| title | ❌ | URL title |
-| description | ❌ | Description |
-| password | ❌ | Password protection |
-| expiresAt | ❌ | Expiration date |
-| maxClicks | ❌ | Maximum redirects |
-| tags | ❌ | Tag IDs |
+| Field       | Required | Description          |
+| ----------- | -------- | -------------------- |
+| originalUrl | ✅       | Original destination |
+| shortCode   | ❌       | Custom short code    |
+| title       | ❌       | URL title            |
+| description | ❌       | Description          |
+| password    | ❌       | Password protection  |
+| expiresAt   | ❌       | Expiration date      |
+| maxClicks   | ❌       | Maximum redirects    |
+| tags        | ❌       | Tag IDs              |
 
 ### Success Response
 
@@ -87,13 +87,13 @@ GET /workspaces/{workspaceId}/urls
 
 ### Query Parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| page | Page number |
-| limit | Items per page |
-| search | Search keyword |
-| status | URL status |
-| tag | Tag ID |
+| Parameter | Description    |
+| --------- | -------------- |
+| page      | Page number    |
+| limit     | Items per page |
+| search    | Search keyword |
+| status    | URL status     |
+| tag       | Tag ID         |
 
 ### Success Response
 
@@ -279,9 +279,9 @@ GET /urls/{id}/analytics
 ### Query Parameters
 
 | Parameter | Description |
-|-----------|-------------|
-| from | Start date |
-| to | End date |
+| --------- | ----------- |
+| from      | Start date  |
+| to        | End date    |
 
 ### Success Response
 
@@ -301,30 +301,30 @@ Returns
 
 # Common Error Responses
 
-| Status | Description |
-|---------|-------------|
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Resource Not Found |
-| 409 | Short Code Already Exists |
-| 410 | URL Expired or Maximum Clicks Reached |
-| 422 | Invalid URL |
-| 500 | Internal Server Error |
+| Status | Description                           |
+| ------ | ------------------------------------- |
+| 400    | Bad Request                           |
+| 401    | Unauthorized                          |
+| 403    | Forbidden                             |
+| 404    | Resource Not Found                    |
+| 409    | Short Code Already Exists             |
+| 410    | URL Expired or Maximum Clicks Reached |
+| 422    | Invalid URL                           |
+| 500    | Internal Server Error                 |
 
 ---
 
 # Permission Matrix
 
-| Feature | Workspace Member | Workspace Admin | Workspace Owner |
-|----------|------------------|-----------------|-----------------|
-| List URLs | ✅ | ✅ | ✅ |
-| View URL | ✅ | ✅ | ✅ |
-| Create URL | ✅ | ✅ | ✅ |
-| Update URL | ✅ | ✅ | ✅ |
-| Delete URL | ❌ | ✅ | ✅ |
-| View Analytics | ✅ | ✅ | ✅ |
-| Generate QR Code | ✅ | ✅ | ✅ |
+| Feature          | Workspace Member | Workspace Admin | Workspace Owner |
+| ---------------- | ---------------- | --------------- | --------------- |
+| List URLs        | ✅               | ✅              | ✅              |
+| View URL         | ✅               | ✅              | ✅              |
+| Create URL       | ✅               | ✅              | ✅              |
+| Update URL       | ✅               | ✅              | ✅              |
+| Delete URL       | ❌               | ✅              | ✅              |
+| View Analytics   | ✅               | ✅              | ✅              |
+| Generate QR Code | ✅               | ✅              | ✅              |
 
 ---
 
@@ -332,12 +332,12 @@ Returns
 
 To prevent abuse, the following limits should be applied.
 
-| Endpoint | Recommendation |
-|----------|----------------|
-| Create URL | 50 requests/minute |
-| Redirect | Unlimited |
+| Endpoint         | Recommendation     |
+| ---------------- | ------------------ |
+| Create URL       | 50 requests/minute |
+| Redirect         | Unlimited          |
 | Generate QR Code | 10 requests/minute |
-| Analytics | 30 requests/minute |
+| Analytics        | 30 requests/minute |
 
 ---
 

@@ -14,7 +14,6 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export default function DangerZoneCard() {
-
   const { loading } = useAuthContext();
 
   const deleteAccount = useDelete();

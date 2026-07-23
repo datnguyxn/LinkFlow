@@ -308,15 +308,15 @@ root
 
 # Workspace Information
 
-| Field | Description |
-|---------|-----------------------------|
-| id | Workspace identifier |
-| ownerId | Workspace owner |
-| name | Workspace name |
-| slug | Unique workspace slug |
-| logoUrl | Workspace logo |
-| createdAt | Creation timestamp |
-| updatedAt | Last updated |
+| Field     | Description           |
+| --------- | --------------------- |
+| id        | Workspace identifier  |
+| ownerId   | Workspace owner       |
+| name      | Workspace name        |
+| slug      | Unique workspace slug |
+| logoUrl   | Workspace logo        |
+| createdAt | Creation timestamp    |
+| updatedAt | Last updated          |
 
 ---
 
@@ -347,10 +347,10 @@ Possible future improvements include
 
 # Module Summary
 
-| Feature | Authentication Required |
-|-------------------------|-------------------------|
-| Create Workspace | ✅ |
-| List Workspaces | ✅ |
-| Get Workspace Details | ✅ |
-| Update Workspace | ✅ |
-| Delete Workspace | ✅ |
+| Feature               | Authentication Required |
+| --------------------- | ----------------------- |
+| Create Workspace      | ✅                      |
+| List Workspaces       | ✅                      |
+| Get Workspace Details | ✅                      |
+| Update Workspace      | ✅                      |
+| Delete Workspace      | ✅                      |

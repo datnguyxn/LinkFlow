@@ -2,11 +2,7 @@
 
 import { useMe } from '@/hooks/queries/useMe';
 
-export function useInitializeAuth({
-  enabled,
-}: {
-  enabled: boolean;
-}) {
+export function useInitializeAuth({ enabled }: { enabled: boolean }) {
   const me = useMe({
     enabled,
   });

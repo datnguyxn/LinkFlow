@@ -29,15 +29,15 @@ Invitation validation and acceptance endpoints use an invitation token and do no
 
 # API Overview
 
-| Method | Endpoint | Authentication | Description |
-|---------|----------|----------------|-------------|
-| POST | /workspaces/:workspaceId/invitations | ✅ | Send Invitation |
-| GET | /workspaces/:workspaceId/invitations | ✅ | List Invitations |
-| GET | /workspaces/:workspaceId/invitations/:id | ✅ | Get Invitation Details |
-| DELETE | /workspaces/:workspaceId/invitations/:id | ✅ | Revoke Invitation |
-| GET | /workspace-invitations/:token | ❌ | Validate Invitation |
-| POST | /workspace-invitations/:token/accept | Conditional | Accept Invitation |
-| POST | /workspace-invitations/:token/reject | Conditional | Reject Invitation |
+| Method | Endpoint                                 | Authentication | Description            |
+| ------ | ---------------------------------------- | -------------- | ---------------------- |
+| POST   | /workspaces/:workspaceId/invitations     | ✅             | Send Invitation        |
+| GET    | /workspaces/:workspaceId/invitations     | ✅             | List Invitations       |
+| GET    | /workspaces/:workspaceId/invitations/:id | ✅             | Get Invitation Details |
+| DELETE | /workspaces/:workspaceId/invitations/:id | ✅             | Revoke Invitation      |
+| GET    | /workspace-invitations/:token            | ❌             | Validate Invitation    |
+| POST   | /workspace-invitations/:token/accept     | Conditional    | Accept Invitation      |
+| POST   | /workspace-invitations/:token/reject     | Conditional    | Reject Invitation      |
 
 ---
 
@@ -57,10 +57,10 @@ POST /workspaces/{workspaceId}/invitations
 
 ### Request Body
 
-| Field | Required | Description |
-|---------|----------|-------------|
-| email | ✅ | Recipient email |
-| role | ❌ | Member role (default MEMBER) |
+| Field | Required | Description                  |
+| ----- | -------- | ---------------------------- |
+| email | ✅       | Recipient email              |
+| role  | ❌       | Member role (default MEMBER) |
 
 ### Business Rules
 
@@ -100,12 +100,12 @@ GET /workspaces/{workspaceId}/invitations
 
 ### Query Parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| page | Page number |
-| limit | Items per page |
-| status | Invitation status |
-| search | Search by email |
+| Parameter | Description       |
+| --------- | ----------------- |
+| page      | Page number       |
+| limit     | Items per page    |
+| status    | Invitation status |
+| search    | Search by email   |
 
 ### Success Response
 
@@ -278,32 +278,32 @@ POST /workspace-invitations/{token}/reject
 
 # Common Error Responses
 
-| Status | Description |
-|---------|-------------|
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Workspace or Invitation Not Found |
-| 409 | Pending Invitation Already Exists |
-| 409 | User Already Member |
-| 410 | Invitation Expired |
-| 410 | Invitation Revoked |
-| 410 | Invitation Already Accepted |
-| 500 | Internal Server Error |
+| Status | Description                       |
+| ------ | --------------------------------- |
+| 400    | Bad Request                       |
+| 401    | Unauthorized                      |
+| 403    | Forbidden                         |
+| 404    | Workspace or Invitation Not Found |
+| 409    | Pending Invitation Already Exists |
+| 409    | User Already Member               |
+| 410    | Invitation Expired                |
+| 410    | Invitation Revoked                |
+| 410    | Invitation Already Accepted       |
+| 500    | Internal Server Error             |
 
 ---
 
 # Permission Matrix
 
-| Feature | Member | Owner | Invitee |
-|----------|:------:|:-----:|:--------:|
-| List Invitations | ✅ | ✅ | ❌ |
-| View Invitation Details | ✅ | ✅ | ❌ |
-| Send Invitation | ❌ | ✅ | ❌ |
-| Revoke Invitation | ❌ | ✅ | ❌ |
-| Validate Invitation | ❌ | ❌ | ✅ |
-| Accept Invitation | ❌ | ❌ | ✅ |
-| Reject Invitation | ❌ | ❌ | ✅ |
+| Feature                 | Member | Owner | Invitee |
+| ----------------------- | :----: | :---: | :-----: |
+| List Invitations        |   ✅   |  ✅   |   ❌    |
+| View Invitation Details |   ✅   |  ✅   |   ❌    |
+| Send Invitation         |   ❌   |  ✅   |   ❌    |
+| Revoke Invitation       |   ❌   |  ✅   |   ❌    |
+| Validate Invitation     |   ❌   |  ❌   |   ✅    |
+| Accept Invitation       |   ❌   |  ❌   |   ✅    |
+| Reject Invitation       |   ❌   |  ❌   |   ✅    |
 
 ---
 
@@ -352,14 +352,14 @@ Requirements
 
 To prevent abuse, the following limits should be applied.
 
-| Endpoint | Recommendation |
-|----------|----------------|
-| Send Invitation | 20 requests/minute |
-| Accept Invitation | 10 requests/minute |
-| Reject Invitation | 10 requests/minute |
+| Endpoint            | Recommendation     |
+| ------------------- | ------------------ |
+| Send Invitation     | 20 requests/minute |
+| Accept Invitation   | 10 requests/minute |
+| Reject Invitation   | 10 requests/minute |
 | Validate Invitation | 60 requests/minute |
-| List Invitations | 60 requests/minute |
-| Revoke Invitation | 20 requests/minute |
+| List Invitations    | 60 requests/minute |
+| Revoke Invitation   | 20 requests/minute |
 
 ---
 

@@ -44,9 +44,9 @@ Each invitation belongs to exactly one workspace.
 
 Purpose
 
-* Invite tracking
-* Membership onboarding
-* Collaboration
+- Invite tracking
+- Membership onboarding
+- Collaboration
 
 ---
 
@@ -64,8 +64,8 @@ Only workspace owners can create invitations.
 
 Purpose
 
-* Audit history
-* Permission verification
+- Audit history
+- Permission verification
 
 ---
 
@@ -83,9 +83,9 @@ If the invited email does not belong to an existing account, this relationship r
 
 Purpose
 
-* In-app notifications
-* Invitation acceptance
-* Account linking
+- In-app notifications
+- Invitation acceptance
+- Account linking
 
 ---
 
@@ -105,22 +105,22 @@ id
 
 Important Fields
 
-* workspaceId
-* inviterId
-* inviteeId (nullable)
-* email
-* role
-* token
-* status
-* expiresAt
-* acceptedAt
-* rejectedAt
+- workspaceId
+- inviterId
+- inviteeId (nullable)
+- email
+- role
+- token
+- status
+- expiresAt
+- acceptedAt
+- rejectedAt
 
 Relations
 
-* Workspace
-* Inviter
-* Invitee
+- Workspace
+- Inviter
+- Invitee
 
 ---
 
@@ -134,9 +134,9 @@ Relations
 
 ### Benefits
 
-* Invitations are automatically removed when a workspace is deleted.
-* Historical invitations remain valid even if an invited user account is deleted.
-* Prevents orphan invitation records.
+- Invitations are automatically removed when a workspace is deleted.
+- Historical invitations remain valid even if an invited user account is deleted.
+- Prevents orphan invitation records.
 
 ---
 
@@ -176,21 +176,21 @@ Accepted, rejected, revoked, or expired invitations do not affect future invitat
 
 Indexes
 
-* workspaceId
-* email
-* inviteeId
-* inviterId
-* status
-* token
-* expiresAt
+- workspaceId
+- email
+- inviteeId
+- inviterId
+- status
+- token
+- expiresAt
 
 Purpose
 
-* Fast invitation lookup
-* Email-based invitation search
-* Token validation
-* Pending invitation queries
-* Automatic expiration cleanup
+- Fast invitation lookup
+- Email-based invitation search
+- Token validation
+- Pending invitation queries
+- Automatic expiration cleanup
 
 ---
 
@@ -362,9 +362,9 @@ Workspace Invitations
 
 Benefits
 
-* No orphan invitations
-* Consistent workspace cleanup
-* Simplified maintenance
+- No orphan invitations
+- Consistent workspace cleanup
+- Simplified maintenance
 
 ---
 
@@ -376,10 +376,10 @@ Invitations are stored separately from `WorkspaceMember`.
 
 Benefits
 
-* Members always represent active access.
-* Invitations represent pending access.
-* Simpler authorization logic.
-* Easier invitation lifecycle management.
+- Members always represent active access.
+- Invitations represent pending access.
+- Simpler authorization logic.
+- Easier invitation lifecycle management.
 
 ---
 
@@ -389,9 +389,9 @@ The system supports invitations for both registered and unregistered users.
 
 Benefits
 
-* Existing users receive email and in-app notifications.
-* New users receive email invitations.
-* No duplicate invitation workflow.
+- Existing users receive email and in-app notifications.
+- New users receive email invitations.
+- No duplicate invitation workflow.
 
 ---
 
@@ -401,7 +401,6 @@ Each invitation contains a unique token.
 
 Benefits
 
-* Secure invitation links
-* Easy validation
-* Supports future public invitation pages
-
+- Secure invitation links
+- Easy validation
+- Supports future public invitation pages

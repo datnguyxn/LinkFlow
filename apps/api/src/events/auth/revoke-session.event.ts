@@ -7,12 +7,7 @@ export interface AuthSessionRevokedEvent {
 
   revokedAt: string;
 
-  reason:
-    | 'USER_LOGOUT'
-    | 'USER_REVOKE'
-    | 'PASSWORD_CHANGED'
-    | 'ADMIN_REVOKE'
-    | 'ACCOUNT_DELETED';
+  reason: 'USER_LOGOUT' | 'USER_REVOKE' | 'PASSWORD_CHANGED' | 'ADMIN_REVOKE' | 'ACCOUNT_DELETED';
 
-    ipAddress?: string | null;
+  ipAddress?: string | null;
 }

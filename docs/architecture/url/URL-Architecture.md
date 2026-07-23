@@ -316,10 +316,10 @@ Analytics are generated automatically during redirect.
 
 Supported redirect types
 
-| Type | Description |
-|------|-------------|
-| 301 | Permanent Redirect |
-| 302 | Temporary Redirect |
+| Type | Description        |
+| ---- | ------------------ |
+| 301  | Permanent Redirect |
+| 302  | Temporary Redirect |
 
 The redirect type is configurable for each URL.
 
@@ -377,24 +377,24 @@ docs
 
 # URL Information
 
-| Field | Description |
-|---------|-----------------------------|
-| id | URL identifier |
-| workspaceId | Workspace owner |
-| userId | URL creator |
-| shortCode | Unique short code |
-| originalUrl | Original destination |
-| title | Website title |
-| description | Website description |
-| faviconUrl | Website favicon |
-| passwordHash | Hashed password |
-| expiresAt | Expiration time |
-| maxClicks | Maximum redirects |
-| clickCount | Current redirects |
-| status | ACTIVE / DISABLED / EXPIRED |
-| createdAt | Creation timestamp |
-| updatedAt | Last updated |
-| deletedAt | Soft delete timestamp |
+| Field        | Description                 |
+| ------------ | --------------------------- |
+| id           | URL identifier              |
+| workspaceId  | Workspace owner             |
+| userId       | URL creator                 |
+| shortCode    | Unique short code           |
+| originalUrl  | Original destination        |
+| title        | Website title               |
+| description  | Website description         |
+| faviconUrl   | Website favicon             |
+| passwordHash | Hashed password             |
+| expiresAt    | Expiration time             |
+| maxClicks    | Maximum redirects           |
+| clickCount   | Current redirects           |
+| status       | ACTIVE / DISABLED / EXPIRED |
+| createdAt    | Creation timestamp          |
+| updatedAt    | Last updated                |
+| deletedAt    | Soft delete timestamp       |
 
 ---
 
@@ -431,14 +431,14 @@ Possible future improvements include:
 
 # Module Summary
 
-| Feature | Authentication Required |
-|---------------------|-------------------------|
-| Create URL | ✅ |
-| List URLs | ✅ |
-| Get URL Details | ✅ |
-| Update URL | ✅ |
-| Delete URL | ✅ |
-| Generate QR Code | ✅ |
-| Manage Tags | ✅ |
-| View Analytics | ✅ |
-| Redirect URL | ❌ |
+| Feature          | Authentication Required |
+| ---------------- | ----------------------- |
+| Create URL       | ✅                      |
+| List URLs        | ✅                      |
+| Get URL Details  | ✅                      |
+| Update URL       | ✅                      |
+| Delete URL       | ✅                      |
+| Generate QR Code | ✅                      |
+| Manage Tags      | ✅                      |
+| View Analytics   | ✅                      |
+| Redirect URL     | ❌                      |

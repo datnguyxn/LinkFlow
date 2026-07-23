@@ -342,12 +342,12 @@ sequenceDiagram
 
 # Sequence Summary
 
-| Feature | Main Components |
-|----------|-----------------|
-| Create URL | API → Database |
-| Get URL | API → Database |
-| Update URL | API → Database |
-| Delete URL | API → Database |
-| Redirect URL | API → Database → Analytics |
+| Feature          | Main Components                         |
+| ---------------- | --------------------------------------- |
+| Create URL       | API → Database                          |
+| Get URL          | API → Database                          |
+| Update URL       | API → Database                          |
+| Delete URL       | API → Database                          |
+| Redirect URL     | API → Database → Analytics              |
 | Generate QR Code | API → QR Generator → Storage → Database |
-| Get Analytics | API → Database |
+| Get Analytics    | API → Database                          |

@@ -75,7 +75,7 @@ export class AuthPublisher {
     return this.publisher.publish(
       RABBITMQ_EXCHANGE.AUTH,
       RABBITMQ_ROUTING_KEY.USER_SESSION_REVOKED,
-      event
+      event,
     );
   }
 }

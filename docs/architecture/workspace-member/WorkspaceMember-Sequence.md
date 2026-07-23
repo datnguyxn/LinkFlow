@@ -264,6 +264,7 @@ sequenceDiagram
 ---
 
 # Transfer Workspace Ownership
+
 ## Description
 
 Transfers workspace ownership from the current workspace owner to another existing workspace member.
@@ -276,6 +277,7 @@ The current owner becomes a MEMBER.
 The selected member becomes the new OWNER.
 The workspace always has exactly one owner.
 Both users receive email notifications.
+
 ### Sequence Diagram
 
 ```mermaid
@@ -338,15 +340,16 @@ sequenceDiagram
         end
     end
 ```
+
 ---
 
 # Sequence Summary
 
-| Feature | Main Components |
-|----------|-----------------|
-| List Members | API → Database |
-| Get Member Details | API → Database |
-| Update Member Role | API → Database → Mail |
-| Remove Member | API → Database → Mail |
-| Leave Workspace | API → Database → Mail |
-| Transfer Workspace Ownership | API → Database → Mail → Notification|
+| Feature                      | Main Components                      |
+| ---------------------------- | ------------------------------------ |
+| List Members                 | API → Database                       |
+| Get Member Details           | API → Database                       |
+| Update Member Role           | API → Database → Mail                |
+| Remove Member                | API → Database → Mail                |
+| Leave Workspace              | API → Database → Mail                |
+| Transfer Workspace Ownership | API → Database → Mail → Notification |

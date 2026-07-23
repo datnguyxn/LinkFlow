@@ -297,12 +297,12 @@ Effects
 
 # Redirect Behavior
 
-| State | Redirect |
-|---------|----------|
-| ACTIVE | ✅ |
-| DISABLED | ❌ |
-| EXPIRED | ❌ |
-| DELETED | ❌ |
+| State    | Redirect |
+| -------- | -------- |
+| ACTIVE   | ✅       |
+| DISABLED | ❌       |
+| EXPIRED  | ❌       |
+| DELETED  | ❌       |
 
 Additional validations
 
@@ -341,12 +341,12 @@ QR Codes always point to the shortened URL.
 
 Availability
 
-| State | QR Code |
-|---------|----------|
-| ACTIVE | ✅ |
-| DISABLED | ✅ |
-| EXPIRED | ✅ |
-| DELETED | ❌ |
+| State    | QR Code |
+| -------- | ------- |
+| ACTIVE   | ✅      |
+| DISABLED | ✅      |
+| EXPIRED  | ✅      |
+| DELETED  | ❌      |
 
 Scanning a QR Code follows the same redirect validation as visiting the short URL directly.
 
@@ -354,12 +354,12 @@ Scanning a QR Code follows the same redirect validation as visiting the short UR
 
 # Update Behavior
 
-| State | Editable |
-|---------|----------|
-| ACTIVE | ✅ |
-| DISABLED | ✅ |
-| EXPIRED | ✅ |
-| DELETED | ❌ |
+| State    | Editable |
+| -------- | -------- |
+| ACTIVE   | ✅       |
+| DISABLED | ✅       |
+| EXPIRED  | ✅       |
+| DELETED  | ❌       |
 
 Editable fields may include
 
@@ -394,12 +394,12 @@ Benefits
 
 # Lifecycle Summary
 
-| State | Redirect | Analytics | Editable | QR Code |
-|---------|----------|-----------|----------|----------|
-| ACTIVE | ✅ | ✅ | ✅ | ✅ |
-| DISABLED | ❌ | ❌ | ✅ | ✅ |
-| EXPIRED | ❌ | ❌ | ✅ | ✅ |
-| DELETED | ❌ | ❌ | ❌ | ❌ |
+| State    | Redirect | Analytics | Editable | QR Code |
+| -------- | -------- | --------- | -------- | ------- |
+| ACTIVE   | ✅       | ✅        | ✅       | ✅      |
+| DISABLED | ❌       | ❌        | ✅       | ✅      |
+| EXPIRED  | ❌       | ❌        | ✅       | ✅      |
+| DELETED  | ❌       | ❌        | ❌       | ❌      |
 
 ---
 

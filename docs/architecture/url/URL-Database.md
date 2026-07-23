@@ -422,21 +422,21 @@ Unique Constraint
 
 # Foreign Key Strategy
 
-| Child Table | Parent Table | Delete Strategy |
-|-------------|--------------|-----------------|
-| Workspace | User | Cascade |
-| WorkspaceMember | Workspace | Cascade |
-| WorkspaceMember | User | Cascade |
-| URL | Workspace | Cascade |
-| URL | User | Cascade |
-| QRCode | URL | Cascade |
-| UrlTag | URL | Cascade |
-| UrlTag | Tag | Cascade |
-| ClickEvent | URL | Cascade |
-| DailyStatistic | URL | Cascade |
-| BrowserStatistic | URL | Cascade |
-| CountryStatistic | URL | Cascade |
-| DeviceStatistic | URL | Cascade |
+| Child Table      | Parent Table | Delete Strategy |
+| ---------------- | ------------ | --------------- |
+| Workspace        | User         | Cascade         |
+| WorkspaceMember  | Workspace    | Cascade         |
+| WorkspaceMember  | User         | Cascade         |
+| URL              | Workspace    | Cascade         |
+| URL              | User         | Cascade         |
+| QRCode           | URL          | Cascade         |
+| UrlTag           | URL          | Cascade         |
+| UrlTag           | Tag          | Cascade         |
+| ClickEvent       | URL          | Cascade         |
+| DailyStatistic   | URL          | Cascade         |
+| BrowserStatistic | URL          | Cascade         |
+| CountryStatistic | URL          | Cascade         |
+| DeviceStatistic  | URL          | Cascade         |
 
 ---
 

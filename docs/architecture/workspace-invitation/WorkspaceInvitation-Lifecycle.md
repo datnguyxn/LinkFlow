@@ -349,26 +349,26 @@ This separation ensures pending invitations never grant permissions.
 
 # Access Behavior
 
-| State | Workspace Access |
-|---------|:---------------:|
-| PENDING | ❌ |
-| ACCEPTED | ✅ |
-| REJECTED | ❌ |
-| REVOKED | ❌ |
-| EXPIRED | ❌ |
+| State    | Workspace Access |
+| -------- | :--------------: |
+| PENDING  |        ❌        |
+| ACCEPTED |        ✅        |
+| REJECTED |        ❌        |
+| REVOKED  |        ❌        |
+| EXPIRED  |        ❌        |
 
 ---
 
 # Notification Behavior
 
-| Event | Email | In-App Notification |
-|---------|:-----:|:-------------------:|
-| Send Invitation (Existing User) | ✅ | ✅ |
-| Send Invitation (Email Only) | ✅ | ❌ |
-| Accept Invitation | ✅ | ✅ |
-| Reject Invitation | ✅ | ✅ |
-| Revoke Invitation | ✅ | ✅ |
-| Expire Invitation | ❌ | ❌ |
+| Event                           | Email | In-App Notification |
+| ------------------------------- | :---: | :-----------------: |
+| Send Invitation (Existing User) |  ✅   |         ✅          |
+| Send Invitation (Email Only)    |  ✅   |         ❌          |
+| Accept Invitation               |  ✅   |         ✅          |
+| Reject Invitation               |  ✅   |         ✅          |
+| Revoke Invitation               |  ✅   |         ✅          |
+| Expire Invitation               |  ❌   |         ❌          |
 
 ---
 
@@ -390,13 +390,13 @@ Once expired:
 
 # Lifecycle Summary
 
-| State | Valid | Workspace Access | Editable |
-|---------|:-----:|:----------------:|:--------:|
-| PENDING | ✅ | ❌ | ✅ |
-| ACCEPTED | ❌ | ✅ | ❌ |
-| REJECTED | ❌ | ❌ | ❌ |
-| REVOKED | ❌ | ❌ | ❌ |
-| EXPIRED | ❌ | ❌ | ❌ |
+| State    | Valid | Workspace Access | Editable |
+| -------- | :---: | :--------------: | :------: |
+| PENDING  |  ✅   |        ❌        |    ✅    |
+| ACCEPTED |  ❌   |        ✅        |    ❌    |
+| REJECTED |  ❌   |        ❌        |    ❌    |
+| REVOKED  |  ❌   |        ❌        |    ❌    |
+| EXPIRED  |  ❌   |        ❌        |    ❌    |
 
 ---
 

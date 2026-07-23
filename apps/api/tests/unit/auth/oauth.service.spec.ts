@@ -221,7 +221,6 @@ describe('OAuthService', () => {
         expect.any(Object),
       );
 
-
       expect(workspaceRepository.create).toHaveBeenCalledWith(
         {
           name: profile.fullName || 'Default Workspace',

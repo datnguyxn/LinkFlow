@@ -523,10 +523,13 @@ export class AuthService {
       );
 
       // 2. Create default workspace for the new user
-      await this.workspaceRepository.create({
-        name: newUser.fullName || 'Default Workspace',
-        ownerId: newUser.id,
-      }, tx);
+      await this.workspaceRepository.create(
+        {
+          name: newUser.fullName || 'Default Workspace',
+          ownerId: newUser.id,
+        },
+        tx,
+      );
 
       // 3. Delete the verification token after successful verification
       await this.emailVerificationRepository.delete(verificationRecord.id, tx);
@@ -914,7 +917,11 @@ export class AuthService {
    * @param ipAddress - Optional IP address of the request
    * @returns void
    */
-  async logoutAllOtherSessions(userId: string, sessionId: string, ipAddress: string | null): Promise<void> {
+  async logoutAllOtherSessions(
+    userId: string,
+    sessionId: string,
+    ipAddress: string | null,
+  ): Promise<void> {
     // Revoke all active sessions for the user to log them out from all devices
     await this.refreshTokenRepository.revokeAllByUserIdExcept(userId, sessionId);
 

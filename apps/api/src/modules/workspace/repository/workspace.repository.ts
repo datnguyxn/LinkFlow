@@ -8,14 +8,13 @@ import { generateWorkspaceSlug } from '../../../utils/slug.util.ts';
  * managing workspace members and their roles.
  */
 export class WorkspaceRepository {
-
   /**
    * Create a new workspace and assign the owner inside a transaction
    * Transaction flow:
    * 1. Create workspace record
    * 2. Create workspace-member mapping for the owner
    * 3. Ensure both operations succeed or both rollback
-   * 
+   *
    * @param transaction - The Prisma transaction client for database operations
    * @param data - An object containing the workspace name and owner ID
    * @returns The created workspace record with its members
@@ -28,7 +27,6 @@ export class WorkspaceRepository {
     },
     db: PrismaClient | Prisma.TransactionClient = prisma, // Use the provided transaction client or default to the main Prisma client
   ) {
-
     // Use a transaction to ensure atomicity
     return db.workspace.create({
       data: {
@@ -48,7 +46,7 @@ export class WorkspaceRepository {
               connect: {
                 name: 'OWNER', // Assign the "OWNER" role to the workspace owner
               },
-            }
+            },
           },
         },
       },
@@ -69,10 +67,7 @@ export class WorkspaceRepository {
    * @param userId - The unique identifier of the user
    * @returns The workspace object with member information if found, otherwise null
    */
-  async findWorkspaceAndMemberById(
-    workspaceId: string,
-    userId: string,
-  ) {
+  async findWorkspaceAndMemberById(workspaceId: string, userId: string) {
     return prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -124,7 +119,6 @@ export class WorkspaceRepository {
    * @returns The updated workspace object
    */
   async update(id: string, data: Prisma.WorkspaceUpdateInput) {
-
     // Use Prisma to update the workspace record in the database
     return prisma.workspace.update({
       where: {
@@ -140,7 +134,6 @@ export class WorkspaceRepository {
    * @returns The deleted workspace object
    */
   async delete(id: string) {
-
     // Use Prisma to delete the workspace record from the database
     return prisma.workspace.delete({
       where: {
@@ -173,7 +166,6 @@ export class WorkspaceRepository {
    * @returns An array of workspaces with the user's role in each workspace
    */
   async findAllByUserId(userId: string) {
-
     // Use Prisma to find all workspaces where the user is a member, including their roles
     return prisma.workspace.findMany({
       where: {
@@ -210,19 +202,14 @@ export class WorkspaceRepository {
     });
   }
 
-  /** 
- * Check if a user has a specific permission in a workspace
- * @param workspaceId - The ID of the workspace
- * @param userId - The ID of the user whose permission to check
- * @param permissionName - The name of the permission to check
- * @returns A boolean indicating whether the user has the specified permission in the workspace
- */
-  async hasPermission(
-    workspaceId: string,
-    userId: string,
-    permissionName: string,
-  ) {
-
+  /**
+   * Check if a user has a specific permission in a workspace
+   * @param workspaceId - The ID of the workspace
+   * @param userId - The ID of the user whose permission to check
+   * @param permissionName - The name of the permission to check
+   * @returns A boolean indicating whether the user has the specified permission in the workspace
+   */
+  async hasPermission(workspaceId: string, userId: string, permissionName: string) {
     // Use Prisma to find the workspace member record and check if the user has the specified permission
     const member = await prisma.workspaceMember.findFirst({
       where: {

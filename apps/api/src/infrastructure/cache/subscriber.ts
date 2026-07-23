@@ -6,15 +6,10 @@ class RedisSubscriber {
   private client: RedisClientType;
 
   constructor() {
-    this.client = redis
-      .getClient()
-      .duplicate();
+    this.client = redis.getClient().duplicate();
 
     this.client.on('error', (error) => {
-      console.error(
-        '❌ Redis subscriber error:',
-        error,
-      );
+      console.error('❌ Redis subscriber error:', error);
     });
   }
 
@@ -24,20 +19,12 @@ class RedisSubscriber {
     }
   }
 
-  async subscribe(
-    channel: string,
-    handler: (message: string) => void,
-  ) {
-    await this.client.subscribe(
-      channel,
-      handler,
-    );
+  async subscribe(channel: string, handler: (message: string) => void) {
+    await this.client.subscribe(channel, handler);
   }
 
   async unsubscribe(channel: string) {
-    await this.client.unsubscribe(
-      channel,
-    );
+    await this.client.unsubscribe(channel);
   }
 
   async disconnect() {
@@ -47,5 +34,4 @@ class RedisSubscriber {
   }
 }
 
-export const redisSubscriber =
-  new RedisSubscriber();
+export const redisSubscriber = new RedisSubscriber();

@@ -4,24 +4,20 @@ import { WorkspaceInvitationPublisher } from '../publishers/workspace-invitation
 import { Publisher } from '../infrastructure/queue/index.ts';
 
 export async function registerJobs() {
-    const workspaceInvitationRepository =
-        new WorkspaceInvitationRepository();
+  const workspaceInvitationRepository = new WorkspaceInvitationRepository();
 
-    const workspaceInvitationPublisher =
-        new WorkspaceInvitationPublisher(new Publisher());
+  const workspaceInvitationPublisher = new WorkspaceInvitationPublisher(new Publisher());
 
-    const workspaceInvitationExpirationJob =
-        new WorkspaceInvitationExpirationJob(
-            workspaceInvitationRepository,
-            workspaceInvitationPublisher,
+  const workspaceInvitationExpirationJob = new WorkspaceInvitationExpirationJob(
+    workspaceInvitationRepository,
+    workspaceInvitationPublisher,
+  );
 
-        );
+  await workspaceInvitationExpirationJob.start();
 
-    await workspaceInvitationExpirationJob.start();
+  console.log('✅ Jobs started');
 
-    console.log('✅ Jobs started');
-
-    return {
-        workspaceInvitationExpirationJob,
-    };
+  return {
+    workspaceInvitationExpirationJob,
+  };
 }

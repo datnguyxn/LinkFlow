@@ -122,10 +122,13 @@ export class OAuthService {
         tx,
       );
 
-      await this.workspaceRepository.create({
-        name: profile.fullName || 'Default Workspace',
-        ownerId: user.id,
-      }, tx);
+      await this.workspaceRepository.create(
+        {
+          name: profile.fullName || 'Default Workspace',
+          ownerId: user.id,
+        },
+        tx,
+      );
 
       return user;
     });

@@ -9,8 +9,8 @@ import {
   AuthAuditWorker,
   UserAuditWorker,
   WorkspaceAuditWorker,
-  EmailWorker, 
-  NotificationWorker
+  EmailWorker,
+  NotificationWorker,
 } from '../workers/index.ts';
 
 export async function registerWorkers() {
@@ -21,26 +21,17 @@ export async function registerWorkers() {
   // Redis publisher
   await redisPublisher.connect();
 
-  const adminUserAuditWorker =
-    new AdminUserAuditWorker(auditRepository);
+  const adminUserAuditWorker = new AdminUserAuditWorker(auditRepository);
 
-  const authAuditWorker =
-    new AuthAuditWorker(auditRepository);
+  const authAuditWorker = new AuthAuditWorker(auditRepository);
 
-  const userAuditWorker =
-    new UserAuditWorker(auditRepository);
+  const userAuditWorker = new UserAuditWorker(auditRepository);
 
-  const workspaceAuditWorker =
-    new WorkspaceAuditWorker(auditRepository);
+  const workspaceAuditWorker = new WorkspaceAuditWorker(auditRepository);
 
-  const emailWorker =
-    new EmailWorker(smtpProvider);
+  const emailWorker = new EmailWorker(smtpProvider);
 
-  const notificationWorker =
-    new NotificationWorker(
-      notificationRepository,
-      redisPublisher,
-    );
+  const notificationWorker = new NotificationWorker(notificationRepository, redisPublisher);
 
   await Promise.all([
     emailWorker.start(),

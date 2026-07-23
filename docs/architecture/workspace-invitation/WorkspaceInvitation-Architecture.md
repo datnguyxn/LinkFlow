@@ -331,20 +331,20 @@ Requirements
 
 # Invitation Information
 
-| Field | Description |
-|---------|-----------------------------|
-| id | Invitation identifier |
-| workspaceId | Target workspace |
-| invitedBy | User who sent the invitation |
-| userId | Invited user (nullable) |
-| email | Invited email |
-| role | Assigned role |
-| token | Invitation token |
-| status | Invitation status |
-| expiresAt | Expiration timestamp |
-| acceptedAt | Acceptance timestamp |
-| createdAt | Creation timestamp |
-| updatedAt | Last updated |
+| Field       | Description                  |
+| ----------- | ---------------------------- |
+| id          | Invitation identifier        |
+| workspaceId | Target workspace             |
+| invitedBy   | User who sent the invitation |
+| userId      | Invited user (nullable)      |
+| email       | Invited email                |
+| role        | Assigned role                |
+| token       | Invitation token             |
+| status      | Invitation status            |
+| expiresAt   | Expiration timestamp         |
+| acceptedAt  | Acceptance timestamp         |
+| createdAt   | Creation timestamp           |
+| updatedAt   | Last updated                 |
 
 ---
 
@@ -381,12 +381,12 @@ Possible future improvements include:
 
 # Module Summary
 
-| Feature | Authentication Required |
-|----------------------|-------------------------|
-| Invite User | ✅ |
-| List Invitations | ✅ |
-| Get Invitation Details | ✅ |
-| Resend Invitation | ✅ |
-| Cancel Invitation | ✅ |
-| Accept Invitation | ❌ *(Token Required)* |
-| Decline Invitation | ❌ *(Token Required)* |
+| Feature                | Authentication Required |
+| ---------------------- | ----------------------- |
+| Invite User            | ✅                      |
+| List Invitations       | ✅                      |
+| Get Invitation Details | ✅                      |
+| Resend Invitation      | ✅                      |
+| Cancel Invitation      | ✅                      |
+| Accept Invitation      | ❌ _(Token Required)_   |
+| Decline Invitation     | ❌ _(Token Required)_   |

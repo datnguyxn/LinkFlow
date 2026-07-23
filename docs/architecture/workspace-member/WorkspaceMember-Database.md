@@ -112,10 +112,10 @@ Relations
 
 # Foreign Key Strategy
 
-| Child Table | Parent Table | Delete Strategy |
-|-------------|--------------|-----------------|
-| WorkspaceMember | Workspace | Cascade |
-| WorkspaceMember | User | Cascade |
+| Child Table     | Parent Table | Delete Strategy |
+| --------------- | ------------ | --------------- |
+| WorkspaceMember | Workspace    | Cascade         |
+| WorkspaceMember | User         | Cascade         |
 
 Benefits
 

@@ -6,7 +6,12 @@ import {
   RABBITMQ_QUEUE,
   RABBITMQ_ROUTING_KEY,
 } from '../../common/constants/rabbitmq.constant.ts';
-import type { PasswordResetRequestedEvent, UserActionEvent, WorkspaceInvitationCreatedEvent, WorkspaceInvitationUpdatedEvent } from '../../events/index.ts';
+import type {
+  PasswordResetRequestedEvent,
+  UserActionEvent,
+  WorkspaceInvitationCreatedEvent,
+  WorkspaceInvitationUpdatedEvent,
+} from '../../events/index.ts';
 import { InvitationStatus } from '@prisma/client';
 
 /**
@@ -17,7 +22,7 @@ import { InvitationStatus } from '@prisma/client';
  */
 export class EmailWorker {
   // Initialize the EmailWorker with an instance of MailService
-  constructor(private readonly mailService: MailService) { }
+  constructor(private readonly mailService: MailService) {}
 
   // Start the EmailWorker to consume events from RabbitMQ and send emails.
   async start() {
@@ -130,9 +135,7 @@ export class EmailWorker {
     );
   }
 
-  private async handleInvitationUpdated(
-    event: WorkspaceInvitationUpdatedEvent,
-  ) {
+  private async handleInvitationUpdated(event: WorkspaceInvitationUpdatedEvent) {
     switch (event.status) {
       case InvitationStatus.ACCEPTED:
         await this.handleAccepted(event);
@@ -148,9 +151,7 @@ export class EmailWorker {
     }
   }
 
-  private async handleAccepted(
-    event: WorkspaceInvitationUpdatedEvent,
-  ) {
+  private async handleAccepted(event: WorkspaceInvitationUpdatedEvent) {
     await Promise.all([
       this.mailService.sendAcceptanceEmailToInviter({
         workspaceId: event.workspaceId,
@@ -162,7 +163,9 @@ export class EmailWorker {
         inviteToken: '', // No token needed for acceptance email
         roleName: event.roleName,
       }),
-      console.log(`Acceptance email sent to inviter ${event.inviterName} (${event.inviterEmail}) for invitation ${event.invitationId}`),
+      console.log(
+        `Acceptance email sent to inviter ${event.inviterName} (${event.inviterEmail}) for invitation ${event.invitationId}`,
+      ),
 
       this.mailService.sendAcceptanceEmailToInvitee({
         workspaceId: event.workspaceId,
@@ -175,7 +178,9 @@ export class EmailWorker {
         roleName: event.roleName,
       }),
 
-      console.log(`Acceptance email sent to invitee ${event.inviteeName} (${event.inviteeEmail}) for invitation ${event.invitationId}`),
+      console.log(
+        `Acceptance email sent to invitee ${event.inviteeName} (${event.inviteeEmail}) for invitation ${event.invitationId}`,
+      ),
     ]);
   }
 }
