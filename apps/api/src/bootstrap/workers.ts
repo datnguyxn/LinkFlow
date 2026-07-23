@@ -1,19 +1,57 @@
-import { EmailWorker } from '../workers/mail.worker.ts';
 import { SmtpProvider } from '../infrastructure/mail/providers/smtp.provider.ts';
+import { redisPublisher } from '../infrastructure/cache/publisher.ts';
+
 import { AuditLogRepository } from '../modules/audit-log/index.ts';
-import { AuditWorker } from '../workers/audit.worker.ts';
+import { NotificationRepository } from '../modules/notification/index.ts';
+
+import {
+  AdminUserAuditWorker,
+  AuthAuditWorker,
+  UserAuditWorker,
+  WorkspaceAuditWorker,
+  EmailWorker, 
+  NotificationWorker
+} from '../workers/index.ts';
 
 export async function registerWorkers() {
-  // Initialize repositories and providers
   const auditRepository = new AuditLogRepository();
   const smtpProvider = new SmtpProvider();
+  const notificationRepository = new NotificationRepository();
 
-  // Initialize workers
-  const auditWorker = new AuditWorker(auditRepository);
-  const emailWorker = new EmailWorker(smtpProvider);
+  // Redis publisher
+  await redisPublisher.connect();
 
-  // Start workers
-  await Promise.all([emailWorker.start(), auditWorker.start()]);
+  const adminUserAuditWorker =
+    new AdminUserAuditWorker(auditRepository);
+
+  const authAuditWorker =
+    new AuthAuditWorker(auditRepository);
+
+  const userAuditWorker =
+    new UserAuditWorker(auditRepository);
+
+  const workspaceAuditWorker =
+    new WorkspaceAuditWorker(auditRepository);
+
+  const emailWorker =
+    new EmailWorker(smtpProvider);
+
+  const notificationWorker =
+    new NotificationWorker(
+      notificationRepository,
+      redisPublisher,
+    );
+
+  await Promise.all([
+    emailWorker.start(),
+
+    adminUserAuditWorker.start(),
+    authAuditWorker.start(),
+    userAuditWorker.start(),
+    workspaceAuditWorker.start(),
+
+    notificationWorker.start(),
+  ]);
 
   console.log('✅ Workers started');
 }
