@@ -52,6 +52,10 @@ model User {
 
   workspaceMembers WorkspaceMember[]
 
+  workspaceInviter WorkspaceInvitation[] @relation("WorkspaceInviter")
+
+  workspaceInvitee WorkspaceInvitation[] @relation("WorkspaceInvitee")
+
   urls Url[]
 
   notifications Notification[]
@@ -96,17 +100,17 @@ model RefreshToken {
 
   tokenHash String @map("token_hash")
 
-  userAgent String?
+  userAgent String? @map("user_agent")
 
-  ipAddress String?
+  ipAddress String? @map("ip_address")
 
-  rememberMe Boolean @default(false)
+  rememberMe Boolean @default(false) @map("remember_me")
 
   expiresAt DateTime @map("expires_at")
 
   revoked Boolean @default(false)
 
-  revokedAt DateTime?
+  revokedAt DateTime? @map("revoked_at")
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -124,11 +128,15 @@ model Workspace {
 
   slug String @unique
 
+  status WorkspaceStatus @default(ACTIVE)
+
   logoUrl String? @map("logo_url") @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
 
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  deletedAt DateTime? @map("deleted_at")
 
   // ===========================
   // Relations
@@ -144,6 +152,9 @@ model Workspace {
 
   apiKeys ApiKey[]
 
+  WorkspaceInvitation WorkspaceInvitation[]
+
+  @@index([ownerId])
   @@map("workspaces")
 }
 
@@ -154,11 +165,17 @@ model WorkspaceMember {
 
   userId String @map("user_id") @db.Uuid
 
-  role WorkspaceRole @default(MEMBER)
+  roleId String @map("role_id") @db.Uuid
 
-  invitedAt DateTime? @map("invited_at")
+  status WorkspaceMemberStatus @default(ACTIVE)
 
-  joinedAt DateTime? @map("joined_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  deletedAt DateTime? @map("deleted_at")
 
   // ===========================
   // Relations
@@ -168,10 +185,57 @@ model WorkspaceMember {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  role Role @relation(fields: [roleId], references: [id])
+
   @@unique([workspaceId, userId])
   @@index([workspaceId])
   @@index([userId])
+  @@index([roleId])
   @@map("workspace_members")
+}
+
+model WorkspaceInvitation {
+  id String @id @default(uuid()) @db.Uuid
+
+  workspaceId String @map("workspace_id") @db.Uuid
+
+  inviterId String @map("inviter_id") @db.Uuid
+
+  userId String? @map("user_id") @db.Uuid
+
+  roleId String @map("role_id") @db.Uuid
+
+  email String
+
+  token String @unique
+
+  status InvitationStatus @default(PENDING)
+
+  expiresAt DateTime @map("expires_at")
+
+  revokedAt DateTime? @map("revoked_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  rejectedAt DateTime? @map("rejected_at")
+
+  acceptedAt DateTime? @map("accepted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  inviter User @relation("WorkspaceInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  user User? @relation("WorkspaceInvitee", fields: [userId], references: [id], onDelete: Cascade)
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([email])
+  @@index([roleId])
+  @@map("workspace_invitations")
 }
 
 model Url {
@@ -190,6 +254,8 @@ model Url {
   description String? @db.Text
 
   faviconUrl String? @map("favicon_url") @db.Text
+
+  redirectType RedirectType @default(TEMPORARY) @map("redirect_type")
 
   passwordHash String? @map("password_hash")
 
@@ -398,13 +464,18 @@ model Notification {
 
   type NotificationType
 
+  data Json?
+
   isRead Boolean @default(false) @map("is_read")
+
+  readAt DateTime? @map("read_at")
 
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, readAt])
   @@map("notifications")
 }
 
@@ -443,7 +514,14 @@ model Role {
 
   description String? @db.Text
 
-  permissions RolePermission[]
+  createdAt DateTime @default(now()) @map("created_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members WorkspaceMember[]
+
+  permissions         RolePermission[]
+  WorkspaceInvitation WorkspaceInvitation[]
 
   @@map("roles")
 }
@@ -470,6 +548,7 @@ model RolePermission {
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
+  @@index([permissionId])
   @@map("role_permissions")
 }
 
@@ -537,12 +616,6 @@ enum UserStatus {
   PENDING_VERIFICATION
 }
 
-enum WorkspaceRole {
-  OWNER
-  ADMIN
-  MEMBER
-}
-
 enum UrlStatus {
   ACTIVE
   DISABLED
@@ -554,6 +627,7 @@ enum NotificationType {
   SUCCESS
   WARNING
   ERROR
+  WORKSPACE_INVITATION
 }
 
 enum OAuthProvider {
@@ -570,4 +644,30 @@ enum Theme {
   LIGHT
   DARK
   SYSTEM
+}
+
+enum RedirectType {
+  PERMANENT
+  TEMPORARY
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
+  CANCELLED
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum WorkspaceMemberStatus {
+  ACTIVE
+  REMOVED
+  LEFT
 }

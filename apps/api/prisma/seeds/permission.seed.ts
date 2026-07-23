@@ -3,43 +3,86 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const permissions = [
-  'auth.login',
-  'auth.logout',
-  'auth.refresh',
+  // ===========================
+  // User
+  // ===========================
+  'user.profile.read',
+  'user.profile.update',
+  'user.password.update',
+  'user.avatar.upload',
+  'user.account.delete',
 
-  'user.read',
-  'user.create',
-  'user.update',
-  'user.delete',
-
+  // ===========================
+  // Workspace
+  // ===========================
   'workspace.read',
   'workspace.create',
   'workspace.update',
   'workspace.delete',
-  'workspace.invite',
 
+  // ===========================
+  // Workspace Members
+  // ===========================
+  'workspace.member.read',
+  'workspace.member.invite',
+  'workspace.member.update',
+  'workspace.member.remove',
+
+  // ===========================
+  // Workspace Invitation
+  // ===========================
+  'workspace.invitation.read',
+  'workspace.invitation.create',
+  'workspace.invitation.cancel',
+  'workspace.invitation.accept',
+  'workspace.invitation.reject',
+
+  // ===========================
+  // URL
+  // ===========================
   'url.read',
   'url.create',
   'url.update',
   'url.delete',
 
+  // ===========================
+  // QR Code
+  // ===========================
+  'qrcode.read',
+  'qrcode.create',
+  'qrcode.delete',
+
+  // ===========================
+  // Tag
+  // ===========================
+  'tag.read',
+  'tag.create',
+  'tag.update',
+  'tag.delete',
+
+  // ===========================
+  // Analytics
+  // ===========================
   'analytics.read',
 
-  'dashboard.read',
-
-  'search.read',
-
-  'notification.read',
-  'notification.update',
-
+  // ===========================
+  // API Key
+  // ===========================
   'apikey.read',
   'apikey.create',
   'apikey.update',
   'apikey.delete',
 
-  'admin.dashboard',
-  'admin.user',
-  'admin.audit',
+  // ===========================
+  // Audit Log
+  // ===========================
+  'audit.read',
+
+  // ===========================
+  // Billing
+  // ===========================
+  'billing.read',
+  'billing.update',
 ];
 
 export async function seedPermissions() {
