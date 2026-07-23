@@ -8,81 +8,6 @@ The sequence diagrams illustrate how membership requests are processed from star
 
 ---
 
-# Invite Member
-
-## Description
-
-Invites an existing user to join a workspace.
-
-Only the workspace owner can invite new members.
-
-The invited user receives an invitation email and becomes a workspace member only after accepting the invitation.
-
-### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-
-    actor Owner
-    participant API
-    participant DB
-    participant Mail
-
-    Owner->>API: POST /workspaces/:workspaceId/members
-
-    API->>DB: Find Workspace
-
-    alt Workspace Not Found
-
-        API-->>Owner: 404 Workspace Not Found
-
-    else Workspace Exists
-
-        API->>DB: Validate Owner Permission
-
-        alt Forbidden
-
-            API-->>Owner: 403 Forbidden
-
-        else Authorized
-
-            API->>DB: Find User
-
-            alt User Not Found
-
-                API-->>Owner: 404 User Not Found
-
-            else User Exists
-
-                API->>DB: Check Membership
-
-                alt Already Member
-
-                    API-->>Owner: 409 Member Already Exists
-
-                else Not Member
-
-                    API->>DB: Create Invitation
-
-                    DB-->>API: Invitation Created
-
-                    API->>Mail: Send Invitation Email
-
-                    Mail-->>API: Email Sent
-
-                    API-->>Owner: Invitation Sent
-
-                end
-
-            end
-
-        end
-
-    end
-```
-
----
-
 # List Members
 
 ## Description
@@ -121,56 +46,6 @@ sequenceDiagram
             DB-->>API: Member List
 
             API-->>User: Members
-
-        end
-
-    end
-```
-
----
-
-# Accept Invitation
-
-## Description
-
-Accepts a workspace invitation.
-
-The invitation is validated before creating the workspace membership.
-
-### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-
-    actor User
-    participant API
-    participant DB
-
-    User->>API: POST /workspace-invitations/:token/accept
-
-    API->>DB: Find Invitation
-
-    alt Invitation Not Found
-
-        API-->>User: 404 Invitation Not Found
-
-    else Invitation Exists
-
-        API->>API: Validate Invitation
-
-        alt Invitation Expired
-
-            API-->>User: 410 Invitation Expired
-
-        else Invitation Valid
-
-            API->>DB: Create Workspace Member
-
-            API->>DB: Mark Invitation Accepted
-
-            DB-->>API: Membership Created
-
-            API-->>User: Joined Workspace
 
         end
 
@@ -388,14 +263,90 @@ sequenceDiagram
 
 ---
 
+# Transfer Workspace Ownership
+## Description
+
+Transfers workspace ownership from the current workspace owner to another existing workspace member.
+
+Only the current workspace owner can transfer ownership.
+
+After the transfer:
+
+The current owner becomes a MEMBER.
+The selected member becomes the new OWNER.
+The workspace always has exactly one owner.
+Both users receive email notifications.
+### Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    actor CurrentOwner
+    participant API
+    participant DB
+    participant RabbitMQ
+    participant EmailWorker
+    participant NotificationWorker
+
+    CurrentOwner->>API: PATCH /workspaces/:workspaceId/ownership
+
+    API->>DB: Find Workspace
+
+    alt Workspace Not Found
+        API-->>CurrentOwner: 404 Workspace Not Found
+    else Workspace Exists
+
+        API->>DB: Validate Current Owner
+
+        alt Forbidden
+            API-->>CurrentOwner: 403 Forbidden
+        else Authorized
+
+            API->>DB: Find Target Workspace Member
+
+            alt Member Not Found
+                API-->>CurrentOwner: 404 Member Not Found
+            else Member Exists
+
+                API->>API: Validate Target Member
+
+                alt Target Is Current Owner
+                    API-->>CurrentOwner: 400 Cannot Transfer Ownership to Yourself
+                else Valid Target
+
+                    API->>DB: Begin Transaction
+
+                    API->>DB: Update Current Owner Role to MEMBER
+                    API->>DB: Update Target Member Role to OWNER
+                    API->>DB: Update Workspace Owner
+
+                    DB-->>API: Ownership Transfer Completed
+
+                    API->>RabbitMQ: Publish OwnershipTransferred Event
+
+                    API-->>CurrentOwner: Ownership Transferred
+
+                    RabbitMQ->>EmailWorker: OwnershipTransferred Event
+                    EmailWorker->>EmailWorker: Send Email to New Owner
+                    EmailWorker->>EmailWorker: Send Email to Previous Owner
+
+                    RabbitMQ->>NotificationWorker: OwnershipTransferred Event
+                    NotificationWorker->>DB: Create Notifications
+                    NotificationWorker->>Redis: Publish Realtime Notifications
+
+                end
+            end
+        end
+    end
+```
+---
+
 # Sequence Summary
 
 | Feature | Main Components |
 |----------|-----------------|
-| Invite Member | API → Database → Mail |
 | List Members | API → Database |
-| Accept Invitation | API → Database |
 | Get Member Details | API → Database |
 | Update Member Role | API → Database → Mail |
 | Remove Member | API → Database → Mail |
 | Leave Workspace | API → Database → Mail |
+| Transfer Workspace Ownership | API → Database → Mail → Notification|

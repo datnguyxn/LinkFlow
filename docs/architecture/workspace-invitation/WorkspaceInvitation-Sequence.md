@@ -28,8 +28,12 @@ sequenceDiagram
     actor Owner
     participant API
     participant DB
-    participant Mail
-    participant Notification
+    participant RabbitMQ
+    participant EmailWorker
+    participant NotificationWorker
+    participant Redis
+    participant WebSocket
+    actor Invitee
 
     Owner->>API: POST /workspaces/:workspaceId/invitations
 
@@ -41,7 +45,7 @@ sequenceDiagram
 
     else Workspace Exists
 
-        API->>DB: Validate Owner Permission
+        API->>DB: Validate Permission: workspace.invite
 
         alt Forbidden
 
@@ -49,31 +53,65 @@ sequenceDiagram
 
         else Authorized
 
-            API->>DB: Check Existing Pending Invitation
+            API->>DB: Find User By Email
 
-            alt Invitation Already Exists
+            alt User Already Active Member
 
-                API-->>Owner: 409 Invitation Already Exists
+                API-->>Owner: 409 User Already Member
 
-            else Invitation Available
+            else User Not Member
 
-                API->>DB: Find User By Email
+                API->>DB: Check Existing Pending Invitation
 
-                API->>API: Generate Invitation Token
+                alt Invitation Already Exists
 
-                API->>DB: Create Invitation
+                    API-->>Owner: 409 Invitation Already Exists
 
-                DB-->>API: Invitation Created
+                else Invitation Available
 
-                API->>Mail: Send Invitation Email
+                    API->>DB: Find Role
 
-                alt Existing User
+                    alt Role Not Found
 
-                    API->>Notification: Create In-App Notification
+                        API-->>Owner: 404 Role Not Found
+
+                    else Role Exists
+
+                        API->>API: Generate Invitation Token
+
+                        API->>DB: Create Invitation
+
+                        DB-->>API: Invitation Created
+
+                        API->>RabbitMQ: Publish InvitationCreated Event
+
+                        API-->>Owner: 201 Invitation Created
+
+                        RabbitMQ->>EmailWorker: Consume InvitationCreated Event
+
+                        EmailWorker->>EmailWorker: Build Invitation URL
+
+                        EmailWorker->>EmailWorker: Send Invitation Email
+
+                        alt Existing User
+
+                            RabbitMQ->>NotificationWorker: Consume InvitationCreated Event
+
+                            NotificationWorker->>DB: Create Notification
+
+                            DB-->>NotificationWorker: Notification Created
+
+                            NotificationWorker->>Redis: Publish NotificationCreated
+
+                            Redis->>WebSocket: NotificationCreated
+
+                            WebSocket->>Invitee: Push Realtime Notification
+
+                        end
+
+                    end
 
                 end
-
-                API-->>Owner: Invitation Sent
 
             end
 
@@ -196,12 +234,14 @@ sequenceDiagram
     actor User
     participant API
     participant DB
-    participant Mail
-    participant Notification
+    participant RabbitMQ
+    participant EmailWorker
+    participant NotificationWorker
+    participant Redis
 
-    User->>API: POST /workspace-invitations/:token/accept
+    User->>API: GET /workspaces/:workspaceId/invitations/accept?token=
 
-    API->>DB: Find Invitation
+    API->>DB: Find Invitation By Token
 
     alt Invitation Not Found
 
@@ -209,35 +249,60 @@ sequenceDiagram
 
     else Invitation Exists
 
-        API->>API: Validate Status
+        API->>API: Validate Invitation Status
 
-        API->>API: Validate Expiration
-
-        alt Invalid Invitation
+        alt Invitation Not Pending
 
             API-->>User: 410 Invitation Invalid
 
-        else Valid Invitation
+        else Pending
 
-            API->>DB: Check Membership
+            API->>API: Validate Expiration
 
-            alt Already Member
+            alt Invitation Expired
 
-                API-->>User: 409 Member Already Exists
+                API-->>User: 410 Invitation Expired
 
-            else Not Member
+            else Valid
 
-                API->>DB: Create WorkspaceMember
+                API->>API: Validate Authenticated User
 
-                API->>DB: Update Invitation Status
+                alt User Does Not Match Invitation
 
-                DB-->>API: Accepted
+                    API-->>User: 403 Forbidden
 
-                API->>Mail: Send Acceptance Email
+                else Authorized
 
-                API->>Notification: Notify Workspace Owner
+                    API->>DB: Check Existing Workspace Membership
 
-                API-->>User: Invitation Accepted
+                    alt Already Member
+
+                        API-->>User: 409 Member Already Exists
+
+                    else Not Member
+
+                        API->>DB: Begin Transaction
+
+                        API->>DB: Create WorkspaceMember
+
+                        API->>DB: Update Invitation Status to ACCEPTED
+
+                        DB-->>API: Transaction Committed
+
+                        API->>RabbitMQ: Publish InvitationAccepted Event
+
+                        API-->>User: Invitation Accepted
+
+                        RabbitMQ->>EmailWorker: InvitationAccepted Event
+                        EmailWorker->>EmailWorker: Send Acceptance Email
+
+                        RabbitMQ->>NotificationWorker: InvitationAccepted Event
+                        NotificationWorker->>DB: Create Notification for Workspace Owner
+                        NotificationWorker->>Redis: Publish Realtime Notification
+
+                    end
+
+                end
 
             end
 
@@ -264,12 +329,14 @@ sequenceDiagram
     actor User
     participant API
     participant DB
-    participant Mail
-    participant Notification
+    participant RabbitMQ
+    participant EmailWorker
+    participant NotificationWorker
+    participant Redis
 
     User->>API: POST /workspace-invitations/:token/reject
 
-    API->>DB: Find Invitation
+    API->>DB: Find Invitation By Token
 
     alt Invitation Not Found
 
@@ -277,23 +344,48 @@ sequenceDiagram
 
     else Invitation Exists
 
-        API->>API: Validate Status
+        API->>API: Validate Invitation Status
 
-        alt Invalid Invitation
+        alt Invitation Not Pending
 
             API-->>User: 410 Invitation Invalid
 
-        else Valid Invitation
+        else Pending
 
-            API->>DB: Update Status
+            API->>API: Validate Expiration
 
-            DB-->>API: Rejected
+            alt Invitation Expired
 
-            API->>Mail: Send Rejection Email
+                API-->>User: 410 Invitation Expired
 
-            API->>Notification: Notify Workspace Owner
+            else Valid
 
-            API-->>User: Invitation Rejected
+                API->>API: Validate Authenticated User
+
+                alt User Does Not Match Invitation
+
+                    API-->>User: 403 Forbidden
+
+                else Authorized
+
+                    API->>DB: Update Invitation Status to REJECTED
+
+                    DB-->>API: Invitation Rejected
+
+                    API->>RabbitMQ: Publish InvitationRejected Event
+
+                    API-->>User: Invitation Rejected
+
+                    RabbitMQ->>EmailWorker: InvitationRejected Event
+                    EmailWorker->>EmailWorker: Send Rejection Email
+
+                    RabbitMQ->>NotificationWorker: InvitationRejected Event
+                    NotificationWorker->>DB: Create Notification for Workspace Owner
+                    NotificationWorker->>Redis: Publish Realtime Notification
+
+                end
+
+            end
 
         end
 
@@ -318,8 +410,10 @@ sequenceDiagram
     actor Owner
     participant API
     participant DB
-    participant Mail
-    participant Notification
+    participant RabbitMQ
+    participant EmailWorker
+    participant NotificationWorker
+    participant Redis
 
     Owner->>API: DELETE /workspaces/:workspaceId/invitations/:invitationId
 
@@ -331,27 +425,52 @@ sequenceDiagram
 
     else Invitation Exists
 
-        API->>DB: Validate Owner Permission
+        API->>DB: Validate Invitation Belongs to Workspace
 
-        alt Forbidden
+        alt Workspace Mismatch
 
-            API-->>Owner: 403 Forbidden
+            API-->>Owner: 404 Invitation Not Found
 
-        else Authorized
+        else Valid Workspace
 
-            API->>DB: Update Status
+            API->>DB: Validate Revoke Permission
 
-            DB-->>API: Revoked
+            alt Forbidden
 
-            API->>Mail: Send Revocation Email
+                API-->>Owner: 403 Forbidden
 
-            alt Existing User
+            else Authorized
 
-                API->>Notification: Notify User
+                API->>API: Validate Invitation Status
+
+                alt Invitation Not Pending
+
+                    API-->>Owner: 409 Invitation Cannot Be Revoked
+
+                else Pending
+
+                    API->>DB: Update Invitation Status to REVOKED
+
+                    DB-->>API: Invitation Revoked
+
+                    API->>RabbitMQ: Publish InvitationRevoked Event
+
+                    API-->>Owner: Invitation Revoked
+
+                    RabbitMQ->>EmailWorker: InvitationRevoked Event
+                    EmailWorker->>EmailWorker: Send Revocation Email
+
+                    alt Existing Invitee
+
+                        RabbitMQ->>NotificationWorker: InvitationRevoked Event
+                        NotificationWorker->>DB: Create Notification for Invitee
+                        NotificationWorker->>Redis: Publish Realtime Notification
+
+                    end
+
+                end
 
             end
-
-            API-->>Owner: Invitation Revoked
 
         end
 
@@ -375,7 +494,7 @@ sequenceDiagram
     participant API
     participant DB
 
-    User->>API: GET /workspace-invitations/:token
+    User->>API: GET /workspaces/:id/invitations/validate?token=
 
     API->>DB: Find Invitation By Token
 
