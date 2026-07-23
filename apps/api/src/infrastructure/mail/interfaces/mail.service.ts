@@ -11,10 +11,35 @@ export interface SendResetPasswordEmail {
 }
 
 export interface SendWorkspaceInvitationEmail {
+  workspaceId: string;
+  name: string;
   email: string;
   inviterName: string;
   workspaceName: string;
   inviteToken: string;
+  roleName: string;
+}
+
+export interface SendAcceptanceEmailToInvitee {
+  workspaceId: string;
+  name: string;
+  email: string;
+  inviterName: string;
+  inviteeName: string;
+  workspaceName: string;
+  inviteToken: string;
+  roleName: string;
+}
+
+export interface SendAcceptanceEmailToInviter {
+  workspaceId: string;
+  name: string;
+  email: string;
+  inviterName: string;
+  inviteeName: string;
+  workspaceName: string;
+  inviteToken: string;
+  roleName: string;
 }
 
 export interface SendUrlExpirationReminder {
@@ -38,6 +63,10 @@ export interface MailService {
   sendResetPasswordEmail(data: SendResetPasswordEmail): Promise<void>;
 
   sendWorkspaceInvitationEmail(data: SendWorkspaceInvitationEmail): Promise<void>;
+  
+  sendAcceptanceEmailToInviter(data: SendAcceptanceEmailToInviter): Promise<void>;
+
+  sendAcceptanceEmailToInvitee(data: SendAcceptanceEmailToInvitee): Promise<void>;
 
   sendUrlExpirationReminder(data: SendUrlExpirationReminder): Promise<void>;
 

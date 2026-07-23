@@ -6,6 +6,7 @@ import type {
   UserLogoutEvent,
   PasswordResetRequestedEvent,
   AuthAuditEvent,
+  AuthSessionRevokedEvent,
 } from '../../events/index.ts';
 
 /**
@@ -33,6 +34,7 @@ export class AuthPublisher {
     return this.publisher.publish(RABBITMQ_EXCHANGE.AUTH, RABBITMQ_ROUTING_KEY.USER_LOGOUT, event);
   }
 
+  // Publish password reset requested event to RabbitMQ
   async passwordResetRequested(event: PasswordResetRequestedEvent) {
     return this.publisher.publish(
       RABBITMQ_EXCHANGE.AUTH,
@@ -41,6 +43,7 @@ export class AuthPublisher {
     );
   }
 
+  // Publish email verified event to RabbitMQ
   async emailVerified(event: AuthAuditEvent) {
     return this.publisher.publish(
       RABBITMQ_EXCHANGE.AUTH,
@@ -49,6 +52,7 @@ export class AuthPublisher {
     );
   }
 
+  // Publish verification email resent event to RabbitMQ
   async verificationEmailResent(event: AuthAuditEvent) {
     return this.publisher.publish(
       RABBITMQ_EXCHANGE.AUTH,
@@ -57,11 +61,21 @@ export class AuthPublisher {
     );
   }
 
+  // Publish password reset success event to RabbitMQ
   async passwordResetSuccess(event: AuthAuditEvent) {
     return this.publisher.publish(
       RABBITMQ_EXCHANGE.AUTH,
       RABBITMQ_ROUTING_KEY.PASSWORD_RESET_SUCCESS,
       event,
+    );
+  }
+
+  // Publish Google login event to RabbitMQ
+  async revokeSession(event: AuthSessionRevokedEvent) {
+    return this.publisher.publish(
+      RABBITMQ_EXCHANGE.AUTH,
+      RABBITMQ_ROUTING_KEY.USER_SESSION_REVOKED,
+      event
     );
   }
 }

@@ -1,0 +1,181 @@
+import type { MailService } from '../../infrastructure/mail/interfaces/mail.service.ts';
+import { consumer } from '../../infrastructure/queue/index.ts';
+import type { UserRegisteredEvent } from '../../events/auth/user-registered.event.ts';
+import {
+  RABBITMQ_EXCHANGE,
+  RABBITMQ_QUEUE,
+  RABBITMQ_ROUTING_KEY,
+} from '../../common/constants/rabbitmq.constant.ts';
+import type { PasswordResetRequestedEvent, UserActionEvent, WorkspaceInvitationCreatedEvent, WorkspaceInvitationUpdatedEvent } from '../../events/index.ts';
+import { InvitationStatus } from '@prisma/client';
+
+/**
+ * EmailWorker is responsible for consuming email-related events from RabbitMQ and sending corresponding emails using the MailService.
+ * It listens to events such as user registration and admin user actions, and sends verification emails or user action emails accordingly.
+ *
+ * The worker uses the MailService to send emails, and it subscribes to specific RabbitMQ exchanges and queues for each event type.
+ */
+export class EmailWorker {
+  // Initialize the EmailWorker with an instance of MailService
+  constructor(private readonly mailService: MailService) { }
+
+  // Start the EmailWorker to consume events from RabbitMQ and send emails.
+  async start() {
+    // Consume user registration events and send verification emails
+    await consumer.consume<UserRegisteredEvent>(
+      RABBITMQ_EXCHANGE.AUTH,
+      RABBITMQ_ROUTING_KEY.USER_REGISTERED,
+      RABBITMQ_QUEUE.EMAIL_USER_REGISTERED,
+
+      // Process the user registration event and send a verification email
+      async (event) => {
+        try {
+          await this.mailService.sendVerificationEmail({
+            email: event.email,
+
+            fullName: event.fullName,
+
+            verifyToken: event.verifyToken,
+          });
+
+          console.log(`Verification email sent to ${event.email}`);
+        } catch (error) {
+          console.error('Error sending verification email:', error);
+        }
+      },
+    );
+
+    // Consume admin user action events and send user action emails
+    await consumer.consume<UserActionEvent>(
+      RABBITMQ_EXCHANGE.ADMIN_USER,
+      RABBITMQ_ROUTING_KEY.USER_ACTION,
+      RABBITMQ_QUEUE.EMAIL_USER_ACTION,
+
+      // Process the admin user action event and send a user action email
+      async (event) => {
+        try {
+          await this.mailService.sendUserActionEmail({
+            email: event.email,
+            fullName: event.fullName,
+            action: event.action,
+            reason: event.reason,
+            actionTime: event.timestamp,
+          });
+
+          console.log(`User action email sent to ${event.email} for action ${event.action}`);
+        } catch (error) {
+          console.error('Error sending user action email:', error);
+        }
+      },
+    );
+
+    // Consume password reset requested events and send reset password emails
+    await consumer.consume<PasswordResetRequestedEvent>(
+      RABBITMQ_EXCHANGE.AUTH,
+      RABBITMQ_ROUTING_KEY.PASSWORD_RESET_REQUESTED,
+      RABBITMQ_QUEUE.EMAIL_PASSWORD_RESET_REQUESTED,
+
+      // Process the password reset requested event and send a reset password email
+      async (event) => {
+        try {
+          await this.mailService.sendResetPasswordEmail({
+            email: event.email,
+            fullName: event.fullName,
+            resetToken: event.resetToken,
+          });
+
+          console.log(`Reset password email sent to ${event.email}`);
+        } catch (error) {
+          console.error('Error sending reset password email:', error);
+        }
+      },
+    );
+
+    await consumer.consume<WorkspaceInvitationCreatedEvent>(
+      RABBITMQ_EXCHANGE.WORKSPACE,
+      RABBITMQ_ROUTING_KEY.WORKSPACE_INVITATION_CREATED,
+      RABBITMQ_QUEUE.EMAIL_WORKSPACE_INVITATION_CREATED,
+
+      async (event) => {
+        try {
+          await this.mailService.sendWorkspaceInvitationEmail({
+            workspaceId: event.workspaceId,
+            name: event.inviteeName || '',
+            email: event.inviteeEmail || '',
+            inviterName: event.inviterName,
+            workspaceName: event.workspaceName,
+            inviteToken: event.token,
+            roleName: event.roleName,
+          });
+
+          console.log(`Workspace invitation email sent to ${event.inviteeEmail || ''}`);
+        } catch (error) {
+          console.error('Error sending workspace invitation email:', error);
+        }
+      },
+    );
+
+    await consumer.consume<WorkspaceInvitationUpdatedEvent>(
+      RABBITMQ_EXCHANGE.WORKSPACE,
+      RABBITMQ_ROUTING_KEY.WORKSPACE_INVITATION_ACCEPTED,
+      RABBITMQ_QUEUE.EMAIL_WORKSPACE_INVITATION_ACCEPTED,
+
+      async (event) => {
+        try {
+          await this.handleInvitationUpdated(event);
+        } catch (error) {
+          console.error('Error sending workspace invitation accepted email:', error);
+        }
+      },
+    );
+  }
+
+  private async handleInvitationUpdated(
+    event: WorkspaceInvitationUpdatedEvent,
+  ) {
+    switch (event.status) {
+      case InvitationStatus.ACCEPTED:
+        await this.handleAccepted(event);
+        break;
+
+      // case InvitationStatus.REJECTED:
+      //   await this.handleRejected(event);
+      //   break;
+
+      // case InvitationStatus.REVOKED:
+      //   await this.handleRevoked(event);
+      //   break;
+    }
+  }
+
+  private async handleAccepted(
+    event: WorkspaceInvitationUpdatedEvent,
+  ) {
+    await Promise.all([
+      this.mailService.sendAcceptanceEmailToInviter({
+        workspaceId: event.workspaceId,
+        name: event.inviterName,
+        email: event.inviterEmail,
+        inviterName: event.inviterName,
+        inviteeName: event.inviteeName,
+        workspaceName: event.workspaceName,
+        inviteToken: '', // No token needed for acceptance email
+        roleName: event.roleName,
+      }),
+      console.log(`Acceptance email sent to inviter ${event.inviterName} (${event.inviterEmail}) for invitation ${event.invitationId}`),
+
+      this.mailService.sendAcceptanceEmailToInvitee({
+        workspaceId: event.workspaceId,
+        name: event.inviteeName,
+        email: event.inviteeEmail,
+        inviterName: event.inviterName,
+        inviteeName: event.inviteeName,
+        workspaceName: event.workspaceName,
+        inviteToken: '', // No token needed for acceptance email
+        roleName: event.roleName,
+      }),
+
+      console.log(`Acceptance email sent to invitee ${event.inviteeName} (${event.inviteeEmail}) for invitation ${event.invitationId}`),
+    ]);
+  }
+}
