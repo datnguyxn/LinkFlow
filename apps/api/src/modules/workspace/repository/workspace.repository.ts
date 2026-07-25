@@ -67,13 +67,13 @@ export class WorkspaceRepository {
    * @param userId - The unique identifier of the user
    * @returns The workspace object with member information if found, otherwise null
    */
-  async findWorkspaceAndMemberById(workspaceId: string, userId: string) {
+  async findByWorkspaceIdAndUserId(workspaceId: string, userId: string) {
     return prisma.workspace.findFirst({
       where: {
         id: workspaceId,
         members: {
           some: {
-            id: userId, // Ensure the user is a member of the workspace
+            userId,
           },
         },
       },
@@ -233,5 +233,29 @@ export class WorkspaceRepository {
 
     // Return true if the user has the specified permission, otherwise false
     return Boolean(member);
+  }
+
+  /**
+   * Update the owner of a workspace
+   * @param workspaceId - The ID of the workspace to update
+   * @param newOwnerId - The ID of the new owner to assign to the workspace
+   * @param db - The Prisma client or transaction client for database operations
+   * @returns The updated workspace object with the new owner assigned
+   */
+  async updateOwner(
+    workspaceId: string,
+    newOwnerId: string,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
+    // Use Prisma to update the owner of the workspace
+    return db.workspace.update({
+      where: {
+        id: workspaceId,
+      },
+      data: {
+        ownerId: newOwnerId, // Set the new owner ID for the workspace
+        updatedAt: new Date(), // Update the timestamp for when the workspace was last modified
+      },
+    });
   }
 }

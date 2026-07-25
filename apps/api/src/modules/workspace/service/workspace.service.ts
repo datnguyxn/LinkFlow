@@ -102,7 +102,7 @@ export class WorkspaceService {
    */
   async getWorkspaceById(workspaceId: string, ownerId: string) {
     // Retrieve the workspace by its ID using the repository method
-    const workspace = await this.workspaceRepository.findWorkspaceAndMemberById(
+    const workspace = await this.workspaceRepository.findByWorkspaceIdAndUserId(
       workspaceId,
       ownerId,
     );

@@ -1,5 +1,5 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, WorkspaceMemberStatus } from '@prisma/client';
 
 /**
  * WorkspaceMemberRepository class provides methods to interact with the workspace member data in the database.
@@ -55,14 +55,24 @@ export class WorkspaceMemberRepository {
    * @param userId - The ID of the user whose membership to find
    * @returns The workspace member object if found, otherwise null
    */
-  async findByWorkspaceAndUser(workspaceId: string, userId: string) {
+  async findByWorkspaceAndUser(
+    workspaceId: string,
+    userId: string,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
     // Use Prisma to find the workspace member record by workspace ID and user ID
-    return prisma.workspaceMember.findUnique({
+    return db.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId,
           userId,
         },
+        status: WorkspaceMemberStatus.ACTIVE,
+      },
+      include: {
+        user: true,
+        role: true,
+        workspace: true,
       },
     });
   }
@@ -80,6 +90,121 @@ export class WorkspaceMemberRepository {
     // Use Prisma to create a new workspace member record in the database
     return db.workspaceMember.create({
       data,
+    });
+  }
+
+  /**
+   * Update the role of a workspace member
+   * @param workspaceId - The ID of the workspace
+   * @param userId - The ID of the user whose role to update
+   * @param newRoleId - The ID of the new role to assign to the user
+   * @param db - The Prisma client or transaction client for database operations (default is the main Prisma client)
+   * @returns The updated workspace member object
+   */
+  async updateRole(
+    workspaceId: string,
+    userId: string,
+    newRoleId: string,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
+    // Use Prisma to update the role of a workspace member in the database
+    return db.workspaceMember.update({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId,
+        },
+      },
+      data: {
+        roleId: newRoleId,
+        updatedAt: new Date(), // Update the timestamp for when the workspace member was last modified
+      },
+    });
+  }
+
+  /**
+   * Find all workspace members by workspace ID
+   * @param workspaceId - The ID of the workspace whose members to retrieve
+   * @returns An array of workspace member objects associated with the specified workspace ID
+   */
+  async findAllByWorkspaceId(
+    workspaceId: string,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
+    // Use Prisma to find all workspace members associated with the specified workspace ID
+    return db.workspaceMember.findMany({
+      where: {
+        workspaceId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        role: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Update a workspace member's information
+   * @param workspaceId - The ID of the workspace
+   * @param userId - The ID of the user whose membership to update
+   * @param data - The data to update for the workspace member
+   * @param db - The Prisma client or transaction client for database operations (default is the main Prisma client)
+   * @returns The updated workspace member object
+   */
+  async update(
+    workspaceId: string,
+    userId: string,
+    data: Prisma.WorkspaceMemberUpdateInput,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
+    // Use Prisma to update the workspace member record in the database
+    return db.workspaceMember.update({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId,
+        },
+      },
+      data,
+    });
+  }
+
+  /**
+   * Reactivate a workspace member by updating their role and status
+   * @param memberId - The ID of the workspace member to reactivate
+   * @param roleId - The ID of the new role to assign to the workspace member
+   * @param db - The Prisma client or transaction client for database operations (default is the main Prisma client)
+   * @returns The updated workspace member object with the new role and active status
+   */
+  async reactivate(
+    memberId: string,
+    roleId: string,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
+    // Use Prisma to update the workspace member's role and status to active
+    return db.workspaceMember.update({
+      where: {
+        id: memberId, // Filter the workspace member by their unique ID
+      },
+
+      data: {
+        roleId, // Update the role of the workspace member to the specified new role ID
+
+        status: WorkspaceMemberStatus.ACTIVE, // Set the status of the workspace member to "active"
+        updatedAt: new Date(), // Update the timestamp for when the workspace member was last modified
+        deletedAt: null, // Clear the "deletedAt" timestamp to indicate that the workspace member is no longer deleted
+      },
     });
   }
 }

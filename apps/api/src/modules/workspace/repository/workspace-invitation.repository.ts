@@ -283,32 +283,42 @@ export class WorkspaceInvitationRepository {
     });
   }
 
+  /**
+   * Find all expired pending workspace invitations
+   * @returns An array of expired pending workspace invitation records
+   */
   async findExpiredPendingInvitations() {
+    // Use Prisma to find all expired pending workspace invitations
     return prisma.workspaceInvitation.findMany({
       where: {
-        status: InvitationStatus.PENDING,
+        status: InvitationStatus.PENDING, // Only consider invitations that are still pending
         expiresAt: {
-          lte: new Date(),
+          lte: new Date(), // Only consider invitations that have expired (expiration date is less than or equal to the current date)
         },
       },
       include: {
-        workspace: true,
-        inviter: true,
-        user: true,
-        role: true,
+        workspace: true, // Include the workspace associated with the invitation
+        inviter: true, // Include the user who sent the invitation
+        user: true, // Include the user associated with the invitation (if any)
+        role: true, // Include the role associated with the invitation
       },
     });
   }
 
+  /**
+   * Expire a specific workspace invitation by its ID
+   * @param invitationId - The unique identifier of the invitation to expire
+   * @returns The updated workspace invitation record with the status set to "expired"
+   */
   async expire(invitationId: string) {
     return prisma.workspaceInvitation.update({
       where: {
-        id: invitationId,
+        id: invitationId, // Filter the invitation by its unique ID
       },
       data: {
-        status: InvitationStatus.EXPIRED,
-        expiresAt: new Date(),
-        updatedAt: new Date(),
+        status: InvitationStatus.EXPIRED, // Update the status of the invitation to "expired"
+        expiresAt: new Date(), // Update the "expiresAt" timestamp to the current date and time
+        updatedAt: new Date(), // Update the "updatedAt" timestamp to the current date and time
       },
     });
   }

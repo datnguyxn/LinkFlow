@@ -280,34 +280,64 @@ export class WorkspaceInvitationService {
 
     // Use a transaction to create a new workspace member and update the invitation status atomically
     const result = await this.transactionService.run(async (tx) => {
-      const workspaceMember = await this.workspaceMemberRepository.create(
-        {
-          workspace: {
-            connect: {
-              id: workspaceId, // Connect the new workspace member to the specified workspace
-            },
-          },
-
-          user: {
-            connect: {
-              id: userId, // Connect the new workspace member to the specified user
-            },
-          },
-
-          role: {
-            connect: {
-              id: invitation.roleId, // Connect the new workspace member to the role specified in the invitation
-            },
-          },
-
-          status: WorkspaceMemberStatus.ACTIVE, // Set the status of the new workspace member to ACTIVE
-        },
+      // Find existing membership
+      const existingMember = await this.workspaceMemberRepository.findByWorkspaceAndUser(
+        workspaceId,
+        userId,
         tx,
       );
 
+      let workspaceMember;
+
+      // If the user is already a member of the workspace, check their status
+      if (existingMember) {
+        // Existing member must be LEFT or REMOVED
+        if (existingMember.status === WorkspaceMemberStatus.ACTIVE) {
+          throw new ConflictError(
+            'workspace.userAlreadyMember',
+            ERROR_CODE.WORKSPACE_MEMBER_ALREADY_EXISTS,
+          );
+        }
+
+        // Reactivate existing membership
+        workspaceMember = await this.workspaceMemberRepository.reactivate(
+          existingMember.id,
+          invitation.roleId,
+          tx,
+        );
+      } else {
+        // Create a new membership
+        workspaceMember = await this.workspaceMemberRepository.create(
+          {
+            workspace: {
+              connect: {
+                id: workspaceId, // Connect the new workspace member to the specified workspace
+              },
+            },
+
+            user: {
+              connect: {
+                id: userId, // Connect the new workspace member to the specified user
+              },
+            },
+
+            role: {
+              connect: {
+                id: invitation.roleId, // Connect the new workspace member to the role specified in the invitation
+              },
+            },
+
+            status: WorkspaceMemberStatus.ACTIVE, // Set the status of the new workspace member to "ACTIVE"
+            updatedAt: new Date(), // Update the timestamp for when the workspace member was last modified
+          },
+          tx,
+        );
+      }
+
+      // Mark invitation as accepted
       const updatedInvitation = await this.workspaceInvitationRepository.updateStatus(
-        invitation.id, // Update the status of the invitation to ACCEPTED
-        InvitationStatus.ACCEPTED, // Update the status of the invitation to ACCEPTED
+        invitation.id,
+        InvitationStatus.ACCEPTED,
         tx,
       );
 
@@ -336,7 +366,12 @@ export class WorkspaceInvitationService {
       ipAddress,
     };
 
-    // Publish the workspace invitation updated event to notify other services or components
+    // console.log(
+    //   '📤 EVENT BEFORE PUBLISH:',
+    //   JSON.stringify(event, null, 2),
+    // );
+
+    //Publish the workspace invitation updated event to notify other services or components
     await this.workspaceInvitationPublisher.workspaceInvitationAccepted(event);
 
     // Return the result containing the created workspace member and updated invitation to the caller
@@ -488,6 +523,12 @@ export class WorkspaceInvitationService {
     // If the invitation does not exist, throw a NotFoundError indicating that the invitation was not found
     if (!invitation) {
       throw new NotFoundError('workspace.invitationNotFound', ERROR_CODE.INVITATION_NOT_FOUND);
+    } else if (invitation.status !== InvitationStatus.PENDING) {
+      // If the invitation is not in PENDING status, throw a ConflictError indicating that the invitation has already been processed
+      throw new ConflictError(
+        'workspace.invitationAlreadyProcessed',
+        ERROR_CODE.INVITATION_ALREADY_PROCESSED,
+      );
     }
 
     // Update the status of the invitation to "REVOKED" in the repository

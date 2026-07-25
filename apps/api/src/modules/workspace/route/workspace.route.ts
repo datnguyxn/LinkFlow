@@ -11,10 +11,12 @@ import {
   createWorkspaceInvitationSchema,
 } from '../validator/workspace-invitation.validator.ts';
 import { WORKSPACE_PERMISSION } from '../../../common/enums/workspace-permission.enum.ts';
+import { WorkspaceMemberController } from '../controller/workspace-member.controller.ts';
 
 // Initialize controller instance
 const controller = new WorkspaceController();
 const workspaceInvitationController = new WorkspaceInvitationController();
+const workspaceMemberController = new WorkspaceMemberController();
 
 /**
  * Workspace management routes
@@ -287,5 +289,139 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
       },
     },
     workspaceInvitationController.rejectInvitation.bind(workspaceInvitationController),
+  );
+
+  /**
+   * PATCH /workspaces/:id/members/ownership
+   *
+   * Features:
+   * - Transfer ownership of a workspace to another member
+   * - Rate limiting to prevent abuse
+   * - Requires the user to have the WORKSPACE_UPDATE permission for the workspace
+   * - The request body must contain the new owner's ID
+   */
+  app.patch<{ Params: { id: string }; Body: { newOwnerId: string } }>(
+    '/:id/members/ownership',
+    {
+      config: {
+        rateLimit: {
+          max: 10, // Maximum 10 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.WORKSPACE_UPDATE)], // Ensure user is authenticated before processing the request
+    },
+    workspaceMemberController.transferOwnership.bind(workspaceMemberController),
+  );
+
+  /**
+   * GET /workspaces/:id/members
+   *
+   * Features:
+   * - List all members of a specific workspace
+   * - Rate limiting to prevent abuse
+   * - Requires the user to have the WORKSPACE_READ permission for the workspace
+   */
+  app.get<{ Params: { id: string } }>(
+    '/:id/members',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_READ)], // Ensure user is authenticated before processing the request
+    },
+    workspaceMemberController.listWorkspaceMembers.bind(workspaceMemberController),
+  );
+
+  /**
+   * GET /workspaces/:workspaceId/members/:userId
+   *
+   * Features:
+   * - Retrieve a specific member of a workspace by their user ID
+   * - Rate limiting to prevent abuse
+   * - Requires the user to have the WORKSPACE_READ permission for the workspace
+   */
+  app.get<{ Params: { id: string; userId: string } }>(
+    '/:id/members/:userId',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_READ)], // Ensure user is authenticated before processing the request
+    },
+    workspaceMemberController.getWorkspaceMember.bind(workspaceMemberController),
+  );
+
+  /**
+   * PATCH /workspaces/:workspaceId/members/:userId/role
+   *
+   * Features:
+   * - Update the role of a specific member in a workspace
+   * - Rate limiting to prevent abuse
+   * - Requires the user to have the WORKSPACE_UPDATE permission for the workspace
+   * - The request body must contain the new role ID for the member
+   */
+  app.patch<{ Params: { id: string; userId: string }; Body: { newRoleId: string } }>(
+    '/:id/members/:userId',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_UPDATE)], // Ensure user is authenticated before processing the request
+    },
+    workspaceMemberController.updateWorkspaceMemberRole.bind(workspaceMemberController),
+  );
+
+  /**
+   * DELETE /workspaces/:id/members/me
+   *
+   * Features:
+   * - Allows the authenticated user to leave a specific workspace
+   * - Rate limiting to prevent abuse
+   * - Requires the user to have the WORKSPACE_MEMBER_REMOVE permission for the workspace
+   */
+  app.delete<{ Params: { id: string } }>(
+    '/:id/members/me',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_LEAVE)], // Ensure user is authenticated before processing the request
+    },
+    workspaceMemberController.leaveWorkspace.bind(workspaceMemberController),
+  );
+
+  /**
+   * DELETE /workspaces/:id/members/:userId
+   *
+   * Features:
+   * - Allows the authenticated user to remove a specific member from a workspace
+   * - Rate limiting to prevent abuse
+   * - Requires the user to have the WORKSPACE_MEMBER_REMOVE permission for the workspace
+   */
+  app.delete<{ Params: { id: string; userId: string } }>(
+    '/:id/members/:userId',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_REMOVE)], // Ensure user is authenticated before processing the request
+    },
+    workspaceMemberController.removeWorkspaceMember.bind(workspaceMemberController),
   );
 };
