@@ -18,4 +18,18 @@ export class RoleRepository {
       },
     });
   }
+
+  /**
+   * Find a role by its name
+   * @param name - The name of the role to find
+   * @returns The role object if found, otherwise null
+   */
+  async findByName(name: string) {
+    // Use Prisma to find a unique role record by its name
+    return prisma.role.findUnique({
+      where: {
+        name,
+      },
+    });
+  }
 }

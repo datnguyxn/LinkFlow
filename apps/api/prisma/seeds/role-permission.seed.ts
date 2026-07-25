@@ -11,6 +11,7 @@ const rolePermissions = {
     'workspace.member.invite',
     'workspace.member.update',
     'workspace.member.remove',
+    'workspace.member.leave',
 
     'workspace.invitation.read',
     'workspace.invitation.create',
@@ -44,6 +45,7 @@ const rolePermissions = {
     'workspace.read',
 
     'workspace.member.read',
+    'workspace.member.leave',
 
     'workspace.invitation.read',
 

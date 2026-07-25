@@ -21,6 +21,7 @@ export function createWorkspaceInvitationServiceFixture() {
     findRoleByUserId: vi.fn(),
     findByWorkspaceAndUser: vi.fn(),
     create: vi.fn(),
+    reactivate: vi.fn(),
   };
 
   const roleRepository = {

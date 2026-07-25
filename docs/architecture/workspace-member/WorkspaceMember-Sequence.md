@@ -223,38 +223,51 @@ The workspace owner is notified by email after the member leaves.
 ```mermaid
 sequenceDiagram
 
-    actor Member
+    actor User
+    participant Frontend
     participant API
     participant DB
-    participant Mail
+    participant RabbitMQ
+    participant NotificationWorker
+    participant EmailWorker
 
-    Member->>API: DELETE /workspaces/:workspaceId/leave
+    User->>Frontend: Click "Leave Workspace"
 
-    API->>DB: Find Membership
+    Frontend->>User: Show confirmation dialog
 
-    alt Membership Not Found
+    User->>Frontend: Confirm leaving
 
-        API-->>Member: 404 Membership Not Found
+    Frontend->>API: DELETE /workspaces/:workspaceId/members/me
 
-    else Membership Exists
+    API->>DB: Find Current Workspace Member
 
-        API->>API: Check Owner
+    alt Member Not Found
 
-        alt Is Workspace Owner
+        API-->>Frontend: 404 Member Not Found
 
-            API-->>Member: 409 Ownership Transfer Required
+    else Member Exists
 
-        else Not Owner
+        API->>API: Check Member Role
 
-            API->>DB: Delete Membership
+        alt Current User Is OWNER
 
-            DB-->>API: Deleted
+            API-->>Frontend: 409 Transfer Ownership Required
 
-            API->>Mail: Notify Workspace Owner
+        else MEMBER or ADMIN
 
-            Mail-->>API: Email Sent
+            API->>DB: Update Member Status to LEFT
 
-            API-->>Member: Left Workspace
+            DB-->>API: Member Left
+
+            API->>RabbitMQ: Publish WorkspaceMemberLeft Event
+
+            API-->>Frontend: 204 No Content
+
+            RabbitMQ->>NotificationWorker: MemberLeft Event
+            NotificationWorker->>DB: Create Notification for Owner
+
+            RabbitMQ->>EmailWorker: MemberLeft Event
+            EmailWorker->>EmailWorker: Send Email to Owner
 
         end
 
@@ -289,7 +302,7 @@ sequenceDiagram
     participant EmailWorker
     participant NotificationWorker
 
-    CurrentOwner->>API: PATCH /workspaces/:workspaceId/ownership
+    CurrentOwner->>API: PATCH /workspaces/:workspaceId/members/onwership
 
     API->>DB: Find Workspace
 

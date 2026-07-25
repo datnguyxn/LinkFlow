@@ -27,6 +27,7 @@ const permissions = [
   'workspace.member.invite',
   'workspace.member.update',
   'workspace.member.remove',
+  'workspace.member.leave',
 
   // ===========================
   // Workspace Invitation

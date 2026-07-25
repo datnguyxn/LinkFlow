@@ -9,6 +9,7 @@ export function createWorkspaceServiceFixture() {
     findWorkspaceAndMemberById: vi.fn(),
     findById: vi.fn(),
     update: vi.fn(),
+    findByWorkspaceIdAndUserId: vi.fn(),
   };
 
   const workspaceMemberRepository = {

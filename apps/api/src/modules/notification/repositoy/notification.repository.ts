@@ -17,4 +17,16 @@ export class NotificationRepository {
       data,
     });
   }
+
+  /**
+   * Create multiple notifications at once
+   * @param data - An array of notification data to create
+   * @returns The result of the bulk creation operation
+   */
+  async createMany(data: Prisma.NotificationCreateManyInput[]) {
+    // Use Prisma to create multiple notification records in the database
+    return prisma.notification.createMany({
+      data,
+    });
+  }
 }

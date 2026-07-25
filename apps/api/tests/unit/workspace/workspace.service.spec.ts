@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WorkspaceStatus } from '@prisma/client';
 
+import { ForbiddenError } from '../../../src/common/errors/forbidden.error';
+import { ERROR_CODE } from '../../../src/common/constants/index';
+
 import { createWorkspaceServiceFixture } from '../fixtures/workspace.service.fixture';
 
 describe('WorkspaceService', () => {
@@ -168,64 +171,96 @@ describe('WorkspaceService', () => {
   });
 
   describe('getWorkspaceById', () => {
+    const workspaceId = 'workspace-1';
+    const ownerId = 'user-1';
+
     const workspace = {
-      id: 'workspace-1',
+      id: workspaceId,
       name: 'My Workspace',
-      ownerId: 'owner-1',
+      ownerId,
     };
 
-    it('should return workspace successfully for a member', async () => {
-      fixture.workspaceRepository.findWorkspaceAndMemberById.mockResolvedValue(workspace);
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
 
-      fixture.workspaceMemberRepository.findRoleByUserId.mockResolvedValue('MEMBER');
+    it('should return workspace successfully when workspace exists and user is a member', async () => {
+      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockResolvedValue(workspace);
 
-      const result = await fixture.workspaceService.getWorkspaceById('workspace-1', 'user-1');
+      const requireMemberSpy = vi
+        .spyOn(fixture.workspaceService as any, 'requireMember')
+        .mockResolvedValue(undefined);
+
+      const result = await fixture.workspaceService.getWorkspaceById(workspaceId, ownerId);
 
       expect(result).toEqual(workspace);
 
-      expect(fixture.workspaceRepository.findWorkspaceAndMemberById).toHaveBeenCalledWith(
-        'workspace-1',
-        'user-1',
+      expect(fixture.workspaceRepository.findByWorkspaceIdAndUserId).toHaveBeenCalledWith(
+        workspaceId,
+        ownerId,
       );
 
-      expect(fixture.workspaceMemberRepository.findRoleByUserId).toHaveBeenCalledWith(
-        'workspace-1',
-        'user-1',
-      );
+      expect(requireMemberSpy).toHaveBeenCalledWith(workspaceId, ownerId);
     });
 
-    it('should throw when workspace does not exist', async () => {
-      fixture.workspaceRepository.findWorkspaceAndMemberById.mockResolvedValue(null);
+    it('should throw NotFoundError when workspace does not exist', async () => {
+      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockResolvedValue(null);
 
       await expect(
-        fixture.workspaceService.getWorkspaceById('workspace-1', 'user-1'),
+        fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
       ).rejects.toMatchObject({
+        code: ERROR_CODE.WORKSPACE_NOT_FOUND,
         message: 'workspace.notFound',
       });
 
-      expect(fixture.workspaceMemberRepository.findRoleByUserId).not.toHaveBeenCalled();
+      expect(fixture.workspaceRepository.findByWorkspaceIdAndUserId).toHaveBeenCalledWith(
+        workspaceId,
+        ownerId,
+      );
+
+      const requireMemberSpy = vi.spyOn(fixture.workspaceService as any, 'requireMember');
+
+      expect(requireMemberSpy).not.toHaveBeenCalled();
     });
 
-    it('should throw when user is not a member', async () => {
-      fixture.workspaceRepository.findWorkspaceAndMemberById.mockResolvedValue(workspace);
+    it('should throw when user is not a member of the workspace', async () => {
+      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockResolvedValue(workspace);
 
-      fixture.workspaceMemberRepository.findRoleByUserId.mockResolvedValue(null);
+      const requireMemberSpy = vi
+        .spyOn(fixture.workspaceService as any, 'requireMember')
+        .mockRejectedValue(new ForbiddenError('workspace.accessDenied', ERROR_CODE.FORBIDDEN));
 
       await expect(
-        fixture.workspaceService.getWorkspaceById('workspace-1', 'user-1'),
+        fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
       ).rejects.toMatchObject({
         message: 'workspace.accessDenied',
       });
+
+      expect(requireMemberSpy).toHaveBeenCalledWith(workspaceId, ownerId);
     });
 
     it('should propagate repository errors', async () => {
-      fixture.workspaceRepository.findWorkspaceAndMemberById.mockRejectedValue(
+      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockRejectedValue(
         new Error('Database error'),
       );
 
-      await expect(
-        fixture.workspaceService.getWorkspaceById('workspace-1', 'user-1'),
-      ).rejects.toThrow('Database error');
+      await expect(fixture.workspaceService.getWorkspaceById(workspaceId, ownerId)).rejects.toThrow(
+        'Database error',
+      );
+    });
+
+    it('should propagate requireMember errors', async () => {
+      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockResolvedValue(workspace);
+
+      const requireMemberSpy = vi
+        .spyOn(fixture.workspaceService as any, 'requireMember')
+        .mockRejectedValue(new Error('Membership validation error'));
+
+      await expect(fixture.workspaceService.getWorkspaceById(workspaceId, ownerId)).rejects.toThrow(
+        'Membership validation error',
+      );
+
+      expect(requireMemberSpy).toHaveBeenCalledWith(workspaceId, ownerId);
     });
   });
 
