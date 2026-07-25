@@ -139,5 +139,85 @@ export class WorkspaceInvitationAuditWorker {
         console.log(`Audit log created for workspace invitation expiration: ${event.invitationId}`);
       },
     );
+
+    await consumer.consume<WorkspaceInvitationUpdatedEvent>(
+      RABBITMQ_EXCHANGE.WORKSPACE,
+      RABBITMQ_ROUTING_KEY.WORKSPACE_INVITATION_REJECTED,
+      RABBITMQ_QUEUE.AUDIT_WORKSPACE_INVITATION_REJECTED,
+
+      async (event) => {
+        await createAuditLog(
+          {
+            user: {
+              connect: {
+                id: event.inviterId,
+              },
+            },
+
+            action: AUDIT_ACTION.WORKSPACE_INVITATION_REJECTED,
+
+            resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
+
+            resourceId: event.invitationId,
+
+            metadata: {
+              invitationId: event.invitationId,
+              workspaceId: event.workspaceId,
+              inviteeId: event.inviteeId,
+              inviterId: event.inviterId,
+              previousStatus: event.previousStatus,
+              status: event.status,
+              updatedAt: event.updatedAt,
+              rejectedAt: event.rejectedAt,
+            },
+
+            ipAddress: event.ipAddress || null,
+          },
+          this.auditRepository,
+        );
+
+        console.log(`Audit log created for workspace invitation rejection: ${event.invitationId}`);
+      },
+    );
+
+    await consumer.consume<WorkspaceInvitationUpdatedEvent>(
+      RABBITMQ_EXCHANGE.WORKSPACE,
+      RABBITMQ_ROUTING_KEY.WORKSPACE_INVITATION_REVOKED,
+      RABBITMQ_QUEUE.AUDIT_WORKSPACE_INVITATION_REVOKED,
+
+      async (event) => {
+        await createAuditLog(
+          {
+            user: {
+              connect: {
+                id: event.inviterId,
+              },
+            },
+
+            action: AUDIT_ACTION.WORKSPACE_INVITATION_REVOKED,
+
+            resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
+
+            resourceId: event.invitationId,
+
+            metadata: {
+              invitationId: event.invitationId,
+              workspaceId: event.workspaceId,
+              inviteeId: event.inviteeId,
+              inviterId: event.inviterId,
+              previousStatus: event.previousStatus,
+              status: event.status,
+              updatedAt: event.updatedAt,
+              revokedAt: event.revokedAt,
+            },
+
+            ipAddress: event.ipAddress || null,
+          },
+          this.auditRepository,
+        );
+
+        console.log(`Audit log created for workspace invitation revocation: ${event.invitationId}`);
+      },
+    );
   }
 }

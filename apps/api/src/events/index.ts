@@ -25,3 +25,9 @@ export * from './workspace/workspace-delete.event.ts';
 // Workspace invitation-related events
 export * from './workspace/workspace-invitation-create.event.ts';
 export * from './workspace/workspace-invitation-update.event.ts';
+
+// Workspace member-related events
+export * from './workspace/workspace-member-create.event.ts';
+export * from './workspace/workspace-member-update-role.event.ts';
+export * from './workspace/workspace-member-leave.event.ts';
+export * from './workspace/workspace-member-remove.event.ts';
