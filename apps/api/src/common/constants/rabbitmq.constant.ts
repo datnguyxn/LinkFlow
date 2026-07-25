@@ -9,6 +9,7 @@ export const RABBITMQ_EXCHANGE = {
 
 export const RABBITMQ_ROUTING_KEY = {
   USER_REGISTERED: 'user.registered',
+  USER_REGISTERED_WELCOME_EMAIL: 'user.registered.welcome.email',
   USER_LOGIN: 'user.login',
   USER_LOGOUT: 'user.logout',
   USER_ACTION: 'user.action',
@@ -47,16 +48,26 @@ export const RABBITMQ_ROUTING_KEY = {
   WORKSPACE_INVITATION_REJECTED: 'workspace.invitation.rejected',
   WORKSPACE_INVITATION_REVOKED: 'workspace.invitation.revoked',
   WORKSPACE_INVITATION_EXPIRED: 'workspace.invitation.expired',
+
+  WORKSPACE_OWNERSHIP_TRANSFERRED: 'workspace.ownership.transferred',
+  WORKSPACE_MEMBER_ROLE_UPDATED: 'workspace.member.role.updated',
+  WORKSPACE_MEMBER_LEAVE: 'workspace.member.leave',
+  WORKSPACE_MEMBER_REMOVE: 'workspace.member.remove',
 } as const;
 
 export const RABBITMQ_QUEUE = {
   EMAIL_USER_REGISTERED: 'email.user.registered',
+  EMAIL_USER_WELCOME: 'email.user.welcome',
   EMAIL_USER_ACTION: 'email.user.action',
   EMAIL_PASSWORD_RESET_REQUESTED: 'email.password.reset.requested',
   EMAIL_WORKSPACE_INVITATION_CREATED: 'email.workspace.invitation.created',
   EMAIL_WORKSPACE_INVITATION_ACCEPTED: 'email.workspace.invitation.accepted',
   EMAIL_WORKSPACE_INVITATION_REJECTED: 'email.workspace.invitation.rejected',
   EMAIL_WORKSPACE_INVITATION_REVOKED: 'email.workspace.invitation.revoked',
+  EMAIL_WORKSPACE_OWNERSHIP_TRANSFERRED: 'email.workspace.ownership.transferred',
+  EMAIL_WORKSPACE_MEMBER_ROLE_UPDATED: 'email.workspace.member.role.updated',
+  EMAIL_WORKSPACE_MEMBER_LEAVE: 'email.workspace.member.leave',
+  EMAIL_WORKSPACE_MEMBER_REMOVE: 'email.workspace.member.remove',
 
   AUDIT_USER_REGISTERED: 'audit.user.registered',
   AUDIT_USER_LOGIN: 'audit.user.login',
@@ -100,8 +111,18 @@ export const RABBITMQ_QUEUE = {
   AUDIT_WORKSPACE_INVITATION_REVOKED: 'audit.workspace.invitation.revoked',
   AUDIT_WORKSPACE_INVITATION_EXPIRED: 'audit.workspace.invitation.expired',
 
+  AUDIT_WORKSPACE_OWNERSHIP_TRANSFERRED: 'audit.workspace.ownership.transferred',
+  AUDIT_WORKSPACE_MEMBER_ROLE_UPDATED: 'audit.workspace.member.role.updated',
+  AUDIT_WORKSPACE_MEMBER_LEAVE: 'audit.workspace.member.leave',
+  AUDIT_WORKSPACE_MEMBER_REMOVE: 'audit.workspace.member.remove',
+
   NOTIFICATION_WORKSPACE_INVITATION_CREATED: 'notification.workspace.invitation.created',
   NOTIFICATION_WORKSPACE_INVITATION_ACCEPTED: 'notification.workspace.invitation.accepted',
   NOTIFICATION_WORKSPACE_INVITATION_REJECTED: 'notification.workspace.invitation.rejected',
   NOTIFICATION_WORKSPACE_INVITATION_REVOKED: 'notification.workspace.invitation.revoked',
+
+  NOTIFICATION_WORKSPACE_OWNERSHIP_TRANSFERRED: 'notification.workspace.ownership.transferred',
+  NOTIFICATION_WORKSPACE_MEMBER_ROLE_UPDATED: 'notification.workspace.member.role.updated',
+  NOTIFICATION_WORKSPACE_MEMBER_LEAVE: 'notification.workspace.member.leave',
+  NOTIFICATION_WORKSPACE_MEMBER_REMOVE: 'notification.workspace.member.remove',
 } as const;

@@ -25,5 +25,12 @@ This verification link will expire in
 
 </p>
 
+<br>
+
+<p>
+  Best regards,<br>
+  The LinkFlow Team
+</p>
+
 `);
 }

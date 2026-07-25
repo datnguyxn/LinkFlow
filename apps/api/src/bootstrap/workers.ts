@@ -9,8 +9,14 @@ import {
   AuthAuditWorker,
   UserAuditWorker,
   WorkspaceAuditWorker,
-  EmailWorker,
+  WorkspaceMemberAuditWorker,
+  WorkspaceInvitationAuditWorker,
+  AdminUserMailWorker,
+  AuthMailWorker,
+  WorkspaceInvitationMailWorker,
+  WorkspaceMemberNotificationWorker,
   NotificationWorker,
+  WorkspaceMemberEmailWorker,
 } from '../workers/index.ts';
 
 export async function registerWorkers() {
@@ -29,18 +35,39 @@ export async function registerWorkers() {
 
   const workspaceAuditWorker = new WorkspaceAuditWorker(auditRepository);
 
-  const emailWorker = new EmailWorker(smtpProvider);
+  const workspaceMemberAuditWorker = new WorkspaceMemberAuditWorker(auditRepository);
+
+  const workspaceInvitationAuditWorker = new WorkspaceInvitationAuditWorker(auditRepository);
+
+  const adminUserMailWorker = new AdminUserMailWorker(smtpProvider);
+
+  const authMailWorker = new AuthMailWorker(smtpProvider);
+
+  const workspaceMemberMailWorker = new WorkspaceMemberEmailWorker(smtpProvider);
+
+  const workspaceMemberNotificationWorker = new WorkspaceMemberNotificationWorker(
+    notificationRepository,
+    redisPublisher,
+  );
+
+  const workspaceInvitationMailWorker = new WorkspaceInvitationMailWorker(smtpProvider);
 
   const notificationWorker = new NotificationWorker(notificationRepository, redisPublisher);
 
   await Promise.all([
-    emailWorker.start(),
+    adminUserMailWorker.start(),
+    authMailWorker.start(),
+    workspaceInvitationMailWorker.start(),
+    workspaceMemberMailWorker.start(),
 
+    workspaceMemberAuditWorker.start(),
+    workspaceInvitationAuditWorker.start(),
     adminUserAuditWorker.start(),
     authAuditWorker.start(),
     userAuditWorker.start(),
     workspaceAuditWorker.start(),
 
+    workspaceMemberNotificationWorker.start(),
     notificationWorker.start(),
   ]);
 

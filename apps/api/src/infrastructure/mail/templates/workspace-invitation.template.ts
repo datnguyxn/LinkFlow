@@ -35,5 +35,11 @@ This invitation link will expire in
 If you were not expecting this invitation, you can safely ignore this email.
 </p>
 
+<br>
+
+<p>
+  Best regards,<br>
+  The LinkFlow Team
+</p>
 `);
 }

@@ -25,6 +25,11 @@ This verification link will expire in
 
 If this wasn't you, simply ignore this email.
 </p>
+<br>
+<p>
+  Best regards,<br>
+  The LinkFlow Team
+</p>
 
 `);
 }
