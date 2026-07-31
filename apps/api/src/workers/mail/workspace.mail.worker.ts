@@ -9,9 +9,7 @@ import {
 import type { WorkspaceDeletedEvent } from '../../events/index.ts';
 
 export class WorkspaceEmailWorker {
-  constructor(
-    private readonly mailService: MailService,
-  ) {}
+  constructor(private readonly mailService: MailService) {}
 
   async start() {
     await consumer.consume<WorkspaceDeletedEvent>(
@@ -40,10 +38,7 @@ export class WorkspaceEmailWorker {
             `Workspace deleted emails sent for workspace ${event.workspaceName} (${event.id})`,
           );
         } catch (error) {
-          console.error(
-            `Failed to send workspace deleted emails for workspace ${event.id}`,
-            error,
-          );
+          console.error(`Failed to send workspace deleted emails for workspace ${event.id}`, error);
         }
       },
     );

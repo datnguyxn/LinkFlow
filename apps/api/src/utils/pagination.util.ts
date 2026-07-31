@@ -15,10 +15,7 @@ export interface PaginationQuery {
  * @param limit - The number of items per page (default is 10)
  * @returns An object containing 'skip' and 'take' values for database queries
  */
-export function buildPagination(
-  page: number | string,
-  limit: number | string,
-) {
+export function buildPagination(page: number | string, limit: number | string) {
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 

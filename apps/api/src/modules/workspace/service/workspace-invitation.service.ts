@@ -222,7 +222,12 @@ export class WorkspaceInvitationService {
     }
 
     // Fetch and return the list of invitations for the specified workspace
-    const invitations = await this.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination(workspaceId, page, limit, search);
+    const invitations = await this.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination(
+      workspaceId,
+      page,
+      limit,
+      search,
+    );
 
     // Return the list of invitations to the caller
     return invitations;

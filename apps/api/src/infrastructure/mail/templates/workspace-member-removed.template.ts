@@ -1,4 +1,4 @@
-import { emailLayout } from "./layouts/layout.ts";
+import { emailLayout } from './layouts/layout.ts';
 
 export function workspaceMemberRemovedTemplate(memberName: string, workspaceName: string) {
   return emailLayout(`

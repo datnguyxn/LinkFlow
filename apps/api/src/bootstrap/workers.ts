@@ -57,7 +57,7 @@ export async function registerWorkers() {
   const notificationWorker = new NotificationWorker(notificationRepository, redisPublisher);
 
   const workspaceEmailWorker = new WorkspaceEmailWorker(smtpProvider);
-  
+
   const workspaceNotificationWorker = new WorkspaceNotificationWorker(
     notificationRepository,
     redisPublisher,

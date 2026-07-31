@@ -3,11 +3,7 @@
 import Link from 'next/link';
 import { Link2 } from 'lucide-react';
 
-export default function SidebarLogo({
-  collapsed,
-}: {
-  collapsed: boolean;
-}) {
+export default function SidebarLogo({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="border-b border-slate-200 p-6 dark:border-slate-800">
       <Link href="/dashboard" className="flex items-center gap-3">
@@ -33,9 +29,7 @@ export default function SidebarLogo({
           <div>
             <h1 className="text-xl font-bold">LinkFlow</h1>
 
-            <p className="text-xs text-slate-500">
-              Smart URL Platform
-            </p>
+            <p className="text-xs text-slate-500">Smart URL Platform</p>
           </div>
         )}
       </Link>

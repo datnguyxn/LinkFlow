@@ -12,18 +12,13 @@ interface WorkspaceContextValue {
   error: Error | null;
 }
 
-export const WorkspaceContext =
-  createContext<WorkspaceContextValue | undefined>(
-    undefined,
-  );
+export const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefined);
 
 export function useWorkspaceContext() {
   const context = useContext(WorkspaceContext);
 
   if (!context) {
-    throw new Error(
-      'useWorkspaceContext must be used within WorkspaceProvider',
-    );
+    throw new Error('useWorkspaceContext must be used within WorkspaceProvider');
   }
 
   return context;

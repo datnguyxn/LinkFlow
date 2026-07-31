@@ -7,10 +7,7 @@ class WorkspaceMemberService {
     return response.data.data;
   }
 
-  async getById(
-    workspaceId: string,
-    memberId: string,
-  ) {
+  async getById(workspaceId: string, memberId: string) {
     const response = await workspaceApi.getMemberById(workspaceId, memberId);
 
     return response.data.data;
@@ -31,7 +28,6 @@ class WorkspaceMemberService {
   updateMemberRole(workspaceId: string, memberId: string, roleId: string) {
     return workspaceApi.updateMemberRole(workspaceId, memberId, roleId);
   }
-
-};
+}
 
 export const workspaceMemberService = new WorkspaceMemberService();

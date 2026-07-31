@@ -33,17 +33,11 @@ export const createWorkspaceSwagger: FastifySchema = {
         Type.Literal('SUSPENDED'),
       ]),
 
-      logoUrl: Type.Union([
-        Type.String({ format: 'uri' }),
-        Type.Null(),
-      ]),
+      logoUrl: Type.Union([Type.String({ format: 'uri' }), Type.Null()]),
 
       createdAt: Type.String({ format: 'date-time' }),
       updatedAt: Type.String({ format: 'date-time' }),
-      deletedAt: Type.Union([
-        Type.String({ format: 'date-time' }),
-        Type.Null(),
-      ]),
+      deletedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
       members: Type.Array(
         Type.Object({
@@ -52,18 +46,12 @@ export const createWorkspaceSwagger: FastifySchema = {
           userId: Type.String({ format: 'uuid' }),
           roleId: Type.String({ format: 'uuid' }),
 
-          status: Type.Union([
-            Type.Literal('ACTIVE'),
-            Type.Literal('INACTIVE'),
-          ]),
+          status: Type.Union([Type.Literal('ACTIVE'), Type.Literal('INACTIVE')]),
 
           createdAt: Type.String({ format: 'date-time' }),
           joinedAt: Type.String({ format: 'date-time' }),
           updatedAt: Type.String({ format: 'date-time' }),
-          deletedAt: Type.Union([
-            Type.String({ format: 'date-time' }),
-            Type.Null(),
-          ]),
+          deletedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
           role: Type.Object({
             id: Type.String({ format: 'uuid' }),

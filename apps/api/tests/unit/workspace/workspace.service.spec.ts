@@ -160,21 +160,15 @@ describe('WorkspaceService', () => {
         },
       ];
 
-      fixture.workspaceRepository.findAllByUserId.mockResolvedValue(
-        structuredClone(workspaces),
-      );
+      fixture.workspaceRepository.findAllByUserId.mockResolvedValue(structuredClone(workspaces));
 
       const result = await fixture.workspaceService.getAllWorkspaces(ownerId);
 
-      expect(result[0].logoUrl).toBe(
-        'https://cdn.example.com/workspace-logo.png',
-      );
+      expect(result[0].logoUrl).toBe('https://cdn.example.com/workspace-logo.png');
 
       expect(result[1].logoUrl).toBeNull();
 
-      expect(fixture.workspaceRepository.findAllByUserId).toHaveBeenCalledWith(
-        ownerId,
-      );
+      expect(fixture.workspaceRepository.findAllByUserId).toHaveBeenCalledWith(ownerId);
 
       expect(fixture.storageService.getPresignedUrl).toHaveBeenCalledWith(
         'logos/workspace-1.png',
@@ -192,9 +186,7 @@ describe('WorkspaceService', () => {
         },
       ];
 
-      fixture.workspaceRepository.findAllByUserId.mockResolvedValue(
-        structuredClone(workspaces),
-      );
+      fixture.workspaceRepository.findAllByUserId.mockResolvedValue(structuredClone(workspaces));
 
       const result = await fixture.workspaceService.getAllWorkspaces(ownerId);
 
@@ -214,13 +206,11 @@ describe('WorkspaceService', () => {
     });
 
     it('should propagate repository errors', async () => {
-      fixture.workspaceRepository.findAllByUserId.mockRejectedValue(
-        new Error('Database error'),
-      );
+      fixture.workspaceRepository.findAllByUserId.mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        fixture.workspaceService.getAllWorkspaces(ownerId),
-      ).rejects.toThrow('Database error');
+      await expect(fixture.workspaceService.getAllWorkspaces(ownerId)).rejects.toThrow(
+        'Database error',
+      );
 
       expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
     });
@@ -235,17 +225,13 @@ describe('WorkspaceService', () => {
         },
       ];
 
-      fixture.workspaceRepository.findAllByUserId.mockResolvedValue(
-        structuredClone(workspaces),
-      );
+      fixture.workspaceRepository.findAllByUserId.mockResolvedValue(structuredClone(workspaces));
 
-      fixture.storageService.getPresignedUrl.mockRejectedValue(
-        new Error('Storage error'),
-      );
+      fixture.storageService.getPresignedUrl.mockRejectedValue(new Error('Storage error'));
 
-      await expect(
-        fixture.workspaceService.getAllWorkspaces(ownerId),
-      ).rejects.toThrow('Storage error');
+      await expect(fixture.workspaceService.getAllWorkspaces(ownerId)).rejects.toThrow(
+        'Storage error',
+      );
     });
   });
 
@@ -277,23 +263,16 @@ describe('WorkspaceService', () => {
         .spyOn(fixture.workspaceService as any, 'requireMember')
         .mockResolvedValue(undefined);
 
-      const result = await fixture.workspaceService.getWorkspaceById(
+      const result = await fixture.workspaceService.getWorkspaceById(workspaceId, ownerId);
+
+      expect(result.logoUrl).toBe('https://cdn.example.com/workspace.png');
+
+      expect(fixture.workspaceRepository.findByWorkspaceIdAndUserId).toHaveBeenCalledWith(
         workspaceId,
         ownerId,
       );
 
-      expect(result.logoUrl).toBe(
-        'https://cdn.example.com/workspace.png',
-      );
-
-      expect(
-        fixture.workspaceRepository.findByWorkspaceIdAndUserId,
-      ).toHaveBeenCalledWith(workspaceId, ownerId);
-
-      expect(requireMemberSpy).toHaveBeenCalledWith(
-        workspaceId,
-        ownerId,
-      );
+      expect(requireMemberSpy).toHaveBeenCalledWith(workspaceId, ownerId);
 
       expect(fixture.storageService.getPresignedUrl).toHaveBeenCalledWith(
         'logos/workspace.png',
@@ -307,14 +286,9 @@ describe('WorkspaceService', () => {
         logoUrl: 'https://example.com/logo.png',
       });
 
-      vi.spyOn(fixture.workspaceService as any, 'requireMember').mockResolvedValue(
-        undefined,
-      );
+      vi.spyOn(fixture.workspaceService as any, 'requireMember').mockResolvedValue(undefined);
 
-      const result = await fixture.workspaceService.getWorkspaceById(
-        workspaceId,
-        ownerId,
-      );
+      const result = await fixture.workspaceService.getWorkspaceById(workspaceId, ownerId);
 
       expect(result.logoUrl).toBe('https://example.com/logo.png');
 
@@ -327,14 +301,9 @@ describe('WorkspaceService', () => {
         logoUrl: null,
       });
 
-      vi.spyOn(fixture.workspaceService as any, 'requireMember').mockResolvedValue(
-        undefined,
-      );
+      vi.spyOn(fixture.workspaceService as any, 'requireMember').mockResolvedValue(undefined);
 
-      const result = await fixture.workspaceService.getWorkspaceById(
-        workspaceId,
-        ownerId,
-      );
+      const result = await fixture.workspaceService.getWorkspaceById(workspaceId, ownerId);
 
       expect(result.logoUrl).toBeNull();
 
@@ -342,14 +311,9 @@ describe('WorkspaceService', () => {
     });
 
     it('should throw NotFoundError when workspace does not exist', async () => {
-      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockResolvedValue(
-        null,
-      );
+      fixture.workspaceRepository.findByWorkspaceIdAndUserId.mockResolvedValue(null);
 
-      const requireMemberSpy = vi.spyOn(
-        fixture.workspaceService as any,
-        'requireMember',
-      );
+      const requireMemberSpy = vi.spyOn(fixture.workspaceService as any, 'requireMember');
 
       await expect(
         fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
@@ -358,9 +322,10 @@ describe('WorkspaceService', () => {
         message: 'workspace.notFound',
       });
 
-      expect(
-        fixture.workspaceRepository.findByWorkspaceIdAndUserId,
-      ).toHaveBeenCalledWith(workspaceId, ownerId);
+      expect(fixture.workspaceRepository.findByWorkspaceIdAndUserId).toHaveBeenCalledWith(
+        workspaceId,
+        ownerId,
+      );
 
       expect(requireMemberSpy).not.toHaveBeenCalled();
 
@@ -374,12 +339,7 @@ describe('WorkspaceService', () => {
 
       const requireMemberSpy = vi
         .spyOn(fixture.workspaceService as any, 'requireMember')
-        .mockRejectedValue(
-          new ForbiddenError(
-            'workspace.accessDenied',
-            ERROR_CODE.FORBIDDEN,
-          ),
-        );
+        .mockRejectedValue(new ForbiddenError('workspace.accessDenied', ERROR_CODE.FORBIDDEN));
 
       await expect(
         fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
@@ -387,10 +347,7 @@ describe('WorkspaceService', () => {
         message: 'workspace.accessDenied',
       });
 
-      expect(requireMemberSpy).toHaveBeenCalledWith(
-        workspaceId,
-        ownerId,
-      );
+      expect(requireMemberSpy).toHaveBeenCalledWith(workspaceId, ownerId);
 
       expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
     });
@@ -400,9 +357,9 @@ describe('WorkspaceService', () => {
         new Error('Database error'),
       );
 
-      await expect(
-        fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
-      ).rejects.toThrow('Database error');
+      await expect(fixture.workspaceService.getWorkspaceById(workspaceId, ownerId)).rejects.toThrow(
+        'Database error',
+      );
     });
 
     it('should propagate requireMember errors', async () => {
@@ -414,9 +371,9 @@ describe('WorkspaceService', () => {
         new Error('Membership validation error'),
       );
 
-      await expect(
-        fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
-      ).rejects.toThrow('Membership validation error');
+      await expect(fixture.workspaceService.getWorkspaceById(workspaceId, ownerId)).rejects.toThrow(
+        'Membership validation error',
+      );
 
       expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
     });
@@ -426,17 +383,13 @@ describe('WorkspaceService', () => {
         ...workspace,
       });
 
-      vi.spyOn(fixture.workspaceService as any, 'requireMember').mockResolvedValue(
-        undefined,
-      );
+      vi.spyOn(fixture.workspaceService as any, 'requireMember').mockResolvedValue(undefined);
 
-      fixture.storageService.getPresignedUrl.mockRejectedValue(
-        new Error('Storage error'),
-      );
+      fixture.storageService.getPresignedUrl.mockRejectedValue(new Error('Storage error'));
 
-      await expect(
-        fixture.workspaceService.getWorkspaceById(workspaceId, ownerId),
-      ).rejects.toThrow('Storage error');
+      await expect(fixture.workspaceService.getWorkspaceById(workspaceId, ownerId)).rejects.toThrow(
+        'Storage error',
+      );
     });
   });
 
@@ -594,9 +547,7 @@ describe('WorkspaceService', () => {
 
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(
-        members,
-      );
+      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(members);
 
       const result = await fixture.workspaceService.deleteWorkspace(
         workspaceId,
@@ -606,24 +557,17 @@ describe('WorkspaceService', () => {
 
       expect(result).toEqual(updatedWorkspace);
 
-      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(
+      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(workspaceId);
+
+      expect(fixture.workspaceService.requireOwner).toHaveBeenCalledWith(workspaceId, ownerId);
+
+      expect(fixture.workspaceRepository.update).toHaveBeenCalledWith(workspaceId, {
+        status: WorkspaceStatus.SUSPENDED,
+      });
+
+      expect(fixture.workspaceMemberRepository.findAllByWorkspaceId).toHaveBeenCalledWith(
         workspaceId,
       );
-
-      expect(
-        fixture.workspaceService.requireOwner,
-      ).toHaveBeenCalledWith(workspaceId, ownerId);
-
-      expect(fixture.workspaceRepository.update).toHaveBeenCalledWith(
-        workspaceId,
-        {
-          status: WorkspaceStatus.SUSPENDED,
-        },
-      );
-
-      expect(
-        fixture.workspaceMemberRepository.findAllByWorkspaceId,
-      ).toHaveBeenCalledWith(workspaceId);
 
       expect(fixture.publisher.workspaceDeleted).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -659,28 +603,18 @@ describe('WorkspaceService', () => {
         code: ERROR_CODE.WORKSPACE_NOT_FOUND,
       });
 
-      expect(
-        fixture.workspaceService.requireOwner,
-      ).not.toHaveBeenCalled();
+      expect(fixture.workspaceService.requireOwner).not.toHaveBeenCalled();
 
       expect(fixture.workspaceRepository.update).not.toHaveBeenCalled();
 
-      expect(
-        fixture.publisher.workspaceDeleted,
-      ).not.toHaveBeenCalled();
+      expect(fixture.publisher.workspaceDeleted).not.toHaveBeenCalled();
     });
 
     it('should propagate requireOwner errors', async () => {
       fixture.workspaceRepository.findById.mockResolvedValue(workspace);
 
-      vi.spyOn(
-        fixture.workspaceService as any,
-        'requireOwner',
-      ).mockRejectedValue(
-        new ConflictError(
-          'workspace.ownerOnly',
-          ERROR_CODE.WORKSPACE_OWNER_REQUIRED,
-        ),
+      vi.spyOn(fixture.workspaceService as any, 'requireOwner').mockRejectedValue(
+        new ConflictError('workspace.ownerOnly', ERROR_CODE.WORKSPACE_OWNER_REQUIRED),
       );
 
       await expect(
@@ -695,17 +629,13 @@ describe('WorkspaceService', () => {
     it('should propagate repository update errors', async () => {
       fixture.workspaceRepository.findById.mockResolvedValue(workspace);
 
-      fixture.workspaceRepository.update.mockRejectedValue(
-        new Error('Database error'),
+      fixture.workspaceRepository.update.mockRejectedValue(new Error('Database error'));
+
+      await expect(fixture.workspaceService.deleteWorkspace(workspaceId, ownerId)).rejects.toThrow(
+        'Database error',
       );
 
-      await expect(
-        fixture.workspaceService.deleteWorkspace(workspaceId, ownerId),
-      ).rejects.toThrow('Database error');
-
-      expect(
-        fixture.publisher.workspaceDeleted,
-      ).not.toHaveBeenCalled();
+      expect(fixture.publisher.workspaceDeleted).not.toHaveBeenCalled();
     });
 
     it('should propagate member repository errors', async () => {
@@ -717,13 +647,11 @@ describe('WorkspaceService', () => {
         new Error('Database error'),
       );
 
-      await expect(
-        fixture.workspaceService.deleteWorkspace(workspaceId, ownerId),
-      ).rejects.toThrow('Database error');
+      await expect(fixture.workspaceService.deleteWorkspace(workspaceId, ownerId)).rejects.toThrow(
+        'Database error',
+      );
 
-      expect(
-        fixture.publisher.workspaceDeleted,
-      ).not.toHaveBeenCalled();
+      expect(fixture.publisher.workspaceDeleted).not.toHaveBeenCalled();
     });
 
     it('should propagate publisher errors', async () => {
@@ -731,17 +659,13 @@ describe('WorkspaceService', () => {
 
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(
-        members,
-      );
+      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(members);
 
-      fixture.publisher.workspaceDeleted.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      fixture.publisher.workspaceDeleted.mockRejectedValue(new Error('RabbitMQ error'));
 
-      await expect(
-        fixture.workspaceService.deleteWorkspace(workspaceId, ownerId),
-      ).rejects.toThrow('RabbitMQ error');
+      await expect(fixture.workspaceService.deleteWorkspace(workspaceId, ownerId)).rejects.toThrow(
+        'RabbitMQ error',
+      );
     });
 
     it('should publish null ipAddress when ipAddress is not provided', async () => {
@@ -749,14 +673,9 @@ describe('WorkspaceService', () => {
 
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(
-        members,
-      );
+      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(members);
 
-      await fixture.workspaceService.deleteWorkspace(
-        workspaceId,
-        ownerId,
-      );
+      await fixture.workspaceService.deleteWorkspace(workspaceId, ownerId);
 
       expect(fixture.publisher.workspaceDeleted).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -887,9 +806,7 @@ describe('WorkspaceService', () => {
 
       fixture.workspaceRepository.findById.mockResolvedValue(workspace);
 
-      fixture.storageService.getPresignedUrl.mockResolvedValue(
-        'https://cdn.example.com/logo.png',
-      );
+      fixture.storageService.getPresignedUrl.mockResolvedValue('https://cdn.example.com/logo.png');
 
       fixture.publisher.workspaceUpdated.mockResolvedValue(undefined);
     });
@@ -962,12 +879,7 @@ describe('WorkspaceService', () => {
       fixture.workspaceRepository.findById.mockResolvedValue(null);
 
       await expect(
-        fixture.workspaceService.updateWorkspaceLogo(
-          workspaceId,
-          null,
-          null,
-          ownerId,
-        ),
+        fixture.workspaceService.updateWorkspaceLogo(workspaceId, null, null, ownerId),
       ).rejects.toMatchObject({
         code: ERROR_CODE.WORKSPACE_NOT_FOUND,
       });
@@ -977,12 +889,7 @@ describe('WorkspaceService', () => {
 
     it('should throw when logoUrl and file are both missing', async () => {
       await expect(
-        fixture.workspaceService.updateWorkspaceLogo(
-          workspaceId,
-          null,
-          null,
-          ownerId,
-        ),
+        fixture.workspaceService.updateWorkspaceLogo(workspaceId, null, null, ownerId),
       ).rejects.toMatchObject({
         code: ERROR_CODE.INVALID_REQUEST,
       });
@@ -1014,24 +921,15 @@ describe('WorkspaceService', () => {
 
       vi.mocked(validateImage).mockResolvedValue(Buffer.from('image'));
 
-      fixture.storageService.uploadFile.mockRejectedValue(
-        new Error('Upload failed'),
-      );
+      fixture.storageService.uploadFile.mockRejectedValue(new Error('Upload failed'));
 
       await expect(
-        fixture.workspaceService.updateWorkspaceLogo(
-          workspaceId,
-          null,
-          file,
-          ownerId,
-        ),
+        fixture.workspaceService.updateWorkspaceLogo(workspaceId, null, file, ownerId),
       ).rejects.toThrow('Upload failed');
     });
 
     it('should propagate update errors', async () => {
-      fixture.workspaceRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      fixture.workspaceRepository.update.mockRejectedValue(new Error('Database error'));
 
       await expect(
         fixture.workspaceService.updateWorkspaceLogo(
@@ -1046,9 +944,7 @@ describe('WorkspaceService', () => {
     it('should propagate delete file errors', async () => {
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.storageService.deleteFile.mockRejectedValue(
-        new Error('Delete error'),
-      );
+      fixture.storageService.deleteFile.mockRejectedValue(new Error('Delete error'));
 
       await expect(
         fixture.workspaceService.updateWorkspaceLogo(
@@ -1063,9 +959,7 @@ describe('WorkspaceService', () => {
     it('should propagate publisher errors', async () => {
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.publisher.workspaceUpdated.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      fixture.publisher.workspaceUpdated.mockRejectedValue(new Error('RabbitMQ error'));
 
       await expect(
         fixture.workspaceService.updateWorkspaceLogo(
@@ -1080,9 +974,7 @@ describe('WorkspaceService', () => {
     it('should propagate presigned url errors', async () => {
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.storageService.getPresignedUrl.mockRejectedValue(
-        new Error('Presigned error'),
-      );
+      fixture.storageService.getPresignedUrl.mockRejectedValue(new Error('Presigned error'));
 
       await expect(
         fixture.workspaceService.updateWorkspaceLogo(
@@ -1115,10 +1007,7 @@ describe('WorkspaceService', () => {
     beforeEach(() => {
       vi.clearAllMocks();
 
-      vi.spyOn(
-        fixture.workspaceService as any,
-        'requireOwner',
-      ).mockResolvedValue(undefined);
+      vi.spyOn(fixture.workspaceService as any, 'requireOwner').mockResolvedValue(undefined);
     });
 
     it('should delete workspace logo successfully', async () => {
@@ -1138,13 +1027,9 @@ describe('WorkspaceService', () => {
 
       expect(result).toEqual(updatedWorkspace);
 
-      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(
-        workspaceId,
-      );
+      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(workspaceId);
 
-      expect(
-        fixture.workspaceService['requireOwner'],
-      ).toHaveBeenCalledWith(workspaceId, ownerId);
+      expect(fixture.workspaceService['requireOwner']).toHaveBeenCalledWith(workspaceId, ownerId);
 
       expect(fixture.workspaceRepository.update).toHaveBeenCalledWith(
         workspaceId,
@@ -1154,9 +1039,7 @@ describe('WorkspaceService', () => {
         }),
       );
 
-      expect(fixture.storageService.deleteFile).toHaveBeenCalledWith(
-        workspace.logoUrl,
-      );
+      expect(fixture.storageService.deleteFile).toHaveBeenCalledWith(workspace.logoUrl);
 
       expect(fixture.publisher.workspaceUpdated).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1180,11 +1063,7 @@ describe('WorkspaceService', () => {
         logoUrl: null,
       });
 
-      await fixture.workspaceService.deleteWorkspaceLogo(
-        workspaceId,
-        ownerId,
-        ipAddress,
-      );
+      await fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId, ipAddress);
 
       expect(fixture.storageService.deleteFile).not.toHaveBeenCalled();
 
@@ -1202,11 +1081,7 @@ describe('WorkspaceService', () => {
         logoUrl: null,
       });
 
-      await fixture.workspaceService.deleteWorkspaceLogo(
-        workspaceId,
-        ownerId,
-        ipAddress,
-      );
+      await fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId, ipAddress);
 
       expect(fixture.storageService.deleteFile).not.toHaveBeenCalled();
 
@@ -1217,18 +1092,13 @@ describe('WorkspaceService', () => {
       fixture.workspaceRepository.findById.mockResolvedValue(null);
 
       await expect(
-        fixture.workspaceService.deleteWorkspaceLogo(
-          workspaceId,
-          ownerId,
-        ),
+        fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId),
       ).rejects.toMatchObject({
         code: ERROR_CODE.WORKSPACE_NOT_FOUND,
         message: 'workspace.workspaceNotFound',
       });
 
-      expect(
-        fixture.workspaceService['requireOwner'],
-      ).not.toHaveBeenCalled();
+      expect(fixture.workspaceService['requireOwner']).not.toHaveBeenCalled();
 
       expect(fixture.workspaceRepository.update).not.toHaveBeenCalled();
 
@@ -1238,18 +1108,12 @@ describe('WorkspaceService', () => {
     it('should propagate requireOwner errors', async () => {
       fixture.workspaceRepository.findById.mockResolvedValue(workspace);
 
-      vi.spyOn(
-        fixture.workspaceService as any,
-        'requireOwner',
-      ).mockRejectedValue(
+      vi.spyOn(fixture.workspaceService as any, 'requireOwner').mockRejectedValue(
         new Error('Forbidden'),
       );
 
       await expect(
-        fixture.workspaceService.deleteWorkspaceLogo(
-          workspaceId,
-          ownerId,
-        ),
+        fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId),
       ).rejects.toThrow('Forbidden');
 
       expect(fixture.workspaceRepository.update).not.toHaveBeenCalled();
@@ -1258,15 +1122,10 @@ describe('WorkspaceService', () => {
     it('should propagate repository update errors', async () => {
       fixture.workspaceRepository.findById.mockResolvedValue(workspace);
 
-      fixture.workspaceRepository.update.mockRejectedValue(
-        new Error('Database error'),
-      );
+      fixture.workspaceRepository.update.mockRejectedValue(new Error('Database error'));
 
       await expect(
-        fixture.workspaceService.deleteWorkspaceLogo(
-          workspaceId,
-          ownerId,
-        ),
+        fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId),
       ).rejects.toThrow('Database error');
 
       expect(fixture.storageService.deleteFile).not.toHaveBeenCalled();
@@ -1279,15 +1138,10 @@ describe('WorkspaceService', () => {
 
       fixture.workspaceRepository.update.mockResolvedValue(updatedWorkspace);
 
-      fixture.storageService.deleteFile.mockRejectedValue(
-        new Error('Storage error'),
-      );
+      fixture.storageService.deleteFile.mockRejectedValue(new Error('Storage error'));
 
       await expect(
-        fixture.workspaceService.deleteWorkspaceLogo(
-          workspaceId,
-          ownerId,
-        ),
+        fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId),
       ).rejects.toThrow('Storage error');
 
       expect(fixture.publisher.workspaceUpdated).not.toHaveBeenCalled();
@@ -1300,15 +1154,10 @@ describe('WorkspaceService', () => {
 
       fixture.storageService.deleteFile.mockResolvedValue(undefined);
 
-      fixture.publisher.workspaceUpdated.mockRejectedValue(
-        new Error('RabbitMQ error'),
-      );
+      fixture.publisher.workspaceUpdated.mockRejectedValue(new Error('RabbitMQ error'));
 
       await expect(
-        fixture.workspaceService.deleteWorkspaceLogo(
-          workspaceId,
-          ownerId,
-        ),
+        fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId),
       ).rejects.toThrow('RabbitMQ error');
     });
 
@@ -1319,10 +1168,7 @@ describe('WorkspaceService', () => {
 
       fixture.storageService.deleteFile.mockResolvedValue(undefined);
 
-      await fixture.workspaceService.deleteWorkspaceLogo(
-        workspaceId,
-        ownerId,
-      );
+      await fixture.workspaceService.deleteWorkspaceLogo(workspaceId, ownerId);
 
       expect(fixture.publisher.workspaceUpdated).toHaveBeenCalledWith(
         expect.objectContaining({

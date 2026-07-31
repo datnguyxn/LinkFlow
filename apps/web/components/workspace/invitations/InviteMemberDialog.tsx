@@ -55,12 +55,10 @@ export default function InviteMemberDialog({
   }, [roles, currentRole]);
 
   const defaultRoleId = useMemo(() => {
-  return availableRoles.find((r) => r.name === 'MEMBER')?.id
-      ?? availableRoles[0]?.id
-      ?? '';
-}, [availableRoles]);
+    return availableRoles.find((r) => r.name === 'MEMBER')?.id ?? availableRoles[0]?.id ?? '';
+  }, [availableRoles]);
 
-const roleId = selectedRoleId || defaultRoleId;
+  const roleId = selectedRoleId || defaultRoleId;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

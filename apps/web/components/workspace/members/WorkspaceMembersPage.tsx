@@ -155,7 +155,7 @@ export default function WorkspaceMembersPage({ workspace }: WorkspaceMembersPage
         workspaceId={workspace.id}
         workspace={workspace}
         memberId={selectedMemberId}
-        
+
         onClose={() => setSelectedMemberId(null)}
       />
 

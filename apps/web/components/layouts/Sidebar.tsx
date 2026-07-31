@@ -22,29 +22,16 @@ import SidebarFooter from './sidebar/SidebarFooter';
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const collapsed = useSidebarStore(
-    (state) => state.collapsed,
-  );
+  const collapsed = useSidebarStore((state) => state.collapsed);
 
   const { user, authenticated } = useAuthContext();
 
+  const { workspaces, currentWorkspace, loading: workspaceLoading } = useWorkspaceContext();
 
-  const {
-    workspaces,
-    currentWorkspace,
-    loading: workspaceLoading,
-  } = useWorkspaceContext();
-
-  const [
-    openCreateWorkspaceDialog,
-    setOpenCreateWorkspaceDialog,
-  ] = useState(false);
+  const [openCreateWorkspaceDialog, setOpenCreateWorkspaceDialog] = useState(false);
 
   const normalize = (path: string) => {
-    if (
-      path.length > 1 &&
-      path.endsWith('/')
-    ) {
+    if (path.length > 1 && path.endsWith('/')) {
       return path.slice(0, -1);
     }
 
@@ -54,10 +41,7 @@ export default function Sidebar() {
   const currentPath = normalize(pathname);
 
   const isActive = (href: string) => {
-    return (
-      currentPath === href ||
-      currentPath.startsWith(`${href}/`)
-    );
+    return currentPath === href || currentPath.startsWith(`${href}/`);
   };
 
   return (
@@ -87,9 +71,7 @@ export default function Sidebar() {
             workspaces={workspaces}
             currentWorkspace={currentWorkspace}
             loading={workspaceLoading}
-            onCreateWorkspace={() =>
-              setOpenCreateWorkspaceDialog(true)
-            }
+            onCreateWorkspace={() => setOpenCreateWorkspaceDialog(true)}
           />
 
           <SidebarWorkspaceNavigation
@@ -98,17 +80,10 @@ export default function Sidebar() {
             isActive={isActive}
           />
 
-          <SidebarSettings
-            collapsed={collapsed}
-            isActive={isActive}
-          />
+          <SidebarSettings collapsed={collapsed} isActive={isActive} />
         </nav>
 
-        <SidebarFooter
-          collapsed={collapsed}
-          user={user}
-          avatarUrl={user?.avatarUrl}
-        />
+        <SidebarFooter collapsed={collapsed} user={user} avatarUrl={user?.avatarUrl} />
       </aside>
 
       <CreateWorkspaceDialog

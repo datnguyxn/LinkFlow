@@ -657,11 +657,7 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      const result = await userService.uploadAvatar(
-        userId,
-        avatarFile,
-        ipAddress,
-      );
+      const result = await userService.uploadAvatar(userId, avatarFile, ipAddress);
 
       expect(userRepository.findById).toHaveBeenCalledWith(userId);
 
@@ -711,10 +707,7 @@ describe('UserService', () => {
 
       expect(storageService.deleteFile).toHaveBeenCalledWith('old-avatar.png');
 
-      expect(storageService.getPresignedUrl).toHaveBeenCalledWith(
-        'new-avatar.png',
-        60 * 60,
-      );
+      expect(storageService.getPresignedUrl).toHaveBeenCalledWith('new-avatar.png', 60 * 60);
 
       expect(userPublisher.userAvatarUpdated).toHaveBeenCalled();
     });
@@ -739,9 +732,7 @@ describe('UserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toMatchObject({
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toMatchObject({
         code: ERROR_CODE.NOT_FOUND,
       });
 
@@ -758,13 +749,11 @@ describe('UserService', () => {
         avatarUrl: null,
       });
 
-      vi.mocked(validateImage).mockRejectedValue(
-        new Error('Invalid Image'),
-      );
+      vi.mocked(validateImage).mockRejectedValue(new Error('Invalid Image'));
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toThrow('Invalid Image');
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
+        'Invalid Image',
+      );
 
       expect(storageService.uploadFile).not.toHaveBeenCalled();
       expect(userRepository.update).not.toHaveBeenCalled();
@@ -777,13 +766,11 @@ describe('UserService', () => {
         avatarUrl: null,
       });
 
-      storageService.uploadFile.mockRejectedValue(
-        new Error('Upload Error'),
-      );
+      storageService.uploadFile.mockRejectedValue(new Error('Upload Error'));
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toThrow('Upload Error');
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
+        'Upload Error',
+      );
 
       expect(userRepository.update).not.toHaveBeenCalled();
       expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
@@ -800,13 +787,11 @@ describe('UserService', () => {
         objectKey: 'avatar.png',
       });
 
-      userRepository.update.mockRejectedValue(
-        new Error('DB Error'),
-      );
+      userRepository.update.mockRejectedValue(new Error('DB Error'));
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toThrow('DB Error');
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
+        'DB Error',
+      );
 
       expect(storageService.deleteFile).not.toHaveBeenCalled();
       expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
@@ -825,13 +810,9 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      storageService.deleteFile.mockRejectedValue(
-        new Error('Delete Error'),
-      );
+      storageService.deleteFile.mockRejectedValue(new Error('Delete Error'));
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toMatchObject({
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toMatchObject({
         code: ERROR_CODE.FILE_DELETE_FAILED,
       });
 
@@ -851,13 +832,11 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      userPublisher.userAvatarUpdated.mockRejectedValue(
-        new Error('RabbitMQ Error'),
-      );
+      userPublisher.userAvatarUpdated.mockRejectedValue(new Error('RabbitMQ Error'));
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toThrow('RabbitMQ Error');
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
+        'RabbitMQ Error',
+      );
 
       expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
 
@@ -876,13 +855,11 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      storageService.getPresignedUrl.mockRejectedValue(
-        new Error('Presigned URL Error'),
-      );
+      storageService.getPresignedUrl.mockRejectedValue(new Error('Presigned URL Error'));
 
-      await expect(
-        userService.uploadAvatar(userId, avatarFile, ipAddress),
-      ).rejects.toThrow('Presigned URL Error');
+      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
+        'Presigned URL Error',
+      );
 
       expect(userPublisher.userAvatarUpdated).toHaveBeenCalledTimes(1);
     });

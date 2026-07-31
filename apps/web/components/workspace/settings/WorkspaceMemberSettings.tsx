@@ -1,18 +1,11 @@
 import Link from 'next/link';
-import {
-  ArrowUpRight,
-  Users,
-} from 'lucide-react';
+import { ArrowUpRight, Users } from 'lucide-react';
 
 import { WorkspaceDetail } from '@/types/workspace.type';
 
 import Button from '@/components/ui/button';
 
-export default function WorkspaceMemberSettings({
-  workspace,
-}: {
-  workspace: WorkspaceDetail;
-}) {
+export default function WorkspaceMemberSettings({ workspace }: { workspace: WorkspaceDetail }) {
   return (
     <section
       className="
@@ -46,22 +39,15 @@ export default function WorkspaceMemberSettings({
           </div>
 
           <div>
-            <h2 className="font-semibold">
-              Members
-            </h2>
+            <h2 className="font-semibold">Members</h2>
 
-            <p className="text-sm text-slate-500">
-              Manage workspace members and roles.
-            </p>
+            <p className="text-sm text-slate-500">Manage workspace members and roles.</p>
           </div>
         </div>
 
-        <Link
-          href={`/dashboard/w/${workspace.slug}/settings/members`}
-        >
+        <Link href={`/dashboard/w/${workspace.slug}/settings/members`}>
           <Button variant="outline" size="sm">
             Manage
-
             <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>

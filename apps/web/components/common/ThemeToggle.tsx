@@ -11,7 +11,7 @@ export default function ThemeToggle() {
 
   const handleThemeChange = async () => {
     const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-    
+
     // đổi UI ngay
     setTheme(nextTheme);
 

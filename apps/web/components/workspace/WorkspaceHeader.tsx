@@ -9,10 +9,8 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
   const router = useRouter();
 
   const handleSettingsClick = () => {
-    router.push(
-      `/dashboard/w/${workspace.slug}/settings`,
-    );
-  }
+    router.push(`/dashboard/w/${workspace.slug}/settings`);
+  };
 
   return (
     <div

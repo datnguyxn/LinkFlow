@@ -4,30 +4,29 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { HTTP_STATUS } from '../../../common/constants/index.ts';
 
 export class AuditLogController {
-    private auditLogService: AuditLogService;
+  private auditLogService: AuditLogService;
 
-    constructor() {
-        this.auditLogService = new AuditLogService();
-    }
+  constructor() {
+    this.auditLogService = new AuditLogService();
+  }
 
-    async getAllInWorkspaceByWorkspaceId(
-        request: FastifyRequest<{
-            Params: {
-                workspaceId: string;
-            };
-        }>,
-        reply: FastifyReply,
-    ) {
+  async getAllInWorkspaceByWorkspaceId(
+    request: FastifyRequest<{
+      Params: {
+        workspaceId: string;
+      };
+    }>,
+    reply: FastifyReply,
+  ) {
+    const { workspaceId } = request.params;
 
-        const { workspaceId } = request.params;
+    const result = await this.auditLogService.findAllInWorkspaceByWorkspaceId(workspaceId);
 
-        const result = await this.auditLogService.findAllInWorkspaceByWorkspaceId(workspaceId);
-
-        return ResponseHandler.success(
-            reply,
-            result,
-            request.t('auditLog.auditLogsFetchedSuccessfully'),
-            HTTP_STATUS.OK,
-        );
-    }
+    return ResponseHandler.success(
+      reply,
+      result,
+      request.t('auditLog.auditLogsFetchedSuccessfully'),
+      HTTP_STATUS.OK,
+    );
+  }
 }

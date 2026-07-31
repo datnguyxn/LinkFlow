@@ -12,13 +12,9 @@ export default function WorkspaceMemberDetailRow({
       <Icon className="h-4 w-4 text-slate-400" />
 
       <div className="min-w-0">
-        <p className="text-xs text-slate-500">
-          {label}
-        </p>
+        <p className="text-xs text-slate-500">{label}</p>
 
-        <p className="truncate text-sm font-medium">
-          {value}
-        </p>
+        <p className="truncate text-sm font-medium">{value}</p>
       </div>
     </div>
   );

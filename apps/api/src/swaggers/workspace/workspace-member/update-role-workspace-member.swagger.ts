@@ -37,10 +37,7 @@ export const updateWorkspaceMemberRoleSwagger: FastifySchema = {
       joinedAt: Type.String({ format: 'date-time' }),
       updatedAt: Type.String({ format: 'date-time' }),
 
-      deletedAt: Type.Union([
-        Type.String({ format: 'date-time' }),
-        Type.Null(),
-      ]),
+      deletedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
     }),
     [400, 401, 403, 404, 409, 500],
   ),

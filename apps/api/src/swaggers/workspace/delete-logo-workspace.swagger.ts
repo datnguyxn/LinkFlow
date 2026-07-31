@@ -17,9 +17,5 @@ export const deleteWorkspaceLogoSwagger: FastifySchema = {
     id: Type.String({ format: 'uuid' }),
   }),
 
-  response: createSwaggerResponse(
-    200,
-    Type.Null(),
-    [400, 401, 403, 404, 500],
-  ),
+  response: createSwaggerResponse(200, Type.Null(), [400, 401, 403, 404, 500]),
 };

@@ -44,7 +44,7 @@ export class RoleRepository {
         name: {
           not: 'OWNER', // Exclude the OWNER role from the results
         },
-      }
+      },
     });
   }
 }

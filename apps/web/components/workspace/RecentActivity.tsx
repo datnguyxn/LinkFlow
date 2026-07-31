@@ -67,8 +67,7 @@ const ACTION_CONFIG: Record<
 
   MEMBER_JOINED: {
     title: 'New member joined',
-    description: (activity) =>
-      `${activity.user.fullName} joined the workspace`,
+    description: (activity) => `${activity.user.fullName} joined the workspace`,
     icon: UserPlus,
   },
 
@@ -123,10 +122,7 @@ function formatRelativeTime(dateString: string) {
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    year:
-      date.getFullYear() !== now.getFullYear()
-        ? 'numeric'
-        : undefined,
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
   });
 }
 
@@ -145,14 +141,8 @@ function getActivityConfig(action: string) {
   );
 }
 
-export default function RecentActivity({
-  workspaceId,
-}: RecentActivityProps) {
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useActivityLogs(workspaceId);
+export default function RecentActivity({ workspaceId }: RecentActivityProps) {
+  const { data, isLoading, isError } = useActivityLogs(workspaceId);
 
   const activities = data ?? [];
 
@@ -175,9 +165,7 @@ export default function RecentActivity({
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">
-            Recent activity
-          </h2>
+          <h2 className="text-lg font-semibold">Recent activity</h2>
 
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Recent activities in this workspace.
@@ -239,38 +227,32 @@ export default function RecentActivity({
         )}
 
         {/* Empty */}
-        {!isLoading &&
-          !isError &&
-          activities.length === 0 && (
-            <div className="flex h-full flex-col items-center justify-center py-8 text-center">
-              <Activity className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+        {!isLoading && !isError && activities.length === 0 && (
+          <div className="flex h-full flex-col items-center justify-center py-8 text-center">
+            <Activity className="h-8 w-8 text-slate-300 dark:text-slate-700" />
 
-              <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">
-                No recent activity
-              </p>
+            <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">
+              No recent activity
+            </p>
 
-              <p className="mt-1 text-xs text-slate-400">
-                Activity in this workspace will appear here.
-              </p>
-            </div>
-          )}
+            <p className="mt-1 text-xs text-slate-400">
+              Activity in this workspace will appear here.
+            </p>
+          </div>
+        )}
 
         {/* Activities */}
-        {!isLoading &&
-          !isError &&
-          activities.length > 0 && (
-            <div className="space-y-0">
-              {activities.map((activity) => {
-                const config = getActivityConfig(
-                  activity.action,
-                );
+        {!isLoading && !isError && activities.length > 0 && (
+          <div className="space-y-0">
+            {activities.map((activity) => {
+              const config = getActivityConfig(activity.action);
 
-                const Icon = config.icon;
+              const Icon = config.icon;
 
-                return (
-                  <div
-                    key={activity.id}
-                    className="
+              return (
+                <div
+                  key={activity.id}
+                  className="
                       flex
                       min-h-[72px]
                       items-start
@@ -281,10 +263,10 @@ export default function RecentActivity({
                       last:border-b-0
                       dark:border-slate-800
                     "
-                  >
-                    {/* Icon */}
-                    <div
-                      className="
+                >
+                  {/* Icon */}
+                  <div
+                    className="
                         flex
                         h-9
                         w-9
@@ -297,36 +279,30 @@ export default function RecentActivity({
                         dark:bg-slate-800
                         dark:text-slate-300
                       "
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">
-                        {config.title}
-                      </p>
-
-                      <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-                        {config.description(activity)}
-                      </p>
-
-                      <p className="mt-1 text-xs text-slate-400">
-                        by {activity.user.fullName}
-                      </p>
-                    </div>
-
-                    {/* Time */}
-                    <span className="shrink-0 text-xs text-slate-400">
-                      {formatRelativeTime(
-                        activity.createdAt,
-                      )}
-                    </span>
+                  >
+                    <Icon className="h-4 w-4" />
                   </div>
-                );
-              })}
-            </div>
-          )}
+
+                  {/* Content */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{config.title}</p>
+
+                    <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
+                      {config.description(activity)}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-400">by {activity.user.fullName}</p>
+                  </div>
+
+                  {/* Time */}
+                  <span className="shrink-0 text-xs text-slate-400">
+                    {formatRelativeTime(activity.createdAt)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -16,27 +16,24 @@ export class AuditLogRepository {
     });
   }
 
-  async findAllInWorkspaceByWorkspaceId(
-    workspaceId: string,
-  ) {
-
+  async findAllInWorkspaceByWorkspaceId(workspaceId: string) {
     return prisma.auditLog.findMany({
       where: {
         resourceId: workspaceId,
         resource: {
-          in: ['WORKSPACE', 'WORKSPACE_MEMBER', 'WORKSPACE_INVITATION']
-        }
+          in: ['WORKSPACE', 'WORKSPACE_MEMBER', 'WORKSPACE_INVITATION'],
+        },
       },
       include: {
         user: {
           select: {
             fullName: true,
             avatarUrl: true,
-          }
-        }
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       take: 3,
     });

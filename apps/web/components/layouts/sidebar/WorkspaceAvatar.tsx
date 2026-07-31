@@ -16,9 +16,7 @@ export default function WorkspaceAvatar({
   active = false,
 }: WorkspaceAvatarProps) {
   const sizeClass =
-    size === 'large'
-      ? 'h-10 w-10 rounded-xl text-sm'
-      : 'h-10 w-10 rounded-xl text-sm';
+    size === 'large' ? 'h-10 w-10 rounded-xl text-sm' : 'h-10 w-10 rounded-xl text-sm';
 
   if (!workspace) {
     return (

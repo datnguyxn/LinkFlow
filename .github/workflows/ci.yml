@@ -9,9 +9,7 @@ on:
     branches:
       - main
 
-
 jobs:
-
   # ============================================================
   # API
   # ============================================================
@@ -21,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-
       # --------------------------------------------------------
       # PostgreSQL
       # --------------------------------------------------------
@@ -43,7 +40,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-
       # --------------------------------------------------------
       # Redis
       # --------------------------------------------------------
@@ -59,7 +55,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
 
       # --------------------------------------------------------
       # RabbitMQ
@@ -81,7 +76,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-
 
       # --------------------------------------------------------
       # MinIO
@@ -106,9 +100,7 @@ jobs:
 
         command: server /data --console-address ":9001"
 
-
     steps:
-
       # --------------------------------------------------------
       # Checkout
       # --------------------------------------------------------
@@ -116,14 +108,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       # --------------------------------------------------------
       # pnpm
       # --------------------------------------------------------
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-
 
       # --------------------------------------------------------
       # Node.js
@@ -137,7 +127,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-
       # --------------------------------------------------------
       # Install
       # --------------------------------------------------------
@@ -145,14 +134,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-
       # --------------------------------------------------------
       # Test environment
       # --------------------------------------------------------
 
       - name: Create test environment
-        run: cp apps/api/.env.test.example apps/api/.env.test
-
+        run: |
+          cp apps/api/.env.test.example apps/api/.env
+          cp apps/api/.env.test.example apps/api/.env.test
 
       # --------------------------------------------------------
       # Prisma
@@ -163,12 +152,10 @@ jobs:
           cd apps/api
           pnpm prisma generate
 
-
       - name: Run Prisma migrations
         run: |
           cd apps/api
           pnpm prisma migrate deploy
-
 
       # --------------------------------------------------------
       # Lint
@@ -177,21 +164,12 @@ jobs:
       - name: Lint API
         run: pnpm --filter api lint
 
-
-      # --------------------------------------------------------
-      # Format
-      # --------------------------------------------------------
-
-      - name: Format API
-        run: pnpm --filter api format
-
       # --------------------------------------------------------
       # Build
       # --------------------------------------------------------
 
       - name: Build API
         run: pnpm --filter api build
-
 
       # --------------------------------------------------------
       # Unit tests
@@ -200,14 +178,12 @@ jobs:
       - name: Unit tests
         run: pnpm --filter api test:unit
 
-
       # --------------------------------------------------------
       # Integration tests
       # --------------------------------------------------------
 
       - name: Integration tests
         run: pnpm --filter api test:integration
-
 
   # ============================================================
   # WEB
@@ -218,7 +194,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       # --------------------------------------------------------
       # Checkout
       # --------------------------------------------------------
@@ -226,14 +201,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       # --------------------------------------------------------
       # pnpm
       # --------------------------------------------------------
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-
 
       # --------------------------------------------------------
       # Node.js
@@ -247,7 +220,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-
       # --------------------------------------------------------
       # Install
       # --------------------------------------------------------
@@ -255,20 +227,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-
       # --------------------------------------------------------
       # Lint
       # --------------------------------------------------------
 
       - name: Lint Web
         run: pnpm --filter web lint
-
-      # --------------------------------------------------------
-      # Format
-      # --------------------------------------------------------
-
-      - name: Format Web
-        run: pnpm --filter web format
 
       # --------------------------------------------------------
       # Build

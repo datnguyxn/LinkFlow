@@ -2,13 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { workspaceMemberService } from '@/services/workspace-member.service';
 
-export function useTransferOwnership(
-  workspaceId: string,
-) {
+export function useTransferOwnership(workspaceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (newOwnerId: string) => workspaceMemberService.transferOwnership(workspaceId, newOwnerId),
+    mutationFn: (newOwnerId: string) =>
+      workspaceMemberService.transferOwnership(workspaceId, newOwnerId),
 
     onSuccess: async () => {
       await Promise.all([
@@ -22,6 +21,6 @@ export function useTransferOwnership(
           queryKey: ['workspaces'],
         }),
       ]);
-    }
+    },
   });
 }

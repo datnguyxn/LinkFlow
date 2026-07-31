@@ -29,7 +29,6 @@ import { websocketPlugin } from './infrastructure/websocket/index.ts';
 import { registerWorkers } from './bootstrap/workers.ts';
 import { registerJobs } from './bootstrap/jobs.ts';
 
-
 interface BuildAppOptions {
   enableRabbitMQ?: boolean;
   enableRedis?: boolean;
@@ -40,11 +39,7 @@ interface BuildAppOptions {
   enableJobs?: boolean;
 }
 
-
-export async function buildApp(
-  options: BuildAppOptions = {},
-) {
-
+export async function buildApp(options: BuildAppOptions = {}) {
   const {
     enableRabbitMQ = true,
     enableRedis = true,
@@ -55,18 +50,13 @@ export async function buildApp(
     enableJobs = true,
   } = options;
 
-
   await registerI18n();
 
-
   const app = Fastify({
-    logger: createLogger(
-      process.env.NODE_ENV === config.NODE_ENV,
-    ),
+    logger: createLogger(process.env.NODE_ENV === config.NODE_ENV),
 
     trustProxy: true,
   });
-
 
   /**
    * Infrastructure plugins
@@ -76,28 +66,23 @@ export async function buildApp(
     await app.register(rabbitMQPlugin);
   }
 
-
   if (enableRedis) {
     await app.register(redisPlugin);
   }
-
 
   if (enableStorage) {
     await app.register(storagePlugin);
   }
 
-
   if (enableWebsocket) {
     await app.register(websocketPlugin);
   }
-
 
   /**
    * Core plugins
    */
 
   await app.register(jwtPlugin);
-
 
   /**
    * Background services
@@ -107,13 +92,11 @@ export async function buildApp(
     await registerWorkers();
   }
 
-
   let jobs;
 
   if (enableJobs) {
     jobs = await registerJobs();
   }
-
 
   /**
    * Application plugins
@@ -131,7 +114,6 @@ export async function buildApp(
 
   await app.register(multipartPlugin);
 
-
   await app.register(cookiePlugin);
 
   await app.register(rateLimitPlugin);
@@ -140,9 +122,7 @@ export async function buildApp(
 
   await app.register(staticPlugin);
 
-
   await app.register(languagePlugin);
-
 
   /**
    * Routes
@@ -152,10 +132,7 @@ export async function buildApp(
     prefix: config.API_PREFIX,
   });
 
-
   await app.register(healthRoutes);
-
-
 
   /**
    * Cleanup
@@ -166,7 +143,6 @@ export async function buildApp(
       await jobs.workspaceInvitationExpirationJob.stop();
     });
   }
-
 
   return app;
 }

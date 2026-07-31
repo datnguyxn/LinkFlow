@@ -35,7 +35,7 @@ export class WorkspaceMemberService {
       new Publisher(),
     ),
     private storageService: MinioStorageService = new MinioStorageService(), // Assuming you have a MinioStorageService for handling storage operations
-  ) { }
+  ) {}
 
   /**
    * Transfers ownership of a workspace from the current owner to a new owner.
@@ -213,15 +213,29 @@ export class WorkspaceMemberService {
     }
 
     // Retrieve and return all members of the specified workspace
-    const result = await this.workspaceMemberRepository.findAllByWorkspaceIdWithPagination(workspaceId, page, limit, search);
+    const result = await this.workspaceMemberRepository.findAllByWorkspaceIdWithPagination(
+      workspaceId,
+      page,
+      limit,
+      search,
+    );
 
-    await Promise.all(result.members.map(async (member) => {
-      // Ensure that the member's user object has a valid avatarUrl, defaulting to null if not present
-      if (member.user.avatarUrl && !member.user.avatarUrl.startsWith('http') && !member.user.avatarUrl.startsWith('https')) {
-        member.user.avatarUrl = await this.storageService.getPresignedUrl(member.user.avatarUrl, 60 * 60); // Generate a presigned URL for the avatar with a 1-hour expiration
-      }
-    }));
-    
+    await Promise.all(
+      result.members.map(async (member) => {
+        // Ensure that the member's user object has a valid avatarUrl, defaulting to null if not present
+        if (
+          member.user.avatarUrl &&
+          !member.user.avatarUrl.startsWith('http') &&
+          !member.user.avatarUrl.startsWith('https')
+        ) {
+          member.user.avatarUrl = await this.storageService.getPresignedUrl(
+            member.user.avatarUrl,
+            60 * 60,
+          ); // Generate a presigned URL for the avatar with a 1-hour expiration
+        }
+      }),
+    );
+
     return result;
   }
   /**
@@ -240,8 +254,15 @@ export class WorkspaceMemberService {
       throw new NotFoundError('workspace.memberNotFound', ERROR_CODE.WORKSPACE_MEMBER_NOT_FOUND);
     }
 
-    if (member.user.avatarUrl && !member.user.avatarUrl.startsWith('http') && !member.user.avatarUrl.startsWith('https')) {
-      member.user.avatarUrl = await this.storageService.getPresignedUrl(member.user.avatarUrl, 60 * 60); // Generate a presigned URL for the avatar with a 1-hour expiration
+    if (
+      member.user.avatarUrl &&
+      !member.user.avatarUrl.startsWith('http') &&
+      !member.user.avatarUrl.startsWith('https')
+    ) {
+      member.user.avatarUrl = await this.storageService.getPresignedUrl(
+        member.user.avatarUrl,
+        60 * 60,
+      ); // Generate a presigned URL for the avatar with a 1-hour expiration
     }
 
     // Return the workspace member object
@@ -305,7 +326,7 @@ export class WorkspaceMemberService {
       workspaceId, // The ID of the workspace where the member's role is being updated
       workspaceName: member.workspace.name, // The name of the workspace where the member's role is being updated
       slug: member.workspace.slug, // The slug of the workspace where the member's role is being updated
-      
+
       memberId: member.id, // The ID of the workspace member whose role is being updated
       userId: member.userId, // The ID of the user associated with the workspace member whose role is being updated
 

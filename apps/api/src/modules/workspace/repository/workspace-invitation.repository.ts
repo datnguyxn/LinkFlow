@@ -104,15 +104,16 @@ export class WorkspaceInvitationRepository {
     limit: number,
     search?: string,
   ) {
-    
     // Calculate the pagination parameters (skip and take) based on the provided page and limit values
-    const { skip, take } = buildPagination(page, limit); 
+    const { skip, take } = buildPagination(page, limit);
 
     // Build the where condition for the query, including workspaceId and optional search term for email
     const where: Prisma.WorkspaceInvitationWhereInput = {
       workspaceId, // Filter invitations by the specified workspace ID
-      ...(search && { // If a search term is provided, add a condition to filter invitations by email
-        email: { // Filter invitations by email address
+      ...(search && {
+        // If a search term is provided, add a condition to filter invitations by email
+        email: {
+          // Filter invitations by email address
           contains: search, // Use a case-insensitive search to find invitations where the email contains the search term
           mode: 'insensitive', // Set the search mode to case-insensitive for email filtering
         },
@@ -120,14 +121,7 @@ export class WorkspaceInvitationRepository {
     };
 
     // Execute a transaction to fetch invitations, total count, and counts for different statuses (pending, accepted, rejected, expired) in a single query
-    const [
-      invitations,
-      total,
-      pending,
-      accepted,
-      rejected,
-      expired,
-    ] = await prisma.$transaction([
+    const [invitations, total, pending, accepted, rejected, expired] = await prisma.$transaction([
       prisma.workspaceInvitation.findMany({
         where,
         skip,

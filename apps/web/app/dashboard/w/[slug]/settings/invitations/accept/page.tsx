@@ -36,47 +36,32 @@ export default function AcceptInvitationPage() {
     (async () => {
       try {
         await acceptInvitation.mutateAsync({
-            workspaceId,
-            invitationId,
-            token,
-          });
+          workspaceId,
+          invitationId,
+          token,
+        });
 
-        appToast.success(
-          'Invitation accepted successfully',
-        );
+        appToast.success('Invitation accepted successfully');
 
         router.replace(`/dashboard/w/${slug}`);
       } catch (error) {
         console.error(error);
 
-        appToast.error(
-          'Failed to accept invitation',
-        );
+        appToast.error('Failed to accept invitation');
 
         router.replace('/dashboard');
       }
     })();
-  }, [
-    workspaceId,
-    invitationId,
-    token,
-    slug,
-    router,
-    acceptInvitation,
-  ]);
+  }, [workspaceId, invitationId, token, slug, router, acceptInvitation]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
 
       <div className="space-y-1 text-center">
-        <h1 className="text-lg font-semibold">
-          Accepting invitation...
-        </h1>
+        <h1 className="text-lg font-semibold">Accepting invitation...</h1>
 
-        <p className="text-sm text-slate-500">
-          Please wait while we add you to the workspace.
-        </p>
+        <p className="text-sm text-slate-500">Please wait while we add you to the workspace.</p>
       </div>
     </div>
   );

@@ -25,19 +25,13 @@ export const acceptWorkspaceInvitationSwagger: FastifySchema = {
         userId: Type.String({ format: 'uuid' }),
         roleId: Type.String({ format: 'uuid' }),
 
-        status: Type.Union([
-          Type.Literal('ACTIVE'),
-          Type.Literal('INACTIVE'),
-        ]),
+        status: Type.Union([Type.Literal('ACTIVE'), Type.Literal('INACTIVE')]),
 
         createdAt: Type.String({ format: 'date-time' }),
         joinedAt: Type.String({ format: 'date-time' }),
         updatedAt: Type.String({ format: 'date-time' }),
 
-        deletedAt: Type.Union([
-          Type.String({ format: 'date-time' }),
-          Type.Null(),
-        ]),
+        deletedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
       }),
 
       updatedInvitation: Type.Object({
@@ -60,20 +54,11 @@ export const acceptWorkspaceInvitationSwagger: FastifySchema = {
 
         expiresAt: Type.String({ format: 'date-time' }),
 
-        revokedAt: Type.Union([
-          Type.String({ format: 'date-time' }),
-          Type.Null(),
-        ]),
+        revokedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
-        rejectedAt: Type.Union([
-          Type.String({ format: 'date-time' }),
-          Type.Null(),
-        ]),
+        rejectedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
-        acceptedAt: Type.Union([
-          Type.String({ format: 'date-time' }),
-          Type.Null(),
-        ]),
+        acceptedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
         createdAt: Type.String({ format: 'date-time' }),
         updatedAt: Type.String({ format: 'date-time' }),

@@ -20,17 +20,13 @@ export default function WorkspaceMembersRoute() {
   }
 
   const canManageWorkspace =
-    currentWorkspace.permissions?.includes(
-      WORKSPACE_PERMISSION.WORKSPACE_UPDATE,
-    ) ?? false;
+    currentWorkspace.permissions?.includes(WORKSPACE_PERMISSION.WORKSPACE_UPDATE) ?? false;
 
   const backHref = canManageWorkspace
     ? `/dashboard/w/${currentWorkspace.slug}/settings`
     : `/dashboard/w/${currentWorkspace.slug}`;
 
-  const backLabel = canManageWorkspace
-    ? 'Back to workspace settings'
-    : 'Back to workspace';
+  const backLabel = canManageWorkspace ? 'Back to workspace settings' : 'Back to workspace';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

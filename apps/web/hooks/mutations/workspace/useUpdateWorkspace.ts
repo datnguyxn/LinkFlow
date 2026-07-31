@@ -7,19 +7,19 @@ type UpdateWorkspaceData = {
 };
 
 export function useUpdateWorkspace(workspaceId: string) {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (data: UpdateWorkspaceData) => workspaceService.update(workspaceId, data),
+  return useMutation({
+    mutationFn: (data: UpdateWorkspaceData) => workspaceService.update(workspaceId, data),
 
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['workspaces'],
-            });
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['workspaces'],
+      });
 
-            queryClient.invalidateQueries({
-                queryKey: ['workspace', 'detail', workspaceId],
-            });
-        },
-    });
+      queryClient.invalidateQueries({
+        queryKey: ['workspace', 'detail', workspaceId],
+      });
+    },
+  });
 }

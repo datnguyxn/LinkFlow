@@ -33,7 +33,6 @@ export default function WorkspaceInvitationDetail({
 }: WorkspaceInvitationDetailProps) {
   const { data: invitation, isLoading } = useWorkspaceInvitation(workspaceId, invitationId);
 
-
   const [loading, setLoading] = useState(false);
   const { mutate: revokeInvitation } = useRevokeWorkspaceInvitation(workspaceId);
 
@@ -47,7 +46,7 @@ export default function WorkspaceInvitationDetail({
       (err) => {
         console.error('Could not copy text: ', err);
         appToast.error('Failed to copy invitation link.');
-      }
+      },
     );
   };
 
@@ -144,9 +143,8 @@ export default function WorkspaceInvitationDetail({
                   className="w-full"
                   onClick={() => {
                     const invitationUrl = `${config.NEXT_PUBLIC_APP_URL}/dashboard/w/${invitation.workspace.slug}/settings/invitations/accept?token=${invitation.token}&workspaceId=${workspaceId}&invitationId=${invitation.id}&slug=${invitation.workspace.slug}`;
-                  
+
                     copyToClipboard(invitationUrl);
-                  
                   }}
                 >
                   <Link2 className="mr-2 h-4 w-4" />

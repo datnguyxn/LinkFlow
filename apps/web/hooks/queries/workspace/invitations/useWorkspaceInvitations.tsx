@@ -6,27 +6,18 @@ export function useWorkspaceInvitations(
   workspaceId: string,
   page: number,
   limit: number,
-  search?: string
+  search?: string,
 ) {
   return useQuery({
-    queryKey: [
-      'workspace-invitations',
-      workspaceId,
-      page,
-      limit,
-      search
-    ],
+    queryKey: ['workspace-invitations', workspaceId, page, limit, search],
 
-    queryFn: async (): Promise<
-      WorkspaceInvitationListResponse
-    > => {
-      const response =
-        await workspaceInvitationService.getAllInvitations(
-          workspaceId,
-          page,
-          limit,
-          search
-        );
+    queryFn: async (): Promise<WorkspaceInvitationListResponse> => {
+      const response = await workspaceInvitationService.getAllInvitations(
+        workspaceId,
+        page,
+        limit,
+        search,
+      );
 
       return response.data.data;
     },

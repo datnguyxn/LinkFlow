@@ -12,12 +12,9 @@ import {
 
 import { cn } from '@/lib/utils';
 
-const ThemeToggle = dynamic(
-  () => import('@/components/common/ThemeToggle'),
-  {
-    ssr: false,
-  },
-);
+const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
+  ssr: false,
+});
 
 export default function SidebarLanguageTheme({
   collapsed,
@@ -32,9 +29,7 @@ export default function SidebarLanguageTheme({
     <div
       className={cn(
         'mb-3 flex items-center',
-        collapsed
-          ? 'flex-col gap-2'
-          : 'justify-center gap-3',
+        collapsed ? 'flex-col gap-2' : 'justify-center gap-3',
       )}
     >
       <DropdownMenu>
@@ -61,11 +56,7 @@ export default function SidebarLanguageTheme({
 
             {!collapsed && (
               <>
-                <span className="text-sm font-medium">
-                  {language === 'vi'
-                    ? '🇻🇳 VI'
-                    : '🇺🇸 EN'}
-                </span>
+                <span className="text-sm font-medium">{language === 'vi' ? '🇻🇳 VI' : '🇺🇸 EN'}</span>
 
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               </>
@@ -79,17 +70,11 @@ export default function SidebarLanguageTheme({
           sideOffset={8}
           className="dark:bg-slate-900"
         >
-          <DropdownMenuItem
-            onClick={() => changeLanguage('en')}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer">
             🇺🇸 English
           </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={() => changeLanguage('vi')}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem onClick={() => changeLanguage('vi')} className="cursor-pointer">
             🇻🇳 Tiếng Việt
           </DropdownMenuItem>
         </DropdownMenuContent>

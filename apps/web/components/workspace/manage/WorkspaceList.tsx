@@ -2,11 +2,7 @@ import { Workspace } from '@/types/workspace.type';
 
 import WorkspaceCard from './WorkspaceCard';
 
-export default function WorkspaceList({
-  workspaces,
-}: {
-  workspaces: Workspace[];
-}) {
+export default function WorkspaceList({ workspaces }: { workspaces: Workspace[] }) {
   if (workspaces.length === 0) {
     return (
       <div
@@ -22,13 +18,9 @@ export default function WorkspaceList({
           dark:bg-slate-900
         "
       >
-        <h3 className="text-lg font-semibold">
-          No workspaces found
-        </h3>
+        <h3 className="text-lg font-semibold">No workspaces found</h3>
 
-        <p className="mt-2 text-sm text-slate-500">
-          Try another search or create a new workspace.
-        </p>
+        <p className="mt-2 text-sm text-slate-500">Try another search or create a new workspace.</p>
       </div>
     );
   }
@@ -36,10 +28,7 @@ export default function WorkspaceList({
   return (
     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       {workspaces.map((workspace) => (
-        <WorkspaceCard
-          key={workspace.id}
-          workspace={workspace}
-        />
+        <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
     </div>
   );

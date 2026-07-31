@@ -5,26 +5,14 @@ import { activityLogService } from '@/services/activity-log.service';
 export const activityLogKeys = {
   all: ['activity-logs'] as const,
 
-  workspace: (
-    workspaceId: string,
-  ) => [...activityLogKeys.all, workspaceId] as const,
+  workspace: (workspaceId: string) => [...activityLogKeys.all, workspaceId] as const,
 };
 
-export function useActivityLogs(
-  workspaceId: string,
-  page = 1,
-  limit = 5,
-  enabled = true,
-) {
+export function useActivityLogs(workspaceId: string, page = 1, limit = 5, enabled = true) {
   return useQuery({
-    queryKey: activityLogKeys.workspace(
-      workspaceId,
-    ),
+    queryKey: activityLogKeys.workspace(workspaceId),
 
-    queryFn: () =>
-      activityLogService.getAllByWorkspaceId(
-        workspaceId,
-      ),
+    queryFn: () => activityLogService.getAllByWorkspaceId(workspaceId),
 
     enabled: enabled && Boolean(workspaceId),
 

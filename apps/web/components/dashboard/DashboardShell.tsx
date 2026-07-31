@@ -4,14 +4,8 @@ import Sidebar from '@/components/layouts/Sidebar';
 import WorkspaceProvider from '@/providers/WorkspaceProvider';
 import { useSidebarStore } from '@/stores/sidebar.store';
 
-export default function DashboardShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const collapsed = useSidebarStore(
-    (state) => state.collapsed,
-  );
+export default function DashboardShell({ children }: { children: React.ReactNode }) {
+  const collapsed = useSidebarStore((state) => state.collapsed);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

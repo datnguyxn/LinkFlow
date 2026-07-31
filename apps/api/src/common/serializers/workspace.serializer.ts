@@ -1,4 +1,7 @@
-import type { WorkspaceWithRole, WorkspaceWithRoleAndUser } from '../../modules/workspace/types/workspace.type.ts';
+import type {
+  WorkspaceWithRole,
+  WorkspaceWithRoleAndUser,
+} from '../../modules/workspace/types/workspace.type.ts';
 
 export class WorkspaceSerializer {
   static serializeWithMember(workspace: WorkspaceWithRole) {
@@ -22,9 +25,7 @@ export class WorkspaceSerializer {
     };
   }
 
-  static serialize(
-    workspace: WorkspaceWithRoleAndUser,
-  ) {
+  static serialize(workspace: WorkspaceWithRoleAndUser) {
     const member = workspace.members[0];
 
     return {
@@ -37,16 +38,14 @@ export class WorkspaceSerializer {
 
       role: member?.role
         ? {
-          id: member.role.id,
-          name: member.role.name,
-          description: member.role.description,
-        }
+            id: member.role.id,
+            name: member.role.name,
+            description: member.role.description,
+          }
         : null,
     };
   }
   static serializeMany(workspaces: WorkspaceWithRoleAndUser[]) {
-    return workspaces.map((workspace) =>
-      this.serialize(workspace),
-    );
+    return workspaces.map((workspace) => this.serialize(workspace));
   }
 }

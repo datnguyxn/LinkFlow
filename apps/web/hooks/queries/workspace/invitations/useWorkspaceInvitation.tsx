@@ -4,25 +4,17 @@ import { workspaceInvitationService } from '@/services/workspace-invitation.serv
 
 import { WorkspaceInvitation } from '@/types/workspace.type';
 
-export function useWorkspaceInvitation(
-  workspaceId: string,
-  invitationId: string | null,
-) {
+export function useWorkspaceInvitation(workspaceId: string, invitationId: string | null) {
   return useQuery({
-    queryKey: [
-      'workspace-invitation',
-      workspaceId,
-      invitationId,
-    ],
+    queryKey: ['workspace-invitation', workspaceId, invitationId],
 
     enabled: Boolean(workspaceId && invitationId),
 
     queryFn: async (): Promise<WorkspaceInvitation> => {
-      const response =
-        await workspaceInvitationService.getInvitationById(
-          workspaceId,
-          invitationId!,
-        );
+      const response = await workspaceInvitationService.getInvitationById(
+        workspaceId,
+        invitationId!,
+      );
 
       return response.data.data;
     },

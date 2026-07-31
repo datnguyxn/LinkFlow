@@ -20,10 +20,7 @@ export const getAllWorkspacesSwagger: FastifySchema = {
         name: Type.String(),
         slug: Type.String(),
 
-        logoUrl: Type.Union([
-          Type.String({ format: 'uri' }),
-          Type.Null(),
-        ]),
+        logoUrl: Type.Union([Type.String({ format: 'uri' }), Type.Null()]),
 
         createdAt: Type.String({ format: 'date-time' }),
         updatedAt: Type.String({ format: 'date-time' }),

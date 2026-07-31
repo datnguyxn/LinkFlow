@@ -1,8 +1,4 @@
-export default function WorkspaceStatusBadge({
-  status,
-}: {
-  status: string;
-}) {
+export default function WorkspaceStatusBadge({ status }: { status: string }) {
   const isActive = status === 'ACTIVE';
   const isLeft = status === 'LEFT';
   const isRemoved = status === 'REMOVED';

@@ -16,7 +16,7 @@ import { AUDIT_ACTION, AUDIT_RESOURCE } from '../../common/constants/audit.const
 import { createAuditLog } from '../../utils/create-audit.util.ts';
 
 export class WorkspaceAuditWorker {
-  constructor(private readonly auditRepository: AuditLogRepository) { }
+  constructor(private readonly auditRepository: AuditLogRepository) {}
 
   async start() {
     // Consume workspace created events and create audit logs

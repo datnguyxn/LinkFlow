@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  BarChart3,
-  Link2,
-  QrCode,
-  Settings,
-  ShieldCheck,
-  UserPlus,
-  Users,
-} from 'lucide-react';
+import { BarChart3, Link2, QrCode, Settings, ShieldCheck, UserPlus, Users } from 'lucide-react';
 
 import { WORKSPACE_PERMISSION } from '@/constants/permissions';
 import PermissionGuard from '@/components/common/PermissionGuard';
@@ -17,7 +9,6 @@ import ManagementCard from './ManagementCard';
 import { WorkspaceDetail } from '@/types/workspace.type';
 
 export default function WorkspaceManagement({ workspace }: { workspace: WorkspaceDetail }) {
-
   return (
     <section>
       {/* Header */}
@@ -95,7 +86,7 @@ export default function WorkspaceManagement({ workspace }: { workspace: Workspac
         {/* Workspace Settings */}
         <PermissionGuard permission={WORKSPACE_PERMISSION.WORKSPACE_UPDATE}>
           <ManagementCard
-            icon={Settings} 
+            icon={Settings}
             title="Workspace settings"
             description="Update workspace configuration."
             href={`/dashboard/w/${workspace?.slug}/settings`}

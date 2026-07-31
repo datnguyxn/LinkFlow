@@ -16,7 +16,7 @@ export default fp(async (app) => {
       websocket: true,
     },
     async (socket, request) => {
-  console.log('[WS] CLIENT CONNECTED');
+      console.log('[WS] CLIENT CONNECTED');
       const { token } = request.query as {
         token?: string;
       };
@@ -26,24 +26,23 @@ export default fp(async (app) => {
         return;
       }
 
-       const user = await app.jwt.verify<{
+      const user = await app.jwt.verify<{
         id: string;
       }>(token);
 
       websocketManager.add(user.id, socket);
 
       socket.on('close', (code, reason) => {
-
         console.log('[WS] CLIENT CLOSED', {
-        code,
-        reason: reason.toString(),
-      });
+          code,
+          reason: reason.toString(),
+        });
 
         websocketManager.remove(user.id, socket);
       });
 
       socket.on('error', (error) => {
-         console.error('[WS] SOCKET ERROR', error);
+        console.error('[WS] SOCKET ERROR', error);
         websocketManager.remove(user.id, socket);
       });
     },

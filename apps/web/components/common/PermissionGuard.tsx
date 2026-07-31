@@ -15,18 +15,13 @@ export default function PermissionGuard({
   children,
   fallback = null,
 }: PermissionGuardProps) {
-  const {
-    currentWorkspace,
-  } = useWorkspaceContext();
+  const { currentWorkspace } = useWorkspaceContext();
 
   if (!currentWorkspace) {
     return fallback;
   }
 
-  const hasPermission =
-    currentWorkspace.permissions.includes(
-      permission,
-    );
+  const hasPermission = currentWorkspace.permissions.includes(permission);
 
   if (!hasPermission) {
     return fallback;

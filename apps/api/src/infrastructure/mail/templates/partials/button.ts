@@ -1,8 +1,4 @@
-export function emailButton(
-  text: string,
-  href: string,
-  color?: string,
-) {
+export function emailButton(text: string, href: string, color?: string) {
   // Single button (centered)
   if (!color) {
     return `

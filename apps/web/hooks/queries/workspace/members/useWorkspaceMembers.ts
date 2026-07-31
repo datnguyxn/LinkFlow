@@ -8,13 +8,12 @@ export function useWorkspaceMembers(
   workspaceId?: string,
   page?: number,
   limit?: number,
-  search?: string
+  search?: string,
 ) {
   return useQuery({
     queryKey: ['workspace-members', workspaceId, page, limit, search],
 
-    queryFn: () =>
-      workspaceMemberService.getAll(workspaceId!, page, limit, search),
+    queryFn: () => workspaceMemberService.getAll(workspaceId!, page, limit, search),
 
     enabled: Boolean(workspaceId),
   });

@@ -36,10 +36,7 @@ export interface WorkspaceMemberUser {
   avatarUrl?: string | null;
 }
 
-export type WorkspaceMemberStatus =
-  | 'ACTIVE'
-  | 'LEFT'
-  | 'REMOVED';
+export type WorkspaceMemberStatus = 'ACTIVE' | 'LEFT' | 'REMOVED';
 
 export interface WorkspaceMember {
   id: string;
@@ -58,8 +55,7 @@ export interface WorkspaceMember {
   role: WorkspaceRole;
 }
 
-export interface WorkspaceMemberDetail
-  extends WorkspaceMember {
+export interface WorkspaceMemberDetail extends WorkspaceMember {
   workspace: {
     id: string;
     name: string;
@@ -85,12 +81,7 @@ export interface WorkspaceMembersResponse {
  * Workspace Invitations
  * ======================================================= */
 
-export type WorkspaceInvitationStatus =
-  | 'PENDING'
-  | 'ACCEPTED'
-  | 'EXPIRED'
-  | 'REJECTED'
-  | 'REVOKED';
+export type WorkspaceInvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REJECTED' | 'REVOKED';
 
 export interface WorkspaceInvitationUser {
   id: string;

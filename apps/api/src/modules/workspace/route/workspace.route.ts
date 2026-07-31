@@ -146,7 +146,10 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - Update the logo of a workspace by its ID
    * - Rate limiting to prevent abuse
    */
-  app.patch<{ Params: { id: string }, Body: { file: MultipartFile | null, logoUrl: string | null } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { file: MultipartFile | null; logoUrl: string | null };
+  }>(
     '/:id/logo',
     {
       config: {
@@ -252,7 +255,10 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - List all invitations for a specific workspace
    * - Rate limiting to prevent abuse
    */
-  app.get<{ Params: { id: string }, Querystring: { page: number; limit: number; search?: string } }>(
+  app.get<{
+    Params: { id: string };
+    Querystring: { page: number; limit: number; search?: string };
+  }>(
     '/:id/invitations',
     {
       config: {
@@ -405,7 +411,10 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - Rate limiting to prevent abuse
    * - Requires the user to have the WORKSPACE_READ permission for the workspace
    */
-  app.get<{ Params: { id: string }; Querystring: { page: number; limit: number; search?: string } }>(
+  app.get<{
+    Params: { id: string };
+    Querystring: { page: number; limit: number; search?: string };
+  }>(
     '/:id/members',
     {
       config: {

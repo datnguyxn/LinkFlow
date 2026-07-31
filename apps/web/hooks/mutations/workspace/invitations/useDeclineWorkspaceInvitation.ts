@@ -12,10 +12,7 @@ export function useDeclineWorkspaceInvitation() {
 
   return useMutation({
     mutationFn: (payload: DeclineInvitationPayload) =>
-      workspaceInvitationService.declineInvitation(
-        payload.workspaceId,
-        payload.token,
-      ),
+      workspaceInvitationService.declineInvitation(payload.workspaceId, payload.token),
 
     onSuccess: async () => {
       await Promise.all([

@@ -23,10 +23,7 @@ interface CreateWorkspaceDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function CreateWorkspaceDialog({
-  open,
-  onOpenChange,
-}: CreateWorkspaceDialogProps) {
+export default function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDialogProps) {
   const [name, setName] = useState('');
 
   const createWorkspace = useCreateWorkspace();
@@ -111,9 +108,7 @@ export default function CreateWorkspaceDialog({
             </div>
 
             <div className="min-w-0">
-              <DialogTitle className="text-lg font-semibold">
-                Create workspace
-              </DialogTitle>
+              <DialogTitle className="text-lg font-semibold">Create workspace</DialogTitle>
 
               <DialogDescription className="mt-1 text-sm">
                 Create a workspace to organize your links and team.
@@ -178,10 +173,7 @@ export default function CreateWorkspaceDialog({
               className="rounded-xl"
               disabled={createWorkspace.isPending || !name.trim()}
             >
-              {createWorkspace.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-
+              {createWorkspace.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create workspace
             </Button>
           </DialogFooter>

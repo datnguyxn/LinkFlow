@@ -11,15 +11,8 @@ export function useUploadWorkspaceLogo(workspaceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      file,
-      logoUrl,
-    }: UpdateWorkspaceLogoPayload) =>
-      workspaceService.updateLogo(
-        workspaceId,
-        file,
-        logoUrl,
-      ),
+    mutationFn: ({ file, logoUrl }: UpdateWorkspaceLogoPayload) =>
+      workspaceService.updateLogo(workspaceId, file, logoUrl),
 
     onSuccess: async () => {
       await queryClient.invalidateQueries({

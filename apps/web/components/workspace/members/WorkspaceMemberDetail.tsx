@@ -2,7 +2,7 @@
 
 'use client';
 
-import { CalendarDays, Mail, Shield, Upload, User, X,  } from 'lucide-react';
+import { CalendarDays, Mail, Shield, Upload, User, X } from 'lucide-react';
 
 import {
   Sheet,

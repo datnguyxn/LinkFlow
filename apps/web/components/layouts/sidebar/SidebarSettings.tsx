@@ -30,11 +30,7 @@ export default function SidebarSettings({
       >
         <Settings className="h-5 w-5 shrink-0" />
 
-        {!collapsed && (
-          <span className="ml-3 font-medium">
-            Settings
-          </span>
-        )}
+        {!collapsed && <span className="ml-3 font-medium">Settings</span>}
       </Link>
     </div>
   );

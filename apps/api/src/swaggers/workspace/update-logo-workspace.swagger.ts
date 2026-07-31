@@ -28,12 +28,7 @@ export const updateWorkspaceLogoSwagger: FastifySchema = {
       }),
     ),
 
-    logoUrl: Type.Optional(
-      Type.Union([
-        Type.String({ format: 'uri' }),
-        Type.Null(),
-      ]),
-    ),
+    logoUrl: Type.Optional(Type.Union([Type.String({ format: 'uri' }), Type.Null()])),
   }),
 
   response: createSwaggerResponse(
@@ -47,17 +42,11 @@ export const updateWorkspaceLogoSwagger: FastifySchema = {
 
       status: Type.Enum(WorkspaceStatus),
 
-      logoUrl: Type.Union([
-        Type.String({ format: 'uri' }),
-        Type.Null(),
-      ]),
+      logoUrl: Type.Union([Type.String({ format: 'uri' }), Type.Null()]),
 
       createdAt: Type.String({ format: 'date-time' }),
       updatedAt: Type.String({ format: 'date-time' }),
-      deletedAt: Type.Union([
-        Type.String({ format: 'date-time' }),
-        Type.Null(),
-      ]),
+      deletedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
     }),
     [400, 401, 403, 404, 413, 415, 500],
   ),

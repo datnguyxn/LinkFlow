@@ -22,7 +22,6 @@ export interface ActivityLog {
   user: ActivityLogUser;
 }
 
-
 export interface Pagination {
   page: number;
   limit: number;

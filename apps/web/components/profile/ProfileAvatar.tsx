@@ -51,7 +51,7 @@ export default function ProfileAvatar() {
       }`}
     >
       <Avatar className="h-24 w-24 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-        <AvatarImage src={preview ? preview : user?.avatarUrl || '/avatars/default-avt.jpg' } />
+        <AvatarImage src={preview ? preview : user?.avatarUrl || '/avatars/default-avt.jpg'} />
 
         <AvatarFallback>
           {user?.fullName

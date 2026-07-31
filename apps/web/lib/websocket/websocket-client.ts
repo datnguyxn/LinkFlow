@@ -6,17 +6,13 @@ type WebSocketMessage = {
   data?: unknown;
 };
 
-type MessageHandler = (
-  message: WebSocketMessage,
-) => void;
+type MessageHandler = (message: WebSocketMessage) => void;
 
 class WebSocketClient {
   private socket: WebSocket | null = null;
   private refreshing = false;
 
-  private reconnectTimer: ReturnType<
-    typeof setTimeout
-  > | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   private reconnectAttempts = 0;
 
@@ -41,40 +37,28 @@ class WebSocketClient {
     // Quan trọng
     this.manuallyDisconnected = false;
 
-    const accessToken =
-      tokenStorage.getAccessToken();
+    const accessToken = tokenStorage.getAccessToken();
 
     if (!accessToken) {
-      console.warn(
-        '[WebSocket] No access token',
-      );
+      console.warn('[WebSocket] No access token');
 
       return;
     }
 
     const wsUrl = new URL(url);
 
-    wsUrl.searchParams.set(
-      'token',
-      accessToken,
-    );
+    wsUrl.searchParams.set('token', accessToken);
 
-    this.socket = new WebSocket(
-      wsUrl.toString(),
-    );
+    this.socket = new WebSocket(wsUrl.toString());
 
     this.socket.onopen = () => {
-      console.log(
-        '[WebSocket] Connected',
-      );
+      console.log('[WebSocket] Connected');
 
       this.reconnectAttempts = 0;
     };
 
     this.socket.onclose = async (event) => {
-      const socket = new WebSocket(
-        wsUrl.toString(),
-      );
+      const socket = new WebSocket(wsUrl.toString());
 
       this.socket = socket;
 
@@ -97,18 +81,13 @@ class WebSocketClient {
         }
 
         if (this.manuallyDisconnected) {
-          console.log(
-            '[WebSocket] Manual disconnect. Stop reconnect.',
-          );
+          console.log('[WebSocket] Manual disconnect. Stop reconnect.');
 
           return;
         }
 
         if (event.code === 1008 || event.code === 4401 || event.code === 1006) {
-
-          console.log(
-            '[WebSocket] Unauthorized. Refreshing access token...',
-          );
+          console.log('[WebSocket] Unauthorized. Refreshing access token...');
           const ok = await this.refreshAccessToken();
 
           if (!ok) {
@@ -116,7 +95,6 @@ class WebSocketClient {
             return;
           }
         }
-
 
         this.reconnect();
       };
@@ -132,34 +110,24 @@ class WebSocketClient {
       return;
     }
 
-    const delay = Math.min(
-      1000 *
-      2 **
-      this.reconnectAttempts,
-      30000,
-    );
+    const delay = Math.min(1000 * 2 ** this.reconnectAttempts, 30000);
 
-    console.log(
-      `[WebSocket] Reconnecting in ${delay}ms`,
-    );
+    console.log(`[WebSocket] Reconnecting in ${delay}ms`);
 
     this.reconnectAttempts++;
 
-    this.reconnectTimer =
-      setTimeout(() => {
-        this.reconnectTimer = null;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
 
-        if (!this.url) {
-          return;
-        }
+      if (!this.url) {
+        return;
+      }
 
-        this.connect(this.url);
-      }, delay);
+      this.connect(this.url);
+    }, delay);
   }
 
-  subscribe(
-    handler: MessageHandler,
-  ) {
+  subscribe(handler: MessageHandler) {
     this.listeners.add(handler);
 
     return () => {
@@ -168,21 +136,13 @@ class WebSocketClient {
   }
 
   send(data: unknown) {
-    if (
-      !this.socket ||
-      this.socket.readyState !==
-      WebSocket.OPEN
-    ) {
-      console.warn(
-        '[WebSocket] Cannot send message. Not connected.',
-      );
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+      console.warn('[WebSocket] Cannot send message. Not connected.');
 
       return;
     }
 
-    this.socket.send(
-      JSON.stringify(data),
-    );
+    this.socket.send(JSON.stringify(data));
   }
 
   disconnect() {
@@ -207,10 +167,7 @@ class WebSocketClient {
   }
 
   isConnected() {
-    return (
-      this.socket?.readyState ===
-      WebSocket.OPEN
-    );
+    return this.socket?.readyState === WebSocket.OPEN;
   }
 
   private async refreshAccessToken() {
@@ -232,5 +189,4 @@ class WebSocketClient {
   }
 }
 
-export const websocketClient =
-  new WebSocketClient();
+export const websocketClient = new WebSocketClient();

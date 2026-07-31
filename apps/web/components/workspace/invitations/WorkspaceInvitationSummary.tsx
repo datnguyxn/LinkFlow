@@ -34,13 +34,9 @@ export default function WorkspaceInvitationSummary({
       </div>
 
       <div>
-        <p className="text-xs uppercase tracking-wide text-slate-500">
-          {label}
-        </p>
+        <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
 
-        <p className="text-2xl font-bold">
-          {value}
-        </p>
+        <p className="text-2xl font-bold">{value}</p>
       </div>
     </div>
   );

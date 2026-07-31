@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Shield,
-  UserRound,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreHorizontal, Shield, UserRound } from 'lucide-react';
 
 import Button from '@/components/ui/button';
 
@@ -37,13 +31,9 @@ export default function WorkspaceMemberTable({
           <UserRound className="h-5 w-5 text-slate-400" />
         </div>
 
-        <h3 className="mt-4 font-medium text-slate-900 dark:text-white">
-          No members found
-        </h3>
+        <h3 className="mt-4 font-medium text-slate-900 dark:text-white">No members found</h3>
 
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Try changing your search.
-        </p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try changing your search.</p>
       </div>
     );
   }
@@ -118,9 +108,7 @@ export default function WorkspaceMemberTable({
                     <div className="inline-flex items-center gap-2">
                       <Shield className="h-4 w-4 text-slate-400" />
 
-                      <span className="text-sm font-medium">
-                        {member.role.name}
-                      </span>
+                      <span className="text-sm font-medium">{member.role.name}</span>
                     </div>
                   </td>
 
@@ -129,14 +117,11 @@ export default function WorkspaceMemberTable({
                   </td>
 
                   <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">
-                    {new Date(member.joinedAt).toLocaleDateString(
-                      'en-US',
-                      {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                    )}
+                    {new Date(member.joinedAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </td>
 
                   <td className="px-5 py-4">
@@ -164,14 +149,8 @@ export default function WorkspaceMemberTable({
       {/* Pagination */}
       <div className="flex items-center justify-between border-t border-slate-200 px-5 py-4 dark:border-slate-800">
         <p className="text-sm text-slate-500">
-          Page{' '}
-          <span className="font-medium text-slate-900 dark:text-white">
-            {page}
-          </span>{' '}
-          of{' '}
-          <span className="font-medium text-slate-900 dark:text-white">
-            {totalPages}
-          </span>
+          Page <span className="font-medium text-slate-900 dark:text-white">{page}</span> of{' '}
+          <span className="font-medium text-slate-900 dark:text-white">{totalPages}</span>
         </p>
 
         <div className="flex items-center gap-2">

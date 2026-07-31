@@ -23,10 +23,7 @@ export const getWorkspaceByIdSwagger: FastifySchema = {
       name: Type.String(),
       slug: Type.String(),
 
-      logoUrl: Type.Union([
-        Type.String({ format: 'uri' }),
-        Type.Null(),
-      ]),
+      logoUrl: Type.Union([Type.String({ format: 'uri' }), Type.Null()]),
 
       role: Type.Object({
         id: Type.String({ format: 'uuid' }),

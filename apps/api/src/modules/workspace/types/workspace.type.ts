@@ -26,9 +26,9 @@ export const workspaceWithRoleAndUser = Prisma.validator<Prisma.WorkspaceDefault
       },
       select: {
         role: true, // Include the role information for the member
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 export type WorkspaceWithRole = Prisma.WorkspaceGetPayload<typeof workspaceWithRole>;

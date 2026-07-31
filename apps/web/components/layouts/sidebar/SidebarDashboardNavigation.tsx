@@ -19,8 +19,7 @@ export default function SidebarDashboardNavigation({
       href="/dashboard"
       className={cn(
         'mb-6 flex items-center rounded-xl px-4 py-3 transition-all',
-        isActive('/dashboard') &&
-          !currentPath.startsWith('/dashboard/')
+        isActive('/dashboard') && !currentPath.startsWith('/dashboard/')
           ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow'
           : `
             text-slate-600
@@ -32,11 +31,7 @@ export default function SidebarDashboardNavigation({
     >
       <Home className="h-5 w-5 shrink-0" />
 
-      {!collapsed && (
-        <span className="ml-3 font-medium">
-          Dashboard
-        </span>
-      )}
+      {!collapsed && <span className="ml-3 font-medium">Dashboard</span>}
     </Link>
   );
 }

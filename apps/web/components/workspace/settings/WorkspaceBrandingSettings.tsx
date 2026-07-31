@@ -19,9 +19,7 @@ interface WorkspaceBrandingSettingsProps {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-export default function WorkspaceBrandingSettings({
-  workspace,
-}: WorkspaceBrandingSettingsProps) {
+export default function WorkspaceBrandingSettings({ workspace }: WorkspaceBrandingSettingsProps) {
   const [logo, setLogo] = useState<File | null>(null);
   const [logoUrl, setLogoUrl] = useState('');
   const [removeLogo, setRemoveLogo] = useState(false);
@@ -58,13 +56,9 @@ export default function WorkspaceBrandingSettings({
    * 3. Image URL
    * 4. Existing workspace logo
    */
-  const previewUrl = removeLogo
-    ? null
-    : filePreviewUrl || logoUrl.trim() || workspace.logoUrl;
+  const previewUrl = removeLogo ? null : filePreviewUrl || logoUrl.trim() || workspace.logoUrl;
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -83,14 +77,17 @@ export default function WorkspaceBrandingSettings({
 
     setLogo(file);
 
-    uploadLogoMutation.mutate({ file, logoUrl: null }, {
-      onSuccess: () => {
-        appToast.success('Workspace logo updated successfully.');
+    uploadLogoMutation.mutate(
+      { file, logoUrl: null },
+      {
+        onSuccess: () => {
+          appToast.success('Workspace logo updated successfully.');
+        },
+        onError: () => {
+          appToast.error('Failed to update workspace logo.');
+        },
       },
-      onError: () => {
-        appToast.error('Failed to update workspace logo.');
-      },
-    });
+    );
 
     // Upload file => clear image URL
     setLogoUrl('');
@@ -98,21 +95,22 @@ export default function WorkspaceBrandingSettings({
     setRemoveLogo(false);
   };
 
-  const handleLogoUrlChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleLogoUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
 
     setLogoUrl(value);
 
-    uploadLogoMutation.mutate({ file: null, logoUrl: value }, {
-      onSuccess: () => {
-        appToast.success('Workspace logo updated successfully.');
+    uploadLogoMutation.mutate(
+      { file: null, logoUrl: value },
+      {
+        onSuccess: () => {
+          appToast.success('Workspace logo updated successfully.');
+        },
+        onError: () => {
+          appToast.error('Failed to update workspace logo.');
+        },
       },
-      onError: () => {
-        appToast.error('Failed to update workspace logo.');
-      },
-    });
+    );
 
     // Image URL => clear uploaded file
     if (value.trim()) {
@@ -133,7 +131,6 @@ export default function WorkspaceBrandingSettings({
         appToast.error('Failed to remove workspace logo.');
       },
     });
-
   };
 
   const logoUndo = workspace.logoUrl;
@@ -156,14 +153,17 @@ export default function WorkspaceBrandingSettings({
   const handleUndoDelete = () => {
     setRemoveLogo(false);
 
-    uploadLogoMutation.mutate({ file: null, logoUrl: logoUndo || workspace.logoUrl }, {
-      onSuccess: () => {
-        appToast.success('Workspace logo restored successfully.');
+    uploadLogoMutation.mutate(
+      { file: null, logoUrl: logoUndo || workspace.logoUrl },
+      {
+        onSuccess: () => {
+          appToast.success('Workspace logo restored successfully.');
+        },
+        onError: () => {
+          appToast.error('Failed to restore workspace logo.');
+        },
       },
-      onError: () => {
-        appToast.error('Failed to restore workspace logo.');
-      },
-    });
+    );
   };
 
   const handleClearLogoUrl = () => {
@@ -194,9 +194,7 @@ export default function WorkspaceBrandingSettings({
     >
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-          Branding
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Branding</h2>
 
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Customize how your workspace looks.
@@ -262,10 +260,7 @@ export default function WorkspaceBrandingSettings({
                 )}
               </div>
             ) : (
-              <WorkspaceAvatar
-                workspace={workspace}
-                size="large"
-              />
+              <WorkspaceAvatar workspace={workspace} size="large" />
             )}
           </div>
         </div>
@@ -344,9 +339,7 @@ export default function WorkspaceBrandingSettings({
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
 
-            <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              or
-            </span>
+            <span className="text-xs font-medium uppercase tracking-wide text-slate-400">or</span>
 
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
           </div>
@@ -443,12 +436,7 @@ export default function WorkspaceBrandingSettings({
                 The workspace logo will be removed when you save.
               </p>
 
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleUndoDelete}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={handleUndoDelete}>
                 Undo
               </Button>
             </div>

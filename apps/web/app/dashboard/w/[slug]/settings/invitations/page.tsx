@@ -12,10 +12,7 @@ import WorkspaceSettingsPageSkeleton from '@/components/workspace/settings/Works
 import WorkspaceInvitationsPage from '@/components/workspace/invitations/WorkspaceInvitationsPage';
 
 export default function WorkspaceInvitationsRoute() {
-  const {
-    currentWorkspace,
-    loading,
-  } = useWorkspaceContext();
+  const { currentWorkspace, loading } = useWorkspaceContext();
 
   if (loading || !currentWorkspace) {
     return <WorkspaceSettingsPageSkeleton />;
@@ -41,13 +38,10 @@ export default function WorkspaceInvitationsRoute() {
           "
         >
           <ArrowLeft className="h-4 w-4" />
-
           Back to workspace settings
         </Link>
 
-        <WorkspaceInvitationsPage
-          workspace={currentWorkspace}
-        />
+        <WorkspaceInvitationsPage workspace={currentWorkspace} />
       </main>
     </div>
   );

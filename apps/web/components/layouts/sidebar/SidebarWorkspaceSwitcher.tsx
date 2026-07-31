@@ -4,13 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
-import {
-  Building2,
-  Check,
-  ChevronDown,
-  Plus,
-  Search,
-} from 'lucide-react';
+import { Building2, Check, ChevronDown, Plus, Search } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -62,35 +56,20 @@ export default function SidebarWorkspaceSwitcher({
      * kể cả khi không match keyword
      */
     const currentWorkspaceItem = currentWorkspace
-      ? workspaces.find(
-          (workspace) =>
-            workspace.id === currentWorkspace.id,
-        )
+      ? workspaces.find((workspace) => workspace.id === currentWorkspace.id)
       : null;
 
     if (
       currentWorkspaceItem &&
-      !matchedWorkspaces.some(
-        (workspace) =>
-          workspace.id === currentWorkspaceItem.id,
-      )
+      !matchedWorkspaces.some((workspace) => workspace.id === currentWorkspaceItem.id)
     ) {
-      return [
-        currentWorkspaceItem,
-        ...matchedWorkspaces,
-      ];
+      return [currentWorkspaceItem, ...matchedWorkspaces];
     }
 
     return matchedWorkspaces;
-  }, [
-    workspaces,
-    currentWorkspace,
-    normalizedSearch,
-  ]);
+  }, [workspaces, currentWorkspace, normalizedSearch]);
 
-  const hasMoreWorkspaces =
-    !normalizedSearch &&
-    workspaces.length > MAX_VISIBLE_WORKSPACES;
+  const hasMoreWorkspaces = !normalizedSearch && workspaces.length > MAX_VISIBLE_WORKSPACES;
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -99,9 +78,7 @@ export default function SidebarWorkspaceSwitcher({
   };
 
   return (
-    <DropdownMenu
-      onOpenChange={handleOpenChange}
-    >
+    <DropdownMenu onOpenChange={handleOpenChange}>
       {/* Current workspace */}
       <DropdownMenuTrigger asChild>
         <button
@@ -126,28 +103,20 @@ export default function SidebarWorkspaceSwitcher({
               dark:bg-slate-900
               dark:hover:border-slate-600
             `,
-            collapsed
-              ? 'justify-center'
-              : 'gap-3',
+            collapsed ? 'justify-center' : 'gap-3',
           )}
         >
-          <WorkspaceAvatar
-            workspace={currentWorkspace}
-            size="large"
-          />
+          <WorkspaceAvatar workspace={currentWorkspace} size="large" />
 
           {!collapsed && (
             <>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                  {currentWorkspace?.name ??
-                    'Select workspace'}
+                  {currentWorkspace?.name ?? 'Select workspace'}
                 </p>
 
                 <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                  {currentWorkspace
-                    ? 'Workspace'
-                    : 'Choose a workspace'}
+                  {currentWorkspace ? 'Workspace' : 'Choose a workspace'}
                 </p>
               </div>
 
@@ -191,17 +160,15 @@ export default function SidebarWorkspaceSwitcher({
         </div>
 
         {/* Search */}
-        {!loading &&
-          workspaces.length >
-            MAX_VISIBLE_WORKSPACES && (
-            <div
-              className="relative mb-2 px-1"
-              onPointerDown={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <Search
-                className="
+        {!loading && workspaces.length > MAX_VISIBLE_WORKSPACES && (
+          <div
+            className="relative mb-2 px-1"
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <Search
+              className="
                   absolute
                   left-3
                   top-1/2
@@ -210,18 +177,18 @@ export default function SidebarWorkspaceSwitcher({
                   -translate-y-1/2
                   text-slate-400
                 "
-              />
+            />
 
-              <input
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                }}
-                onKeyDown={(event) => {
-                  event.stopPropagation();
-                }}
-                placeholder="Search workspaces..."
-                className="
+            <input
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+              }}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+              }}
+              placeholder="Search workspaces..."
+              className="
                   h-10
                   w-full
                   rounded-xl
@@ -241,9 +208,9 @@ export default function SidebarWorkspaceSwitcher({
                   dark:bg-slate-800
                   dark:text-white
                 "
-              />
-            </div>
-          )}
+            />
+          </div>
+        )}
 
         {/* Workspace list */}
         <div className="space-y-1">
@@ -251,9 +218,7 @@ export default function SidebarWorkspaceSwitcher({
             <SidebarWorkspaceListSkeleton />
           ) : filteredWorkspaces.length > 0 ? (
             filteredWorkspaces.map((workspace) => {
-              const isCurrent =
-                currentWorkspace?.id ===
-                workspace.id;
+              const isCurrent = currentWorkspace?.id === workspace.id;
 
               return (
                 <DropdownMenuItem
@@ -290,15 +255,10 @@ export default function SidebarWorkspaceSwitcher({
                         `,
                     )}
                   >
-                    <WorkspaceAvatar
-                      workspace={workspace}
-                      active={isCurrent}
-                    />
+                    <WorkspaceAvatar workspace={workspace} active={isCurrent} />
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {workspace.name}
-                      </p>
+                      <p className="truncate text-sm font-medium">{workspace.name}</p>
 
                       <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                         @{workspace.slug}
@@ -314,9 +274,7 @@ export default function SidebarWorkspaceSwitcher({
             })
           ) : (
             <div className="px-3 py-6 text-center">
-              <p className="text-sm text-slate-500">
-                No workspace found
-              </p>
+              <p className="text-sm text-slate-500">No workspace found</p>
             </div>
           )}
         </div>
@@ -324,10 +282,7 @@ export default function SidebarWorkspaceSwitcher({
         <DropdownMenuSeparator className="my-2" />
 
         {/* Create workspace */}
-        <DropdownMenuItem
-          onClick={onCreateWorkspace}
-          className="cursor-pointer rounded-xl p-3"
-        >
+        <DropdownMenuItem onClick={onCreateWorkspace} className="cursor-pointer rounded-xl p-3">
           <div className="flex items-center gap-3">
             <div
               className="
@@ -348,26 +303,16 @@ export default function SidebarWorkspaceSwitcher({
             </div>
 
             <div>
-              <p className="text-sm font-medium">
-                Create workspace
-              </p>
+              <p className="text-sm font-medium">Create workspace</p>
 
-              <p className="text-xs text-slate-500">
-                Start a new workspace
-              </p>
+              <p className="text-xs text-slate-500">Start a new workspace</p>
             </div>
           </div>
         </DropdownMenuItem>
 
         {/* Manage workspaces */}
-        <DropdownMenuItem
-          asChild
-          className="cursor-pointer rounded-xl p-3"
-        >
-          <Link
-            href="/dashboard/w"
-            className="flex items-center gap-3"
-          >
+        <DropdownMenuItem asChild className="cursor-pointer rounded-xl p-3">
+          <Link href="/dashboard/w" className="flex items-center gap-3">
             <div
               className="
                 flex
@@ -386,13 +331,9 @@ export default function SidebarWorkspaceSwitcher({
             </div>
 
             <div>
-              <p className="text-sm font-medium">
-                Manage workspaces
-              </p>
+              <p className="text-sm font-medium">Manage workspaces</p>
 
-              <p className="text-xs text-slate-500">
-                View and manage all workspaces
-              </p>
+              <p className="text-xs text-slate-500">View and manage all workspaces</p>
             </div>
           </Link>
         </DropdownMenuItem>

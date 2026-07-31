@@ -14,13 +14,9 @@ export default function WorkspaceMemberSummary({
       <Icon className={`h-5 w-5 ${iconClassName}`} />
 
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {label}
-        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
 
-        <p className="text-lg font-bold text-slate-900 dark:text-white">
-          {value}
-        </p>
+        <p className="text-lg font-bold text-slate-900 dark:text-white">{value}</p>
       </div>
     </div>
   );

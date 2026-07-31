@@ -33,11 +33,7 @@ export default function SidebarCollapseButton() {
         dark:hover:bg-slate-700
       "
     >
-      {collapsed ? (
-        <ChevronRight className="h-4 w-4" />
-      ) : (
-        <ChevronLeft className="h-4 w-4" />
-      )}
+      {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
     </button>
   );
 }

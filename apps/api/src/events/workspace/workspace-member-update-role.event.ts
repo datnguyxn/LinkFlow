@@ -2,7 +2,7 @@ export interface WorkspaceMemberRoleUpdatedEvent {
   workspaceId: string;
   workspaceName: string;
   slug: string;
-  
+
   memberId: string;
   userId: string;
 

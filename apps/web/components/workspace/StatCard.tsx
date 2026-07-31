@@ -6,11 +6,7 @@ interface StatCardProps {
   value: string | number;
 }
 
-export default function StatCard({
-  icon: Icon,
-  title,
-  value,
-}: StatCardProps) {
+export default function StatCard({ icon: Icon, title, value }: StatCardProps) {
   return (
     <div
       className="
@@ -29,9 +25,7 @@ export default function StatCard({
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {title}
-          </p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
 
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             {value}

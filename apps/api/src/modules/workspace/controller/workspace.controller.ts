@@ -307,11 +307,11 @@ export class WorkspaceController {
    */
   async updateWorkspaceLogo(
     request: FastifyRequest<{
-      Params: { id: string }, Body: { file: MultipartFile | null, logoUrl: string | null };
+      Params: { id: string };
+      Body: { file: MultipartFile | null; logoUrl: string | null };
     }>,
     reply: FastifyReply,
   ) {
-
     // Extract the user ID from the request object
     const file = (request.body as { file: MultipartFile }).file;
 
@@ -346,8 +346,13 @@ export class WorkspaceController {
     }
 
     // If the workspace logo update is successful, return a success response with the updated workspace
-    return ResponseHandler.success(reply, updatedWorkspace, 'workspace.logoUpdated', HTTP_STATUS.OK);
-  } 
+    return ResponseHandler.success(
+      reply,
+      updatedWorkspace,
+      'workspace.logoUpdated',
+      HTTP_STATUS.OK,
+    );
+  }
 
   /**
    * Handles the deletion of a workspace's logo.

@@ -115,10 +115,7 @@ export class WorkspaceMemberRepository {
         workspaceId,
         userId,
         status: {
-          in: [
-            WorkspaceMemberStatus.LEFT,
-            WorkspaceMemberStatus.REMOVED,
-          ],
+          in: [WorkspaceMemberStatus.LEFT, WorkspaceMemberStatus.REMOVED],
         },
       },
       include: {
@@ -246,34 +243,28 @@ export class WorkspaceMemberRepository {
       workspaceId,
       ...(search
         ? {
-          user: {
-            OR: [
-              {
-                fullName: {
-                  contains: search,
-                  mode: 'insensitive',
+            user: {
+              OR: [
+                {
+                  fullName: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
                 },
-              },
-              {
-                email: {
-                  contains: search,
-                  mode: 'insensitive',
+                {
+                  email: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
                 },
-              },
-            ],
-          },
-        }
+              ],
+            },
+          }
         : {}),
     };
 
     return prisma.$transaction(async (tx) => {
-      const [
-        members,
-        totalItems,
-        active,
-        left,
-        removed,
-      ] = await Promise.all([
+      const [members, totalItems, active, left, removed] = await Promise.all([
         tx.workspaceMember.findMany({
           where,
           include: {
@@ -336,7 +327,6 @@ export class WorkspaceMemberRepository {
       };
     });
   }
-
 
   /**
    * Update a workspace member's information

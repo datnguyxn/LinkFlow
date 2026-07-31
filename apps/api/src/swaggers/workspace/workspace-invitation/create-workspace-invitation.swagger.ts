@@ -44,20 +44,11 @@ export const createWorkspaceInvitationSwagger: FastifySchema = {
 
       expiresAt: Type.String({ format: 'date-time' }),
 
-      revokedAt: Type.Union([
-        Type.String({ format: 'date-time' }),
-        Type.Null(),
-      ]),
+      revokedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
-      rejectedAt: Type.Union([
-        Type.String({ format: 'date-time' }),
-        Type.Null(),
-      ]),
+      rejectedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
-      acceptedAt: Type.Union([
-        Type.String({ format: 'date-time' }),
-        Type.Null(),
-      ]),
+      acceptedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
       createdAt: Type.String({ format: 'date-time' }),
       updatedAt: Type.String({ format: 'date-time' }),

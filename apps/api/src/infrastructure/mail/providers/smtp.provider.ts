@@ -131,7 +131,7 @@ export class SmtpProvider implements MailService {
         data.workspaceName, // The name of the workspace, used in the email template to inform the recipient about the workspace they are being invited to.
         data.roleName, // The name of the role assigned to the recipient in the workspace, used in the email template to inform them about their role.
         invitationUrl, // The URL that the recipient can click to accept the invitation, constructed using the client URL, workspace ID, and invite token.
-        declineUrl // The URL that the recipient can click to decline the invitation, constructed using the client URL, workspace ID, and invite token. 
+        declineUrl, // The URL that the recipient can click to decline the invitation, constructed using the client URL, workspace ID, and invite token.
       ),
     );
   }

@@ -224,14 +224,7 @@ export class MinioStorageService implements StorageService {
    * Note: This method generates a temporary presigned URL that allows access to the specified object for a limited time.
    * The expiration time can be specified in seconds. If not provided, a default expiration time of 1 hour is used.
    */
-  async getPresignedUrl(
-    objectKey: string,
-    expiresIn = 60 * 60,
-  ): Promise<string> {
-    return minioClient.presignedGetObject(
-      process.env.MINIO_BUCKET!,
-      objectKey,
-      expiresIn,
-    );
+  async getPresignedUrl(objectKey: string, expiresIn = 60 * 60): Promise<string> {
+    return minioClient.presignedGetObject(process.env.MINIO_BUCKET!, objectKey, expiresIn);
   }
 }

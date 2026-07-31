@@ -30,7 +30,7 @@ export class WorkspaceService {
     private workspaceMemberRepository = new WorkspaceMemberRepository(),
     private publisher = new WorkspacePublisher(new Publisher()),
     private storageService = new MinioStorageService(),
-  ) { }
+  ) {}
 
   /**
    * Create a new workspace and assign the owner inside a transaction
@@ -133,7 +133,11 @@ export class WorkspaceService {
     await this.requireMember(workspaceId, ownerId);
 
     // Generate a presigned URL for the workspace logo if it exists
-    if (workspace.logoUrl && !workspace.logoUrl.startsWith('http') && !workspace.logoUrl.startsWith('https')) {
+    if (
+      workspace.logoUrl &&
+      !workspace.logoUrl.startsWith('http') &&
+      !workspace.logoUrl.startsWith('https')
+    ) {
       workspace.logoUrl = await this.storageService.getPresignedUrl(workspace.logoUrl, 60 * 60);
     }
 
@@ -352,10 +356,7 @@ export class WorkspaceService {
     const workspace = await this.workspaceRepository.findById(workspaceId);
 
     if (!workspace) {
-      throw new NotFoundError(
-        'workspace.workspaceNotFound',
-        ERROR_CODE.WORKSPACE_NOT_FOUND,
-      );
+      throw new NotFoundError('workspace.workspaceNotFound', ERROR_CODE.WORKSPACE_NOT_FOUND);
     }
 
     // 2. Validate workspace owner
@@ -391,27 +392,18 @@ export class WorkspaceService {
 
     // 5. Make sure there is something to update
     if (!newLogoUrl) {
-      throw new BadRequestError(
-        'workspace.logoRequired',
-        ERROR_CODE.INVALID_REQUEST,
-      );
+      throw new BadRequestError('workspace.logoRequired', ERROR_CODE.INVALID_REQUEST);
     }
 
     // 6. Update workspace
-    const updatedWorkspace = await this.workspaceRepository.update(
-      workspaceId,
-      {
-        logoUrl: newLogoUrl,
-        updatedAt: new Date(),
-      },
-    );
+    const updatedWorkspace = await this.workspaceRepository.update(workspaceId, {
+      logoUrl: newLogoUrl,
+      updatedAt: new Date(),
+    });
 
     // 7. Delete old logo from storage
     if (oldLogoUrl && oldLogoUrl !== newLogoUrl) {
-      const oldObjectKey = oldLogoUrl
-        .split('/')
-        .slice(-2)
-        .join('/');
+      const oldObjectKey = oldLogoUrl.split('/').slice(-2).join('/');
 
       await this.storageService.deleteFile(oldObjectKey);
     }
@@ -445,19 +437,12 @@ export class WorkspaceService {
    * @throws NotFoundError if the workspace does not exist
    * @throws ForbiddenError if the user is not the owner of the workspace
    */
-  async deleteWorkspaceLogo(
-    workspaceId: string,
-    ownerId: string,
-    ipAddress?: string | null,
-  ) {
+  async deleteWorkspaceLogo(workspaceId: string, ownerId: string, ipAddress?: string | null) {
     // 1. Validate workspace
     const workspace = await this.workspaceRepository.findById(workspaceId);
 
     if (!workspace) {
-      throw new NotFoundError(
-        'workspace.workspaceNotFound',
-        ERROR_CODE.WORKSPACE_NOT_FOUND,
-      );
+      throw new NotFoundError('workspace.workspaceNotFound', ERROR_CODE.WORKSPACE_NOT_FOUND);
     }
 
     // 2. Validate workspace owner
@@ -467,13 +452,10 @@ export class WorkspaceService {
     const oldLogoUrl = workspace.logoUrl;
 
     // 3. Remove logo URL from database
-    const updatedWorkspace = await this.workspaceRepository.update(
-      workspaceId,
-      {
-        logoUrl: null,
-        updatedAt: new Date(),
-      },
-    );
+    const updatedWorkspace = await this.workspaceRepository.update(workspaceId, {
+      logoUrl: null,
+      updatedAt: new Date(),
+    });
 
     // 4. Delete uploaded logo from MinIO if applicable
     if (oldLogoUrl && !oldLogoUrl.startsWith('http') && !oldLogoUrl.startsWith('https')) {

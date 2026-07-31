@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 
-import {
-  AlertTriangle,
-  Trash2,
-} from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -34,22 +31,17 @@ interface Props {
   workspace: WorkspaceDetail;
 }
 
-export default function WorkspaceDangerZone({
-  workspace,
-}: Props) {
+export default function WorkspaceDangerZone({ workspace }: Props) {
   const [open, setOpen] = useState(false);
 
   const router = useRouter();
 
-  const deleteWorkspaceMutation =
-    useDeleteWorkspace(workspace.id);
+  const deleteWorkspaceMutation = useDeleteWorkspace(workspace.id);
 
   const handleDeleteWorkspace = () => {
     deleteWorkspaceMutation.mutate(undefined, {
       onSuccess: () => {
-        appToast.success(
-          'Workspace deleted successfully.',
-        );
+        appToast.success('Workspace deleted successfully.');
 
         setOpen(false);
 
@@ -57,19 +49,13 @@ export default function WorkspaceDangerZone({
       },
 
       onError: () => {
-        appToast.error(
-          'Failed to delete workspace.',
-        );
+        appToast.error('Failed to delete workspace.');
       },
     });
   };
 
   return (
-    <PermissionGuard
-      permission={
-        WORKSPACE_PERMISSION.WORKSPACE_DELETE
-      }
-    >
+    <PermissionGuard permission={WORKSPACE_PERMISSION.WORKSPACE_DELETE}>
       <>
         <section
           className="
@@ -83,24 +69,17 @@ export default function WorkspaceDangerZone({
           "
         >
           <div className="border-b border-red-200 p-6 dark:border-red-900/50">
-            <h2 className="text-lg font-semibold text-red-600">
-              Danger zone
-            </h2>
+            <h2 className="text-lg font-semibold text-red-600">Danger zone</h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Irreversible and destructive actions.
-            </p>
+            <p className="mt-1 text-sm text-slate-500">Irreversible and destructive actions.</p>
           </div>
 
           <div className="flex items-center justify-between gap-6 p-6">
             <div>
-              <h3 className="font-medium">
-                Delete this workspace
-              </h3>
+              <h3 className="font-medium">Delete this workspace</h3>
 
               <p className="mt-1 text-sm text-slate-500">
-                Once deleted, this workspace and all
-                related data cannot be recovered.
+                Once deleted, this workspace and all related data cannot be recovered.
               </p>
             </div>
 
@@ -131,10 +110,7 @@ export default function WorkspaceDangerZone({
           </div>
         </section>
 
-        <AlertDialog
-          open={open}
-          onOpenChange={setOpen}
-        >
+        <AlertDialog open={open} onOpenChange={setOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <div className="mb-2 flex justify-center">
@@ -155,16 +131,11 @@ export default function WorkspaceDangerZone({
                 </div>
               </div>
 
-              <AlertDialogTitle className="text-center">
-                Delete workspace?
-              </AlertDialogTitle>
+              <AlertDialogTitle className="text-center">Delete workspace?</AlertDialogTitle>
 
               <AlertDialogDescription className="text-center">
                 You are about to permanently delete
-                <span className="font-semibold">
-                  {' '}
-                  {workspace.name}
-                </span>
+                <span className="font-semibold"> {workspace.name}</span>
                 .
                 <br />
                 This action cannot be undone.
@@ -172,11 +143,7 @@ export default function WorkspaceDangerZone({
             </AlertDialogHeader>
 
             <AlertDialogFooter>
-              <AlertDialogCancel
-                disabled={
-                  deleteWorkspaceMutation.isPending
-                }
-              >
+              <AlertDialogCancel disabled={deleteWorkspaceMutation.isPending}>
                 Cancel
               </AlertDialogCancel>
 
@@ -185,18 +152,14 @@ export default function WorkspaceDangerZone({
                   event.preventDefault();
                   handleDeleteWorkspace();
                 }}
-                disabled={
-                  deleteWorkspaceMutation.isPending
-                }
+                disabled={deleteWorkspaceMutation.isPending}
                 className="
                   bg-red-600
                   hover:bg-red-700
                   focus:ring-red-600
                 "
               >
-                {deleteWorkspaceMutation.isPending
-                  ? 'Deleting...'
-                  : 'Delete workspace'}
+                {deleteWorkspaceMutation.isPending ? 'Deleting...' : 'Delete workspace'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

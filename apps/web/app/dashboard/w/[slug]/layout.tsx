@@ -12,9 +12,5 @@ export default async function WorkspaceLayout({
 }) {
   const { slug } = await params;
 
-  return (
-    <WorkspaceProvider slug={slug}>
-      {children}
-    </WorkspaceProvider>
-  );
+  return <WorkspaceProvider slug={slug}>{children}</WorkspaceProvider>;
 }

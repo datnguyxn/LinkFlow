@@ -1,4 +1,4 @@
-import Link from "next/dist/client/link";
+import Link from 'next/dist/client/link';
 
 export default function ManagementCard({
   icon: Icon,
@@ -30,7 +30,8 @@ export default function ManagementCard({
         dark:hover:border-blue-700
       "
     >
-      <div className="
+      <div
+        className="
         mb-4
         flex
         h-11
@@ -45,17 +46,14 @@ export default function ManagementCard({
         group-hover:text-white
         dark:bg-blue-500/10
         dark:text-blue-400
-      ">
+      "
+      >
         <Icon className="h-5 w-5" />
       </div>
 
-      <h3 className="font-semibold">
-        {title}
-      </h3>
+      <h3 className="font-semibold">{title}</h3>
 
-      <p className="mt-2 text-sm text-slate-500">
-        {description}
-      </p>
+      <p className="mt-2 text-sm text-slate-500">{description}</p>
     </Link>
   );
 }

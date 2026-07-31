@@ -2,9 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { workspaceMemberService } from '@/services/workspace-member.service';
 
-export function useLeaveWorkspaceMember(
-  workspaceId: string,
-) {
+export function useLeaveWorkspaceMember(workspaceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -22,6 +20,6 @@ export function useLeaveWorkspaceMember(
           queryKey: ['workspaces'],
         }),
       ]);
-    }
+    },
   });
 }

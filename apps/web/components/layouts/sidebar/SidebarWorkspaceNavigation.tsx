@@ -2,12 +2,7 @@
 
 import Link from 'next/link';
 
-import {
-  BarChart3,
-  Building2,
-  Link as LinkIcon,
-  QrCode,
-} from 'lucide-react';
+import { BarChart3, Building2, Link as LinkIcon, QrCode } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -79,11 +74,7 @@ export default function SidebarWorkspaceNavigation({
             >
               <Icon className="h-5 w-5 shrink-0" />
 
-              {!collapsed && (
-                <span className="ml-3 font-medium">
-                  {menu.name}
-                </span>
-              )}
+              {!collapsed && <span className="ml-3 font-medium">{menu.name}</span>}
             </Link>
           );
         })}

@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  CheckCircle2,
-  Clock3,
-  Mail,
-  OctagonX,
-  Search,
-  UserPlus,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle2, Clock3, Mail, OctagonX, Search, UserPlus, XCircle } from 'lucide-react';
 
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/Input';
@@ -30,21 +22,14 @@ interface Props {
 
 const PAGE_SIZE = 10;
 
-export default function WorkspaceInvitationsPage({
-  workspace,
-}: Props) {
+export default function WorkspaceInvitationsPage({ workspace }: Props) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [inviteOpen, setInviteOpen] = useState(false);
 
-  const [selectedInvitationId, setSelectedInvitationId] =
-    useState<string | null>(null);
+  const [selectedInvitationId, setSelectedInvitationId] = useState<string | null>(null);
 
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useWorkspaceInvitations(
+  const { data, isLoading, isError } = useWorkspaceInvitations(
     workspace.id,
     page,
     PAGE_SIZE,
@@ -61,19 +46,12 @@ export default function WorkspaceInvitationsPage({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">
-              Invitations
-            </h1>
+            <h1 className="text-2xl font-bold">Invitations</h1>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Manage workspace invitations.
-            </p>
+            <p className="mt-1 text-sm text-slate-500">Manage workspace invitations.</p>
           </div>
 
-          <Button
-            size="sm"
-            onClick={() => setInviteOpen(true)}
-          >
+          <Button size="sm" onClick={() => setInviteOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Invite member
           </Button>
@@ -149,13 +127,9 @@ export default function WorkspaceInvitationsPage({
             "
           >
             <div>
-              <h2 className="font-semibold">
-                Invitations
-              </h2>
+              <h2 className="font-semibold">Invitations</h2>
 
-              <p className="text-xs text-slate-500">
-                {pagination?.totalItems ?? 0} invitations
-              </p>
+              <p className="text-xs text-slate-500">{pagination?.totalItems ?? 0} invitations</p>
             </div>
 
             <div className="relative w-64">
@@ -188,22 +162,14 @@ export default function WorkspaceInvitationsPage({
             <WorkspaceInvitationTable
               invitations={invitations}
               page={pagination?.page ?? 1}
-              totalPages={
-                pagination?.totalPages ?? 1
-              }
+              totalPages={pagination?.totalPages ?? 1}
               onPageChange={setPage}
-              onSelectInvitation={(invitation) =>
-                setSelectedInvitationId(
-                  invitation.id,
-                )
-              }
+              onSelectInvitation={(invitation) => setSelectedInvitationId(invitation.id)}
             />
           )}
 
           {isError && (
-            <div className="p-8 text-center text-red-500">
-              Failed to load invitations.
-            </div>
+            <div className="p-8 text-center text-red-500">Failed to load invitations.</div>
           )}
         </div>
       </div>
@@ -211,9 +177,7 @@ export default function WorkspaceInvitationsPage({
       <WorkspaceInvitationDetail
         workspaceId={workspace.id}
         invitationId={selectedInvitationId}
-        onClose={() =>
-          setSelectedInvitationId(null)
-        }
+        onClose={() => setSelectedInvitationId(null)}
       />
 
       <InviteMemberDialog

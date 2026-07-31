@@ -11,11 +11,7 @@ import Input from '@/components/ui/Input';
 import { appToast } from '@/lib/toast';
 import { useUpdateWorkspace } from '@/hooks/mutations/workspace/useUpdateWorkspace';
 
-export default function WorkspaceGeneralSettings({
-  workspace,
-}: {
-  workspace: WorkspaceDetail;
-}) {
+export default function WorkspaceGeneralSettings({ workspace }: { workspace: WorkspaceDetail }) {
   const [name, setName] = useState(workspace.name);
 
   const updateWorkspace = useUpdateWorkspace(workspace.id);
@@ -24,9 +20,7 @@ export default function WorkspaceGeneralSettings({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      appToast.error(
-        'Workspace name is required',
-      );
+      appToast.error('Workspace name is required');
 
       return;
     }
@@ -34,20 +28,15 @@ export default function WorkspaceGeneralSettings({
     try {
       setSaving(true);
 
-      TODO:
-      await updateWorkspace.mutateAsync({
-        name
+      TODO: await updateWorkspace.mutateAsync({
+        name,
       });
 
-      appToast.success(
-        'Workspace settings updated',
-      );
+      appToast.success('Workspace settings updated');
     } catch (error) {
       console.error(error);
 
-      appToast.error(
-        'Failed to update workspace',
-      );
+      appToast.error('Failed to update workspace');
     } finally {
       setSaving(false);
     }
@@ -67,36 +56,26 @@ export default function WorkspaceGeneralSettings({
       "
     >
       <div className="mb-6">
-        <h2 className="text-lg font-semibold">
-          General
-        </h2>
+        <h2 className="text-lg font-semibold">General</h2>
 
-        <p className="mt-1 text-sm text-slate-500">
-          Update your workspace basic information.
-        </p>
+        <p className="mt-1 text-sm text-slate-500">Update your workspace basic information.</p>
       </div>
 
       <div className="space-y-5">
         {/* Name */}
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Workspace name
-          </label>
+          <label className="mb-2 block text-sm font-medium">Workspace name</label>
 
           <Input
             value={name}
-            onChange={(event) =>
-              setName(event.target.value)
-            }
+            onChange={(event) => setName(event.target.value)}
             placeholder="My workspace"
           />
         </div>
 
         {/* Slug */}
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Workspace slug
-          </label>
+          <label className="mb-2 block text-sm font-medium">Workspace slug</label>
 
           <div className="flex items-center">
             <span
@@ -117,19 +96,12 @@ export default function WorkspaceGeneralSettings({
               /w
             </span>
 
-            <Input
-              value={workspace.slug}
-              disabled
-              className="rounded-l-none"
-            />
+            <Input value={workspace.slug} disabled className="rounded-l-none" />
           </div>
         </div>
 
         <div className="flex justify-end border-t border-slate-200 pt-5 dark:border-slate-800">
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-          >
+          <Button onClick={handleSave} disabled={saving}>
             <Save className="mr-2 h-4 w-4" />
 
             {saving ? 'Saving...' : 'Save changes'}

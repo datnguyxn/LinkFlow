@@ -35,11 +35,8 @@ export default function UpdateMemberRoleDialog({ open, onOpenChange, workspaceId
   const [selectedRoleId, setSelectedRoleId] = useState(member?.role.id ?? '');
 
   const availableRoles = useMemo(() => {
-    return roles.filter(
-      (role) => role.name !== 'OWNER',
-    );
+    return roles.filter((role) => role.name !== 'OWNER');
   }, [roles]);
-
 
   const handleSubmit = async () => {
     if (!member) return;

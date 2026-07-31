@@ -40,20 +40,14 @@ export const listWorkspaceMembersSwagger: FastifySchema = {
           joinedAt: Type.String({ format: 'date-time' }),
           updatedAt: Type.String({ format: 'date-time' }),
 
-          deletedAt: Type.Union([
-            Type.String({ format: 'date-time' }),
-            Type.Null(),
-          ]),
+          deletedAt: Type.Union([Type.String({ format: 'date-time' }), Type.Null()]),
 
           user: Type.Object({
             id: Type.String({ format: 'uuid' }),
             fullName: Type.String(),
             email: Type.String({ format: 'email' }),
 
-            avatarUrl: Type.Union([
-              Type.String({ format: 'uri' }),
-              Type.Null(),
-            ]),
+            avatarUrl: Type.Union([Type.String({ format: 'uri' }), Type.Null()]),
           }),
 
           role: Type.Object({

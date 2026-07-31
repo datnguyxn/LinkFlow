@@ -32,7 +32,7 @@ export class UserService {
     private storageService: MinioStorageService = new MinioStorageService(),
     private oauthRepository: OAuthRepository = new OAuthRepository(),
     private userPublisher = new UserPublisher(new Publisher()),
-  ) { }
+  ) {}
 
   /**
    * Update user profile information
@@ -183,7 +183,7 @@ export class UserService {
 
     if (user.avatarUrl) {
       if (!user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('https')) {
-        user.avatarUrl = await this.storageService.getPresignedUrl(user.avatarUrl, 60 * 60)
+        user.avatarUrl = await this.storageService.getPresignedUrl(user.avatarUrl, 60 * 60);
       }
     }
 
@@ -253,7 +253,6 @@ export class UserService {
     await this.userPublisher.userAvatarUpdated(event);
 
     user.avatarUrl = await this.storageService.getPresignedUrl(objectKey, 60 * 60); // Generate a presigned URL for the new logo
-
 
     // Return the public URL of the uploaded avatar
     return {

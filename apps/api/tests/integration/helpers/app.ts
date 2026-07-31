@@ -1,6 +1,5 @@
 import { buildApp } from '../../../src/app.js';
 
-
 export async function createTestApp() {
   const app = await buildApp({
     enableRabbitMQ: true,
@@ -12,9 +11,7 @@ export async function createTestApp() {
     enableJobs: false,
   });
 
-
   await app.ready();
-
 
   return app;
 }

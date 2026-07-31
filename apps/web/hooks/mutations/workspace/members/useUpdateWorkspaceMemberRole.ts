@@ -2,14 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { workspaceMemberService } from '@/services/workspace-member.service';
 
-export function useUpdateWorkspaceMemberRole(
-  workspaceId: string,
-  memberId: string,
-) {
+export function useUpdateWorkspaceMemberRole(workspaceId: string, memberId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (roleId: string) => workspaceMemberService.updateMemberRole(workspaceId, memberId, roleId),
+    mutationFn: (roleId: string) =>
+      workspaceMemberService.updateMemberRole(workspaceId, memberId, roleId),
 
     onSuccess: async () => {
       await Promise.all([
@@ -23,6 +21,6 @@ export function useUpdateWorkspaceMemberRole(
           queryKey: ['workspaces'],
         }),
       ]);
-    }
+    },
   });
 }

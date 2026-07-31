@@ -107,7 +107,12 @@ export class WorkspaceMemberController {
     const { page = 1, limit = 10, search } = request.query;
 
     // Call the listWorkspaceMembers method of the WorkspaceMemberService to retrieve the list of members for the specified workspace.
-    const response = await this.workspaceMemberService.listWorkspaceMembers(workspaceId, page, limit, search);
+    const response = await this.workspaceMemberService.listWorkspaceMembers(
+      workspaceId,
+      page,
+      limit,
+      search,
+    );
 
     // If the listWorkspaceMembers method returns a falsy value (indicating failure), return an error response with a BAD_REQUEST status and an appropriate error message.
     if (!response) {

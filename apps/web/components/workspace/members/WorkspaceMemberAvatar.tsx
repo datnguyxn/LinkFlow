@@ -5,10 +5,9 @@ export default function WorkspaceMemberAvatar({
   name,
   avatarUrl,
 }: {
-  name: string,
+  name: string;
   avatarUrl?: string | null;
 }) {
-
   return (
     <div
       className="
@@ -28,9 +27,23 @@ export default function WorkspaceMemberAvatar({
       "
     >
       {avatarUrl ? (
-        <Image src={avatarUrl} alt={name} width={40} height={40} className="h-full w-full rounded-full object-cover" />
+        <Image
+          src={avatarUrl}
+          alt={name}
+          width={40}
+          height={40}
+          className="h-full w-full rounded-full object-cover"
+        />
       ) : (
-        <span><Image src = "/avatars/default-avt.jpg" alt={name} width={40} height={40} className="h-full w-full rounded-full object-cover" /></span>
+        <span>
+          <Image
+            src="/avatars/default-avt.jpg"
+            alt={name}
+            width={40}
+            height={40}
+            className="h-full w-full rounded-full object-cover"
+          />
+        </span>
       )}
     </div>
   );
