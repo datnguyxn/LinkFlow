@@ -215,43 +215,4 @@ export class UserController {
       request.t('user.avatar.uploadedSuccessfully'),
     );
   }
-
-  /**
-   * Handle request to fetch the user's avatar
-   * Flow:
-   * 1. Extract user ID from request parameters
-   * 2. Call service to fetch user avatar
-   * 3. Return error if avatar is not found
-   * 4. Return success response with avatar data
-   *
-   * @param request - FastifyRequest object containing request data
-   * @param reply - FastifyReply object for sending responses
-   * @returns - A promise that resolves to the HTTP response
-   *
-   * @throws NotFoundError if the avatar is not found
-   */
-  async getMyAvatar(request: FastifyRequest, reply: FastifyReply) {
-    // Extract the user ID from the authenticated request
-    const id = request.user.id;
-
-    // Call the service to fetch the user's avatar data
-    const avatarData = await this.userService.getMyAvatar(id);
-
-    // Check if the avatar data is found; if not, return a not found error
-    if (!avatarData) {
-      return ResponseHandler.success(
-        reply,
-        null,
-        request.t('user.avatar.notFound'),
-        HTTP_STATUS.NO_CONTENT,
-      );
-    }
-
-    reply.header(
-      'Content-Type',
-      avatarData.metadata.metaData['content-type'] ?? 'application/octet-stream',
-    );
-
-    return reply.send(avatarData.stream);
-  }
 }

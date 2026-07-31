@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import type { AnalyticsOverviewCard } from '@/types/analytics';
+import type { AnalyticsOverviewCard } from '@/types/analytics.type';
 
 interface Props {
   data: AnalyticsOverviewCard;

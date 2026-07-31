@@ -4,7 +4,7 @@ import { hashPassword, comparePassword } from '../../../utils/password.util.ts';
 import { ConflictError } from '../../../common/errors/index.ts';
 import { ERROR_CODE } from '../../../common/constants/index.ts';
 import type { MultipartFile } from '@fastify/multipart';
-import { validateAvatar } from '../validator/image.validator.ts';
+import { validateImage } from '../validator/image.validator.ts';
 import { MinioStorageService, STORAGE_FOLDER } from '../../../infrastructure/storage/index.ts';
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
@@ -32,7 +32,7 @@ export class UserService {
     private storageService: MinioStorageService = new MinioStorageService(),
     private oauthRepository: OAuthRepository = new OAuthRepository(),
     private userPublisher = new UserPublisher(new Publisher()),
-  ) {}
+  ) { }
 
   /**
    * Update user profile information
@@ -181,6 +181,12 @@ export class UserService {
 
     const provider = await this.oauthRepository.findByUserId(userId);
 
+    if (user.avatarUrl) {
+      if (!user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('https')) {
+        user.avatarUrl = await this.storageService.getPresignedUrl(user.avatarUrl, 60 * 60)
+      }
+    }
+
     return { user, provider: provider[0]?.provider || 'LOCAL' };
   }
 
@@ -204,7 +210,7 @@ export class UserService {
     const oldAvatarUrl = user.avatarUrl;
 
     // Validate the avatar file (e.g., check file type, size)
-    const buffer = await validateAvatar(avatarFile);
+    const buffer = await validateImage(avatarFile);
 
     // Generate a unique file name and folder path for the avatar
     const fileName = `${randomUUID()}${extname(avatarFile.filename)}`;
@@ -246,39 +252,12 @@ export class UserService {
     // Publish the avatar update event to RabbitMQ
     await this.userPublisher.userAvatarUpdated(event);
 
+    user.avatarUrl = await this.storageService.getPresignedUrl(objectKey, 60 * 60); // Generate a presigned URL for the new logo
+
+
     // Return the public URL of the uploaded avatar
     return {
-      objectKey,
+      avatarUrl: user.avatarUrl,
     };
-  }
-
-  /**
-   * Fetch user avatar
-   * @param userId - The unique ID of the user whose avatar is to be fetched
-   * @returns An object containing the file stream and metadata of the user's avatar
-   * @throws ConflictError if the user or avatar is not found
-   */
-  async getMyAvatar(userId: string) {
-    // Check if the user exists before attempting to fetch the avatar
-    const user = await this.userRepository.findById(userId);
-
-    // If the user does not exist, throw a ConflictError
-    if (!user) {
-      throw new ConflictError('user.userNotFound', ERROR_CODE.NOT_FOUND);
-    }
-
-    // If the user does not have an avatar, throw a ConflictError
-    if (!user.avatarUrl) {
-      return null;
-    }
-
-    // Fetch the avatar file stream and metadata from the storage service
-    const stream = await this.storageService.getFileStream(user.avatarUrl);
-
-    // Fetch the metadata of the avatar file from the storage service
-    const metadata = await this.storageService.getFileMetadata(user.avatarUrl);
-
-    // Return the file stream and metadata of the user's avatar
-    return { stream, metadata };
   }
 }

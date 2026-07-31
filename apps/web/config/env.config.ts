@@ -23,6 +23,7 @@ export function loadEnv(): Env {
     NEXT_PUBLIC_DEFAULT_TIMEZONE: process.env.NEXT_PUBLIC_DEFAULT_TIMEZONE,
     NEXT_PUBLIC_DEFAULT_LANGUAGE: process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE,
     NEXT_PUBLIC_QR_SIZE: process.env.NEXT_PUBLIC_QR_SIZE,
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
   });
 
   if (!result.success) {

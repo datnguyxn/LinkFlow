@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useUpdateProfile } from '@/hooks/mutations/user/useUpdateProfile';
 
 export default function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
@@ -11,7 +11,7 @@ export default function ThemeToggle() {
 
   const handleThemeChange = async () => {
     const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-    console.log('CHANGE THEME');
+    
     // đổi UI ngay
     setTheme(nextTheme);
 

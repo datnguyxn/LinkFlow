@@ -4,15 +4,6 @@ const prisma = new PrismaClient();
 
 const permissions = [
   // ===========================
-  // User
-  // ===========================
-  'user.profile.read',
-  'user.profile.update',
-  'user.password.update',
-  'user.avatar.upload',
-  'user.account.delete',
-
-  // ===========================
   // Workspace
   // ===========================
   'workspace.read',
@@ -65,6 +56,8 @@ const permissions = [
   // Analytics
   // ===========================
   'analytics.read',
+  'analytics.export',
+  'analytics.delete',
 
   // ===========================
   // API Key
@@ -84,6 +77,7 @@ const permissions = [
   // ===========================
   'billing.read',
   'billing.update',
+  'billing.cancel',
 ];
 
 export async function seedPermissions() {

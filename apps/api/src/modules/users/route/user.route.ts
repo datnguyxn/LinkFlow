@@ -134,24 +134,4 @@ export const userRoutes = async (app: FastifyInstance) => {
     },
     controller.uploadAvatar.bind(controller),
   );
-
-  /**
-   * GET /me/avatar
-   *
-   * Features:
-   * - Fetch the avatar of the currently authenticated user
-   * - Rate limiting to prevent abuse
-   */
-  app.get(
-    '/me/avatar',
-    {
-      config: {
-        rateLimit: {
-          max: 20, // Maximum 20 requests
-          timeWindow: '1 minute', // Per minute
-        },
-      },
-    },
-    controller.getMyAvatar.bind(controller),
-  );
 };

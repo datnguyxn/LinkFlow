@@ -2,7 +2,7 @@
 
 import { useTheme } from 'next-themes';
 
-import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useUpdateProfile } from '@/hooks/mutations/user/useUpdateProfile';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export function useAppTheme() {

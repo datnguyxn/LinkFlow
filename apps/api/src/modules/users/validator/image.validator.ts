@@ -10,29 +10,29 @@ import {
 
 import { BadRequestError } from '../../../common/errors/index.ts';
 
-export async function validateAvatar(file: MultipartFile) {
+export async function validateImage(file: MultipartFile) {
   if (!file) {
-    throw new BadRequestError('user.avatar.fileRequired', ERROR_CODE.FILE_REQUIRED);
+    throw new BadRequestError('image.fileRequired', ERROR_CODE.FILE_REQUIRED);
   }
 
   if (!ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
-    throw new BadRequestError('user.avatar.invalidType', ERROR_CODE.INVALID_FILE_TYPE);
+    throw new BadRequestError('image.invalidType', ERROR_CODE.INVALID_FILE_TYPE);
   }
 
   const ext = extname(file.filename).toLowerCase();
 
   if (!ALLOWED_IMAGE_EXTENSIONS.includes(ext)) {
-    throw new BadRequestError('user.avatar.invalidExtension', ERROR_CODE.INVALID_FILE_EXTENSION);
+    throw new BadRequestError('image.invalidExtension', ERROR_CODE.INVALID_FILE_EXTENSION);
   }
 
   const buffer = await file.toBuffer();
 
   if (buffer.length === 0) {
-    throw new BadRequestError('user.avatar.emptyFile', ERROR_CODE.EMPTY_FILE);
+    throw new BadRequestError('image.emptyFile', ERROR_CODE.EMPTY_FILE);
   }
 
   if (buffer.length > MAX_AVATAR_SIZE) {
-    throw new BadRequestError('user.avatar.fileTooLarge', ERROR_CODE.FILE_TOO_LARGE);
+    throw new BadRequestError('image.fileTooLarge', ERROR_CODE.FILE_TOO_LARGE);
   }
 
   return buffer;

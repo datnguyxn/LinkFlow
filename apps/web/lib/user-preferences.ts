@@ -1,5 +1,5 @@
 import i18n, { LANGUAGE_STORAGE_KEY } from '@/i18n';
-import type { UserProfile } from '@/types/auth';
+import type { UserProfile } from '@/types/auth.type';
 
 export function applyUserPreferences(user: UserProfile, setTheme: (theme: string) => void) {
   const theme = user.theme == 'LIGHT' ? 'light' : user.theme == 'SYSTEM' ? 'system' : 'dark';

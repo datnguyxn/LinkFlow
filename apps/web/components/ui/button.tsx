@@ -5,11 +5,11 @@ import { cn } from '@/lib/utils';
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  size?: 'default' | 'sm' | 'lg' | 'icon' | 'icon-sm';
   asChild?: boolean;
 }
 
-export default function Button({ loading, children, className, variant, ...props }: Props) {
+export default function Button({ loading, children, className, variant, size, ...props }: Props) {
   return (
     <button
       disabled={loading}
@@ -36,6 +36,10 @@ export default function Button({ loading, children, className, variant, ...props
         variant === 'link' && 'bg-transparent text-blue-600 hover:underline dark:text-blue-400',
         variant === 'destructive' &&
           'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600',
+        size === 'sm' && 'h-10 px-4 py-2 text-sm',
+        size === 'lg' && 'h-16 px-6 py-3 text-lg',
+        size === 'icon' && 'h-10 w-10 p-0',
+        size === 'icon-sm' && 'h-8 w-8 p-0',
         className,
       )}
       {...props}

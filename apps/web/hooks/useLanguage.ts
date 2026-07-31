@@ -2,7 +2,7 @@
 
 import i18n, { LANGUAGE_STORAGE_KEY } from '@/i18n';
 
-import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useUpdateProfile } from '@/hooks/mutations/user/useUpdateProfile';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export function useLanguage() {

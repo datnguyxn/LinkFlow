@@ -32,6 +32,8 @@ export const envSchema = z.object({
   NEXT_PUBLIC_DEFAULT_LANGUAGE: z.string(),
 
   NEXT_PUBLIC_QR_SIZE: z.coerce.number().positive(),
+
+  NEXT_PUBLIC_WS_URL: z.string().url(),
 });
 
 export type Env = z.infer<typeof envSchema>;
