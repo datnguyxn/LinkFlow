@@ -12,3 +12,4 @@ export * from '../templates/workspace-member-role-updated.template.ts';
 export * from '../templates/welcome-email.template.ts';
 export * from '../templates/workspace-member-left-owner.template.ts';
 export * from '../templates/workspace-member-removed.template.ts';
+export * from '../templates/workspace-delete.template.ts';

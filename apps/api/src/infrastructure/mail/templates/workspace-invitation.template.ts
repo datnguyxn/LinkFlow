@@ -6,40 +6,47 @@ export function workspaceInvitationTemplate(
   inviterName: string,
   workspaceName: string,
   roleName: string,
-  url: string,
+  urlAccept: string,
+  urlDecline: string,
 ) {
   return emailLayout(`
+    <h2>Hello ${name},</h2>
 
-<h2>Hello ${name},</h2>
+    <p>
+      <strong>${inviterName}</strong> has invited you to join the workspace
+      <strong>${workspaceName}</strong> on LinkFlow.
+    </p>
 
-<br>
+    <p>
+      You have been invited to join as
+      <strong>${roleName}</strong>.
+    </p>
 
-<p>
-<strong>${inviterName}</strong> has invited you to join the workspace
-<strong>${workspaceName}</strong> on LinkFlow.
-</p>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:32px 0;">
+      <tr>
+        <td style="padding-right:12px;">
+          ${emailButton('Accept Invitation', urlAccept)}
+        </td>
 
-<p>
-You have been invited to join as a
-<strong>${roleName}</strong>.
-</p>
+        <td>
+          ${emailButton('Decline Invitation', urlDecline, '#6b7280')}
+        </td>
+      </tr>
+    </table>
 
-${emailButton('Accept Invitation', url)}
+    <p>
+      This invitation will expire in <strong>7 days</strong>.
+    </p>
 
-<p>
-This invitation link will expire in
-<strong>7 days</strong>.
-</p>
+    <p>
+      If you weren't expecting this invitation, you can safely ignore this email.
+    </p>
 
-<p>
-If you were not expecting this invitation, you can safely ignore this email.
-</p>
+    <br>
 
-<br>
-
-<p>
-  Best regards,<br>
-  The LinkFlow Team
-</p>
-`);
+    <p>
+      Best regards,<br>
+      The LinkFlow Team
+    </p>
+  `);
 }

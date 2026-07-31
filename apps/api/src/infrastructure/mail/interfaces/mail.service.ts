@@ -12,12 +12,14 @@ export interface SendResetPasswordEmail {
 
 export interface SendWorkspaceInvitationEmail {
   workspaceId: string;
+  slug: string;
   name: string;
   email: string;
   inviterName: string;
   workspaceName: string;
   inviteToken: string;
   roleName: string;
+  invitationId: string;
 }
 
 export interface SendAcceptanceEmailToInvitee {
@@ -92,6 +94,7 @@ export interface SendOwnershipTransferredToPreviousOwner {
 export interface SendWorkspaceMemberRoleUpdatedEmail {
   workspaceId: string;
   workspaceName: string;
+  slug: string;
   memberId: string;
   userId: string;
   memberName: string;
@@ -133,6 +136,17 @@ export interface WorkspaceMemberRemovedMail {
   ipAddress?: string;
 }
 
+export interface WorkspaceDeletedMail {
+  workspaceId: string;
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  workspaceName: string;
+  ownerName: string;
+  deletedAt: Date;
+  ipAddress?: string | null;
+}
+
 export interface MailService {
   sendWelcomeEmail(data: SendWelcomeEmail): Promise<void>;
 
@@ -165,4 +179,6 @@ export interface MailService {
   sendOwnershipTransferredToPreviousOwner(
     data: SendOwnershipTransferredToPreviousOwner,
   ): Promise<void>;
+
+  sendWorkspaceDeletedEmail(data: WorkspaceDeletedMail): Promise<void>;
 }
