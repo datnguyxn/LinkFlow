@@ -1,8 +1,10 @@
 import Fastify from 'fastify';
 import { createLogger } from '@linkflow/logger';
+
 import { healthRoutes } from './modules/health/index.js';
 import { routes } from './routes/index.js';
 import { config } from './config/env/index.ts';
+
 import {
   sensiblePlugin,
   languagePlugin,
@@ -17,53 +19,154 @@ import {
   errorPlugin,
   staticPlugin,
 } from './plugins/index.ts';
+
 import { prismaPlugin } from './infrastructure/database/index.ts';
 import { rabbitMQPlugin } from './infrastructure/queue/index.ts';
 import { redisPlugin } from './infrastructure/cache/index.ts';
-import { registerWorkers } from './bootstrap/workers.ts';
-import { registerJobs } from './bootstrap/jobs.ts';
 import { storagePlugin } from './infrastructure/storage/index.ts';
 import { websocketPlugin } from './infrastructure/websocket/index.ts';
 
-export async function buildApp() {
+import { registerWorkers } from './bootstrap/workers.ts';
+import { registerJobs } from './bootstrap/jobs.ts';
+
+
+interface BuildAppOptions {
+  enableRabbitMQ?: boolean;
+  enableRedis?: boolean;
+  enableStorage?: boolean;
+  enableWebsocket?: boolean;
+
+  enableWorkers?: boolean;
+  enableJobs?: boolean;
+}
+
+
+export async function buildApp(
+  options: BuildAppOptions = {},
+) {
+
+  const {
+    enableRabbitMQ = true,
+    enableRedis = true,
+    enableStorage = true,
+    enableWebsocket = true,
+
+    enableWorkers = true,
+    enableJobs = true,
+  } = options;
+
+
   await registerI18n();
 
+
   const app = Fastify({
-    logger: createLogger(process.env.NODE_ENV === config.NODE_ENV),
+    logger: createLogger(
+      process.env.NODE_ENV === config.NODE_ENV,
+    ),
+
     trustProxy: true,
   });
 
-  await app.register(rabbitMQPlugin);
-  await app.register(redisPlugin);
-  await app.register(storagePlugin);
-  await app.register(jwtPlugin);
-  await app.register(websocketPlugin);
 
-  await registerWorkers();
-  const jobs = await registerJobs();
+  /**
+   * Infrastructure plugins
+   */
+
+  if (enableRabbitMQ) {
+    await app.register(rabbitMQPlugin);
+  }
+
+
+  if (enableRedis) {
+    await app.register(redisPlugin);
+  }
+
+
+  if (enableStorage) {
+    await app.register(storagePlugin);
+  }
+
+
+  if (enableWebsocket) {
+    await app.register(websocketPlugin);
+  }
+
+
+  /**
+   * Core plugins
+   */
+
+  await app.register(jwtPlugin);
+
+
+  /**
+   * Background services
+   */
+
+  if (enableWorkers) {
+    await registerWorkers();
+  }
+
+
+  let jobs;
+
+  if (enableJobs) {
+    jobs = await registerJobs();
+  }
+
+
+  /**
+   * Application plugins
+   */
 
   await app.register(swaggerPlugin);
+
   await app.register(corsPlugin);
+
   await app.register(helmetPlugin);
+
   await app.register(sensiblePlugin);
+
   await app.register(prismaPlugin);
+
   await app.register(multipartPlugin);
 
+
   await app.register(cookiePlugin);
+
   await app.register(rateLimitPlugin);
+
   await app.register(errorPlugin);
+
   await app.register(staticPlugin);
 
+
   await app.register(languagePlugin);
+
+
+  /**
+   * Routes
+   */
 
   await app.register(routes, {
     prefix: config.API_PREFIX,
   });
+
+
   await app.register(healthRoutes);
 
-  app.addHook('onClose', async () => {
-    await jobs.workspaceInvitationExpirationJob.stop();
-  });
+
+
+  /**
+   * Cleanup
+   */
+
+  if (jobs) {
+    app.addHook('onClose', async () => {
+      await jobs.workspaceInvitationExpirationJob.stop();
+    });
+  }
+
 
   return app;
 }

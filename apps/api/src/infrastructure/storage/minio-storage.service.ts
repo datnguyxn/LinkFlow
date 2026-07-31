@@ -189,4 +189,49 @@ export class MinioStorageService implements StorageService {
     // Retrieve the metadata for the specified object key from the MinIO bucket
     return minioClient.statObject(config.MINIO_BUCKET, objectKey);
   }
+
+  /**
+   * Extract object key from public URL.
+   * @param publicUrl - The public URL of the object.
+   * @returns A promise resolving to the extracted object key.
+   * @throws Error if the public URL is invalid or does not match the expected format.
+   *
+   * Note: This method extracts the object key from a given public URL by removing the base URL and bucket name.
+   * It ensures that the provided public URL is valid and corresponds to the configured MinIO bucket.
+   * If the public URL does not match the expected format, an error is thrown.
+   */
+  async extractObjectKey(publicUrl: string): Promise<string> {
+    // Extract the object key from the provided public URL by removing the base URL and bucket name
+    const baseUrl = new URL(config.MINIO_PUBLIC_URL).toString();
+    const bucketPrefix = `${baseUrl}${config.MINIO_BUCKET}/`;
+
+    // Check if the public URL starts with the expected bucket prefix
+    if (!publicUrl.startsWith(bucketPrefix)) {
+      throw new Error('Invalid public URL');
+    }
+
+    // Return the extracted object key by removing the bucket prefix from the public URL
+    return publicUrl.substring(bucketPrefix.length);
+  }
+
+  /**
+   * Get presigned URL for an object.
+   * @param objectKey - The key of the object for which to get the presigned URL.
+   * @param expiresIn - The expiration time in seconds for the presigned URL (default: 1 hour).
+   * @returns A promise resolving to the presigned URL.
+   * @throws Error if the presigned URL cannot be generated.
+   *
+   * Note: This method generates a temporary presigned URL that allows access to the specified object for a limited time.
+   * The expiration time can be specified in seconds. If not provided, a default expiration time of 1 hour is used.
+   */
+  async getPresignedUrl(
+    objectKey: string,
+    expiresIn = 60 * 60,
+  ): Promise<string> {
+    return minioClient.presignedGetObject(
+      process.env.MINIO_BUCKET!,
+      objectKey,
+      expiresIn,
+    );
+  }
 }

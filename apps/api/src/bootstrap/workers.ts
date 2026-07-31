@@ -15,8 +15,10 @@ import {
   AuthMailWorker,
   WorkspaceInvitationMailWorker,
   WorkspaceMemberNotificationWorker,
+  WorkspaceNotificationWorker,
   NotificationWorker,
   WorkspaceMemberEmailWorker,
+  WorkspaceEmailWorker,
 } from '../workers/index.ts';
 
 export async function registerWorkers() {
@@ -54,6 +56,13 @@ export async function registerWorkers() {
 
   const notificationWorker = new NotificationWorker(notificationRepository, redisPublisher);
 
+  const workspaceEmailWorker = new WorkspaceEmailWorker(smtpProvider);
+  
+  const workspaceNotificationWorker = new WorkspaceNotificationWorker(
+    notificationRepository,
+    redisPublisher,
+  );
+
   await Promise.all([
     adminUserMailWorker.start(),
     authMailWorker.start(),
@@ -69,6 +78,9 @@ export async function registerWorkers() {
 
     workspaceMemberNotificationWorker.start(),
     notificationWorker.start(),
+
+    workspaceEmailWorker.start(),
+    workspaceNotificationWorker.start(),
   ]);
 
   console.log('✅ Workers started');

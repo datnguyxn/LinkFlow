@@ -14,19 +14,37 @@ export default fp(async (app) => {
     '/ws',
     {
       websocket: true,
-      preValidation: [app.authenticate],
     },
-    (socket, request) => {
-      const userId = request.user.id;
+    async (socket, request) => {
+  console.log('[WS] CLIENT CONNECTED');
+      const { token } = request.query as {
+        token?: string;
+      };
 
-      websocketManager.add(userId, socket);
+      if (!token) {
+        socket.close(1008, 'Unauthorized');
+        return;
+      }
 
-      socket.on('close', () => {
-        websocketManager.remove(userId, socket);
+       const user = await app.jwt.verify<{
+        id: string;
+      }>(token);
+
+      websocketManager.add(user.id, socket);
+
+      socket.on('close', (code, reason) => {
+
+        console.log('[WS] CLIENT CLOSED', {
+        code,
+        reason: reason.toString(),
       });
 
-      socket.on('error', () => {
-        websocketManager.remove(userId, socket);
+        websocketManager.remove(user.id, socket);
+      });
+
+      socket.on('error', (error) => {
+         console.error('[WS] SOCKET ERROR', error);
+        websocketManager.remove(user.id, socket);
       });
     },
   );
