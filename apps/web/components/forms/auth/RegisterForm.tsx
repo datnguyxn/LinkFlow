@@ -16,7 +16,7 @@ import { loginWithGoogle } from '@/lib/apis/auth.api';
 import { registerSchema, type RegisterForm } from '@/lib/validators/auth.validator';
 import { appToast } from '@/lib/toast';
 
-import { useRegister } from '@/hooks/mutations/useRegister';
+import { useRegister } from '@/hooks/mutations/auth/useRegister';
 
 export default function RegisterForm() {
   const router = useRouter();

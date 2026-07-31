@@ -1,5 +1,5 @@
 import { api } from '@/lib/axios';
-import { ProfileResponse, UserProfile } from '@/types/auth';
+import { ProfileResponse, UserProfile } from '@/types/auth.type';
 
 const PREFIX = '/api/v1';
 

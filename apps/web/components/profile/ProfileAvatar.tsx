@@ -6,8 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { appToast } from '@/lib/toast';
 
-import { useUploadAvatar } from '@/hooks/mutations/useUploadAvatar';
-import { useAvatar } from '@/hooks/queries/useAvatar';
+import { useUploadAvatar } from '@/hooks/mutations/user/useUploadAvatar';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export default function ProfileAvatar() {
@@ -16,10 +15,6 @@ export default function ProfileAvatar() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadAvatar = useUploadAvatar();
-
-  const { data: avatarSrc } = useAvatar(user?.avatarUrl, authenticated);
-
-  console.log('avatarSrc', avatarSrc);
 
   const [preview, setPreview] = useState<string>();
 
@@ -56,7 +51,7 @@ export default function ProfileAvatar() {
       }`}
     >
       <Avatar className="h-24 w-24 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-        <AvatarImage src={preview ?? avatarSrc} />
+        <AvatarImage src={preview ? preview : user?.avatarUrl || '/avatars/default-avt.jpg' } />
 
         <AvatarFallback>
           {user?.fullName

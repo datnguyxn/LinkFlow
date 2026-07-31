@@ -13,8 +13,8 @@ import { motion } from 'framer-motion';
 
 import { appToast } from '@/lib/toast';
 import ChangePasswordCardSkeleton from './ChangePasswordCardSkeleton';
-import { useLogout } from '@/hooks/mutations/useLogout';
-import { useChangePassword } from '@/hooks/mutations/useChangePassword';
+import { useLogout } from '@/hooks/mutations/auth/useLogout';
+import { useChangePassword } from '@/hooks/mutations/user/useChangePassword';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export default function ChangePasswordCard() {
@@ -44,8 +44,7 @@ export default function ChangePasswordCard() {
         newPassword: data.newPassword,
       });
 
-      // Handle success (e.g., show a success message)
-      console.log('Password changed successfully');
+      // Handle success (e.g., show a success message, redirect, etc.)
 
       appToast.success(response.data.message || 'Password changed successfully');
 

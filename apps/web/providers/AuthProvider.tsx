@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { AuthContext } from '@/contexts/auth.context';
-import { useInitializeAuth } from '@/hooks/useInitializeAuth';
+import { useInitializeAuth } from '@/hooks/queries/auth/useInitializeAuth';
 import { isProtectedRoute, ROUTES } from '@/constants/routes';
 import { authEvents } from '@/events/auth.event';
 import { AUTH_EVENT, createAuthChannel } from '@/lib/auth-broadcast';

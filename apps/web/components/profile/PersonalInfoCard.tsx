@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { appToast } from '@/lib/toast';
 
 import PersonalInfoCardSkeleton from './PersonalInfoCardSkeleton';
-import { useUpdateProfile } from '@/hooks/mutations/useUpdateProfile';
+import { useUpdateProfile } from '@/hooks/mutations/user/useUpdateProfile';
 import { useAuthContext } from '@/contexts/auth.context';
 
 export default function PersonalInfoCard() {

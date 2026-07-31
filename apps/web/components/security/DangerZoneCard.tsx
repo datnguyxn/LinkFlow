@@ -8,8 +8,8 @@ import { Trash2 } from 'lucide-react';
 import DangerZoneCardSkeleton from './DangerZoneCardSkeleton';
 
 import { appToast } from '@/lib/toast';
-import { useDelete } from '@/hooks/mutations/useDelete';
-import { useLogout } from '@/hooks/mutations/useLogout';
+import { useDelete } from '@/hooks/mutations/user/useDelete';
+import { useLogout } from '@/hooks/mutations/auth/useLogout';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { useAuthContext } from '@/contexts/auth.context';
 

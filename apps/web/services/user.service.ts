@@ -1,6 +1,6 @@
 import { userApi } from '@/lib/apis/user.api';
-import { ApiResponse } from '@/types/api';
-import type { UserProfile } from '@/types/auth';
+import { ApiResponse } from '@/types/api.type';
+import type { UserProfile } from '@/types/auth.type';
 
 class UserService {
   /**

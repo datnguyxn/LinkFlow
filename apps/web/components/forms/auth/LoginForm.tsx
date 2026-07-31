@@ -16,7 +16,7 @@ import { appToast } from '@/lib/toast';
 import { loginWithGoogle } from '@/lib/apis/auth.api';
 import { loginSchema, type LoginForm } from '@/lib/validators/auth.validator';
 
-import { useLogin } from '@/hooks/mutations/useLogin';
+import { useLogin } from '@/hooks/mutations/auth/useLogin';
 
 export default function LoginForm() {
   const [show, setShow] = useState(false);

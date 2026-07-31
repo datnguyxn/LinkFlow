@@ -30,7 +30,7 @@ import type {
   RefreshResponse,
   RegisterResponse,
   RegisterRequest,
-} from '@/types/auth';
+} from '@/types/auth.type';
 
 const PREFIX = '/api/v1';
 

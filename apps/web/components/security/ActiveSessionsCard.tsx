@@ -9,10 +9,10 @@ import ActiveSessionsCardSkeleton from './ActiveSessionsCardSkeleton';
 
 import { useState } from 'react';
 
-import { useActiveSessions } from '@/hooks/queries/useActiveSessions';
-import { useSignOutSession } from '@/hooks/mutations/useSignOutSession';
-import { useSignOutAllOtherSessions } from '@/hooks/mutations/useSignOutAllOtherSessions';
-import { useLogout } from '@/hooks/mutations/useLogout';
+import { useActiveSessions } from '@/hooks/queries/auth/useActiveSessions';
+import { useSignOutSession } from '@/hooks/mutations/auth/useSignOutSession';
+import { useSignOutAllOtherSessions } from '@/hooks/mutations/auth/useSignOutAllOtherSessions';
+import { useLogout } from '@/hooks/mutations/auth/useLogout';
 import { tokenStorage } from '@/lib/storage/token.storage';
 import { queryClient } from '@/lib/query-client';
 import ConfirmDialog from '../common/ConfirmDialog';
@@ -65,8 +65,6 @@ export default function ActiveSessionsCard() {
 
   const currentSession = sessions.find((session: { current: boolean }) => session.current);
 
-  console.log('sessions', sessions);
-  console.log('currentSession', currentSession);
   if (loading || sessionsLoading) {
     return <ActiveSessionsCardSkeleton />;
   }

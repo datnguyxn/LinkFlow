@@ -3,7 +3,7 @@ import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axio
 import { api } from '../axios';
 import { authService } from '@/services/auth.service';
 import { appToast } from '@/lib/toast';
-import type { ApiErrorResponse } from '@/types/api';
+import type { ApiErrorResponse } from '@/types/api.type';
 import { authEvents } from '@/events/auth.event';
 
 let isRefreshing = false;
@@ -115,6 +115,8 @@ export async function responseError(error: AxiosError<ApiErrorResponse>) {
     processQueue(err);
 
     authEvents.emit('logout');
+
+    await authService.logout();
 
     //appToast.error('Your session has expired. Please sign in again.');
 
