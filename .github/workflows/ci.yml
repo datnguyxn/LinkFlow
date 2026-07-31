@@ -164,6 +164,11 @@ jobs:
           cd apps/api
           pnpm prisma migrate deploy
 
+      - name: Seed test database
+        run: |
+          cd apps/api
+          pnpm prisma db seed
+
       # --------------------------------------------------------
       # Lint
       # --------------------------------------------------------
