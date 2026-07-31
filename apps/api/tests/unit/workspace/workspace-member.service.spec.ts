@@ -411,80 +411,222 @@ describe('WorkspaceMemberService', () => {
 
   describe('listWorkspaceMembers', () => {
     const workspaceId = 'workspace-1';
+    const page = 1;
+    const limit = 10;
+    const search = 'john';
 
     const workspace = {
       id: workspaceId,
       name: 'LinkFlow Workspace',
     };
 
-    const workspaceMembers = [
-      {
-        id: 'member-1',
-        workspaceId,
-        userId: 'user-1',
-        role: {
-          name: 'OWNER',
+    const paginatedResult = {
+      members: [
+        {
+          id: 'member-1',
+          workspaceId,
+          userId: 'user-1',
+          role: {
+            name: 'OWNER',
+          },
+          user: {
+            fullName: 'John',
+            avatarUrl: 'avatars/user1.png',
+          },
         },
-      },
-      {
-        id: 'member-2',
-        workspaceId,
-        userId: 'user-2',
-        role: {
-          name: 'MEMBER',
+        {
+          id: 'member-2',
+          workspaceId,
+          userId: 'user-2',
+          role: {
+            name: 'MEMBER',
+          },
+          user: {
+            fullName: 'Jane',
+            avatarUrl: 'https://cdn.example.com/avatar.png',
+          },
         },
-      },
-    ];
+        {
+          id: 'member-3',
+          workspaceId,
+          userId: 'user-3',
+          role: {
+            name: 'MEMBER',
+          },
+          user: {
+            fullName: 'Bob',
+            avatarUrl: null,
+          },
+        },
+      ],
+      total: 3,
+      page,
+      limit,
+      totalPages: 1,
+    };
 
-    it('should return all workspace members successfully', async () => {
+    beforeEach(() => {
       fixture.workspaceRepository.findById.mockResolvedValue(workspace);
 
-      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockResolvedValue(workspaceMembers);
-
-      const result = await fixture.workspaceMemberService.listWorkspaceMembers(workspaceId);
-
-      expect(result).toEqual(workspaceMembers);
-
-      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(workspaceId);
-
-      expect(fixture.workspaceMemberRepository.findAllByWorkspaceId).toHaveBeenCalledWith(
-        workspaceId,
+      fixture.storageService.getPresignedUrl.mockResolvedValue(
+        'https://presigned-url/avatar.png',
       );
+    });
+
+    it('should return paginated workspace members successfully', async () => {
+      fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination.mockResolvedValue(
+        structuredClone(paginatedResult),
+      );
+
+      const result = await fixture.workspaceMemberService.listWorkspaceMembers(
+        workspaceId,
+        page,
+        limit,
+        search,
+      );
+
+      expect(result.total).toBe(3);
+
+      expect(
+        fixture.workspaceRepository.findById,
+      ).toHaveBeenCalledWith(workspaceId);
+
+      expect(
+        fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination,
+      ).toHaveBeenCalledWith(workspaceId, page, limit, search);
+
+      expect(fixture.storageService.getPresignedUrl).toHaveBeenCalledTimes(1);
+
+      expect(fixture.storageService.getPresignedUrl).toHaveBeenCalledWith(
+        'avatars/user1.png',
+        60 * 60,
+      );
+
+      expect(result.members[0].user.avatarUrl).toBe(
+        'https://presigned-url/avatar.png',
+      );
+
+      expect(result.members[1].user.avatarUrl).toBe(
+        'https://cdn.example.com/avatar.png',
+      );
+
+      expect(result.members[2].user.avatarUrl).toBeNull();
+    });
+
+    it('should return empty members when workspace has no members', async () => {
+      fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination.mockResolvedValue({
+        members: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      });
+
+      const result = await fixture.workspaceMemberService.listWorkspaceMembers(
+        workspaceId,
+        page,
+        limit,
+      );
+
+      expect(result).toEqual({
+        members: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      });
+
+      expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundError when workspace does not exist', async () => {
       fixture.workspaceRepository.findById.mockResolvedValue(null);
 
       await expect(
-        fixture.workspaceMemberService.listWorkspaceMembers(workspaceId),
+        fixture.workspaceMemberService.listWorkspaceMembers(
+          workspaceId,
+          page,
+          limit,
+        ),
       ).rejects.toMatchObject({
         code: ERROR_CODE.WORKSPACE_NOT_FOUND,
         message: 'workspace.workspaceNotFound',
       });
 
-      expect(fixture.workspaceMemberRepository.findAllByWorkspaceId).not.toHaveBeenCalled();
+      expect(
+        fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination,
+      ).not.toHaveBeenCalled();
     });
 
-    it('should propagate repository errors when fetching workspace', async () => {
-      fixture.workspaceRepository.findById.mockRejectedValue(new Error('Database error'));
-
-      await expect(
-        fixture.workspaceMemberService.listWorkspaceMembers(workspaceId),
-      ).rejects.toThrow('Database error');
-
-      expect(fixture.workspaceMemberRepository.findAllByWorkspaceId).not.toHaveBeenCalled();
-    });
-
-    it('should propagate repository errors when fetching workspace members', async () => {
-      fixture.workspaceRepository.findById.mockResolvedValue(workspace);
-
-      fixture.workspaceMemberRepository.findAllByWorkspaceId.mockRejectedValue(
+    it('should propagate workspace repository errors', async () => {
+      fixture.workspaceRepository.findById.mockRejectedValue(
         new Error('Database error'),
       );
 
       await expect(
-        fixture.workspaceMemberService.listWorkspaceMembers(workspaceId),
+        fixture.workspaceMemberService.listWorkspaceMembers(
+          workspaceId,
+          page,
+          limit,
+        ),
       ).rejects.toThrow('Database error');
+    });
+
+    it('should propagate member repository errors', async () => {
+      fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination.mockRejectedValue(
+        new Error('Database error'),
+      );
+
+      await expect(
+        fixture.workspaceMemberService.listWorkspaceMembers(
+          workspaceId,
+          page,
+          limit,
+        ),
+      ).rejects.toThrow('Database error');
+    });
+
+    it('should propagate storage service errors', async () => {
+      fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination.mockResolvedValue(
+        structuredClone(paginatedResult),
+      );
+
+      fixture.storageService.getPresignedUrl.mockRejectedValue(
+        new Error('Storage error'),
+      );
+
+      await expect(
+        fixture.workspaceMemberService.listWorkspaceMembers(
+          workspaceId,
+          page,
+          limit,
+        ),
+      ).rejects.toThrow('Storage error');
+    });
+
+    it('should not generate presigned url for http or https avatars', async () => {
+      fixture.workspaceMemberRepository.findAllByWorkspaceIdWithPagination.mockResolvedValue({
+        members: [
+          {
+            id: 'member-1',
+            user: {
+              avatarUrl: 'https://example.com/avatar.png',
+            },
+          },
+        ],
+        total: 1,
+        page,
+        limit,
+        totalPages: 1,
+      });
+
+      await fixture.workspaceMemberService.listWorkspaceMembers(
+        workspaceId,
+        page,
+        limit,
+      );
+
+      expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
     });
   });
 
@@ -501,30 +643,100 @@ describe('WorkspaceMemberService', () => {
         id: 'role-1',
         name: 'MEMBER',
       },
+      user: {
+        id: userId,
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        avatarUrl: 'avatars/user-1.png',
+      },
     };
 
-    it('should return workspace member successfully', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(member);
-
-      const result = await fixture.workspaceMemberService.getWorkspaceMember(workspaceId, userId);
-
-      expect(result).toEqual(member);
-
-      expect(fixture.workspaceMemberRepository.findByWorkspaceAndUser).toHaveBeenCalledWith(
-        workspaceId,
-        userId,
+    beforeEach(() => {
+      fixture.storageService.getPresignedUrl.mockResolvedValue(
+        'https://cdn.example.com/avatar.png',
       );
     });
 
+    it('should return workspace member successfully with presigned avatar url', async () => {
+      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(
+        structuredClone(member),
+      );
+
+      const result = await fixture.workspaceMemberService.getWorkspaceMember(
+        workspaceId,
+        userId,
+      );
+
+      expect(result.user.avatarUrl).toBe(
+        'https://cdn.example.com/avatar.png',
+      );
+
+      expect(
+        fixture.workspaceMemberRepository.findByWorkspaceAndUser,
+      ).toHaveBeenCalledWith(workspaceId, userId);
+
+      expect(fixture.storageService.getPresignedUrl).toHaveBeenCalledWith(
+        'avatars/user-1.png',
+        60 * 60,
+      );
+    });
+
+    it('should not generate presigned url when avatar is already an http url', async () => {
+      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue({
+        ...structuredClone(member),
+        user: {
+          ...member.user,
+          avatarUrl: 'https://example.com/avatar.png',
+        },
+      });
+
+      const result = await fixture.workspaceMemberService.getWorkspaceMember(
+        workspaceId,
+        userId,
+      );
+
+      expect(result.user.avatarUrl).toBe(
+        'https://example.com/avatar.png',
+      );
+
+      expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
+    });
+
+    it('should not generate presigned url when avatar is null', async () => {
+      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue({
+        ...structuredClone(member),
+        user: {
+          ...member.user,
+          avatarUrl: null,
+        },
+      });
+
+      const result = await fixture.workspaceMemberService.getWorkspaceMember(
+        workspaceId,
+        userId,
+      );
+
+      expect(result.user.avatarUrl).toBeNull();
+
+      expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
+    });
+
     it('should throw NotFoundError when workspace member does not exist', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
+      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(
+        null,
+      );
 
       await expect(
-        fixture.workspaceMemberService.getWorkspaceMember(workspaceId, userId),
+        fixture.workspaceMemberService.getWorkspaceMember(
+          workspaceId,
+          userId,
+        ),
       ).rejects.toMatchObject({
         message: 'workspace.memberNotFound',
         code: ERROR_CODE.WORKSPACE_MEMBER_NOT_FOUND,
       });
+
+      expect(fixture.storageService.getPresignedUrl).not.toHaveBeenCalled();
     });
 
     it('should propagate repository errors', async () => {
@@ -533,8 +745,28 @@ describe('WorkspaceMemberService', () => {
       );
 
       await expect(
-        fixture.workspaceMemberService.getWorkspaceMember(workspaceId, userId),
+        fixture.workspaceMemberService.getWorkspaceMember(
+          workspaceId,
+          userId,
+        ),
       ).rejects.toThrow('Database error');
+    });
+
+    it('should propagate storage service errors', async () => {
+      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(
+        structuredClone(member),
+      );
+
+      fixture.storageService.getPresignedUrl.mockRejectedValue(
+        new Error('Storage error'),
+      );
+
+      await expect(
+        fixture.workspaceMemberService.getWorkspaceMember(
+          workspaceId,
+          userId,
+        ),
+      ).rejects.toThrow('Storage error');
     });
   });
 

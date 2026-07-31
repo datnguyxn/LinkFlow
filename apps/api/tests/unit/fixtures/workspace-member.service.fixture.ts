@@ -15,6 +15,7 @@ export function createWorkspaceMemberServiceFixture() {
     updateRole: vi.fn(),
     findAllByWorkspaceId: vi.fn(),
     update: vi.fn(),
+    findAllByWorkspaceIdWithPagination: vi.fn(),
   };
 
   const roleRepository = {
@@ -41,6 +42,11 @@ export function createWorkspaceMemberServiceFixture() {
     transferOwnership: vi.fn(),
   };
 
+  const storageService = {
+    deleteFile: vi.fn(),
+    getPresignedUrl: vi.fn(),
+  };
+
   const workspaceMemberService = new WorkspaceMemberService(
     workspaceRepository as any,
     workspaceMemberRepository as any,
@@ -48,6 +54,7 @@ export function createWorkspaceMemberServiceFixture() {
     userRepository as any,
     transactionService as any,
     workspaceMemberPublisher as any,
+    storageService as any,
   );
 
   return {
@@ -58,5 +65,6 @@ export function createWorkspaceMemberServiceFixture() {
     userRepository,
     workspaceMemberPublisher,
     transactionService,
+    storageService,
   };
 }

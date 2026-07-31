@@ -8,10 +8,10 @@ vi.mock('../../../src/utils/password.util', () => ({
 }));
 
 vi.mock('../../../src/modules/users/validator/image.validator', () => ({
-  validateAvatar: vi.fn(),
+  validateImage: vi.fn(),
 }));
 
-import { validateAvatar } from '../../../src/modules/users/validator/image.validator';
+import { validateImage } from '../../../src/modules/users/validator/image.validator';
 import { comparePassword, hashPassword } from '../../../src/utils/password.util';
 import { ERROR_CODE } from '../../../src/common/constants';
 import { UserStatus } from '@prisma/client';
@@ -37,6 +37,7 @@ describe('UserService', () => {
       deleteFile: vi.fn(),
       getFileStream: vi.fn(),
       getFileMetadata: vi.fn(),
+      getPresignedUrl: vi.fn(),
     };
 
     oauthRepository = {
@@ -635,18 +636,20 @@ describe('UserService', () => {
     beforeEach(() => {
       vi.clearAllMocks();
 
-      vi.mocked(validateAvatar).mockResolvedValue(Buffer.from('fake-image-data'));
+      vi.mocked(validateImage).mockResolvedValue(Buffer.from('fake-image-data'));
+
+      storageService.getPresignedUrl.mockResolvedValue(
+        'https://cdn.example.com/avatar/user-id/file.png',
+      );
 
       userPublisher.userAvatarUpdated.mockResolvedValue(undefined);
     });
 
     it('should upload avatar successfully', async () => {
-      const user = {
+      userRepository.findById.mockResolvedValue({
         id: userId,
         avatarUrl: null,
-      };
-
-      userRepository.findById.mockResolvedValue(user);
+      });
 
       storageService.uploadFile.mockResolvedValue({
         objectKey: 'avatar/user-id/file.png',
@@ -654,11 +657,15 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      const result = await userService.uploadAvatar(userId, avatarFile, ipAddress);
+      const result = await userService.uploadAvatar(
+        userId,
+        avatarFile,
+        ipAddress,
+      );
 
       expect(userRepository.findById).toHaveBeenCalledWith(userId);
 
-      expect(validateAvatar).toHaveBeenCalledWith(avatarFile);
+      expect(validateImage).toHaveBeenCalledWith(avatarFile);
 
       expect(storageService.uploadFile).toHaveBeenCalledWith({
         folder: expect.any(String),
@@ -671,6 +678,11 @@ describe('UserService', () => {
         avatarUrl: 'avatar/user-id/file.png',
       });
 
+      expect(storageService.getPresignedUrl).toHaveBeenCalledWith(
+        'avatar/user-id/file.png',
+        60 * 60,
+      );
+
       expect(userPublisher.userAvatarUpdated).toHaveBeenCalledWith({
         userId,
         updatedBy: userId,
@@ -679,11 +691,11 @@ describe('UserService', () => {
       });
 
       expect(result).toEqual({
-        objectKey: 'avatar/user-id/file.png',
+        avatarUrl: 'https://cdn.example.com/avatar/user-id/file.png',
       });
     });
 
-    it('should delete old avatar after uploading and updating the new avatar', async () => {
+    it('should delete old avatar after uploading new avatar', async () => {
       userRepository.findById.mockResolvedValue({
         id: userId,
         avatarUrl: 'old-avatar.png',
@@ -695,16 +707,19 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      storageService.deleteFile.mockResolvedValue(undefined);
-
       await userService.uploadAvatar(userId, avatarFile, ipAddress);
 
       expect(storageService.deleteFile).toHaveBeenCalledWith('old-avatar.png');
 
+      expect(storageService.getPresignedUrl).toHaveBeenCalledWith(
+        'new-avatar.png',
+        60 * 60,
+      );
+
       expect(userPublisher.userAvatarUpdated).toHaveBeenCalled();
     });
 
-    it('should not delete old avatar when user does not have one', async () => {
+    it('should not delete old avatar when user has no avatar', async () => {
       userRepository.findById.mockResolvedValue({
         id: userId,
         avatarUrl: null,
@@ -724,27 +739,32 @@ describe('UserService', () => {
     it('should throw ConflictError when user does not exist', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toMatchObject({
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toMatchObject({
         code: ERROR_CODE.NOT_FOUND,
       });
 
-      expect(validateAvatar).not.toHaveBeenCalled();
+      expect(validateImage).not.toHaveBeenCalled();
       expect(storageService.uploadFile).not.toHaveBeenCalled();
       expect(userRepository.update).not.toHaveBeenCalled();
+      expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
       expect(userPublisher.userAvatarUpdated).not.toHaveBeenCalled();
     });
 
-    it('should propagate avatar validation errors', async () => {
+    it('should propagate image validation errors', async () => {
       userRepository.findById.mockResolvedValue({
         id: userId,
         avatarUrl: null,
       });
 
-      vi.mocked(validateAvatar).mockRejectedValue(new Error('Invalid Avatar'));
-
-      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
-        'Invalid Avatar',
+      vi.mocked(validateImage).mockRejectedValue(
+        new Error('Invalid Image'),
       );
+
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toThrow('Invalid Image');
 
       expect(storageService.uploadFile).not.toHaveBeenCalled();
       expect(userRepository.update).not.toHaveBeenCalled();
@@ -757,13 +777,16 @@ describe('UserService', () => {
         avatarUrl: null,
       });
 
-      storageService.uploadFile.mockRejectedValue(new Error('Upload Error'));
-
-      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
-        'Upload Error',
+      storageService.uploadFile.mockRejectedValue(
+        new Error('Upload Error'),
       );
 
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toThrow('Upload Error');
+
       expect(userRepository.update).not.toHaveBeenCalled();
+      expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
       expect(userPublisher.userAvatarUpdated).not.toHaveBeenCalled();
     });
 
@@ -777,13 +800,16 @@ describe('UserService', () => {
         objectKey: 'avatar.png',
       });
 
-      userRepository.update.mockRejectedValue(new Error('DB Error'));
-
-      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
-        'DB Error',
+      userRepository.update.mockRejectedValue(
+        new Error('DB Error'),
       );
 
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toThrow('DB Error');
+
       expect(storageService.deleteFile).not.toHaveBeenCalled();
+      expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
       expect(userPublisher.userAvatarUpdated).not.toHaveBeenCalled();
     });
 
@@ -799,12 +825,17 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      storageService.deleteFile.mockRejectedValue(new Error('Delete Error'));
+      storageService.deleteFile.mockRejectedValue(
+        new Error('Delete Error'),
+      );
 
-      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toMatchObject({
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toMatchObject({
         code: ERROR_CODE.FILE_DELETE_FAILED,
       });
 
+      expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
       expect(userPublisher.userAvatarUpdated).not.toHaveBeenCalled();
     });
 
@@ -820,81 +851,40 @@ describe('UserService', () => {
 
       userRepository.update.mockResolvedValue(undefined);
 
-      userPublisher.userAvatarUpdated.mockRejectedValue(new Error('RabbitMQ Error'));
-
-      await expect(userService.uploadAvatar(userId, avatarFile, ipAddress)).rejects.toThrow(
-        'RabbitMQ Error',
+      userPublisher.userAvatarUpdated.mockRejectedValue(
+        new Error('RabbitMQ Error'),
       );
 
-      expect(userRepository.update).toHaveBeenCalledWith(userId, {
-        avatarUrl: 'new-avatar.png',
-      });
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toThrow('RabbitMQ Error');
+
+      expect(storageService.getPresignedUrl).not.toHaveBeenCalled();
 
       expect(userPublisher.userAvatarUpdated).toHaveBeenCalledTimes(1);
     });
-  });
 
-  describe('getMyAvatar', () => {
-    it('should get avatar successfully', async () => {
+    it('should propagate presigned url errors', async () => {
       userRepository.findById.mockResolvedValue({
-        id: 'user-id',
-        avatarUrl: 'avatar.png',
+        id: userId,
+        avatarUrl: null,
       });
 
-      const stream = {} as any;
-
-      storageService.getFileStream.mockResolvedValue(stream);
-
-      storageService.getFileMetadata.mockResolvedValue({
-        contentType: 'image/png',
-        contentLength: 123,
+      storageService.uploadFile.mockResolvedValue({
+        objectKey: 'new-avatar.png',
       });
 
-      const result = await userService.getMyAvatar('user-id');
+      userRepository.update.mockResolvedValue(undefined);
 
-      expect(storageService.getFileStream).toHaveBeenCalledWith('avatar.png');
+      storageService.getPresignedUrl.mockRejectedValue(
+        new Error('Presigned URL Error'),
+      );
 
-      expect(storageService.getFileMetadata).toHaveBeenCalledWith('avatar.png');
+      await expect(
+        userService.uploadAvatar(userId, avatarFile, ipAddress),
+      ).rejects.toThrow('Presigned URL Error');
 
-      expect(result).toEqual({
-        stream,
-        metadata: {
-          contentType: 'image/png',
-          contentLength: 123,
-        },
-      });
-    });
-
-    it('should throw if user not found', async () => {
-      userRepository.findById.mockResolvedValue(null);
-
-      await expect(userService.getMyAvatar('user-id')).rejects.toMatchObject({
-        code: ERROR_CODE.NOT_FOUND,
-      });
-    });
-
-    it('should throw if get file stream failed', async () => {
-      userRepository.findById.mockResolvedValue({
-        id: 'user-id',
-        avatarUrl: 'avatar.png',
-      });
-
-      storageService.getFileStream.mockRejectedValue(new Error('Storage Error'));
-
-      await expect(userService.getMyAvatar('user-id')).rejects.toThrow('Storage Error');
-    });
-
-    it('should throw if get metadata failed', async () => {
-      userRepository.findById.mockResolvedValue({
-        id: 'user-id',
-        avatarUrl: 'avatar.png',
-      });
-
-      storageService.getFileStream.mockResolvedValue({});
-
-      storageService.getFileMetadata.mockRejectedValue(new Error('Metadata Error'));
-
-      await expect(userService.getMyAvatar('user-id')).rejects.toThrow('Metadata Error');
+      expect(userPublisher.userAvatarUpdated).toHaveBeenCalledTimes(1);
     });
   });
 });

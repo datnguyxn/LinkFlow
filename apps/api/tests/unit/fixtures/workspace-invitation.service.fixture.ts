@@ -11,6 +11,7 @@ export function createWorkspaceInvitationServiceFixture() {
     findExpiredPendingInvitations: vi.fn(),
     findPendingByEmail: vi.fn(),
     findAllByWorkspaceId: vi.fn(),
+    findAllByWorkspaceIdWithPagination: vi.fn(),
   };
 
   const workspaceRepository = {
@@ -22,6 +23,7 @@ export function createWorkspaceInvitationServiceFixture() {
     findByWorkspaceAndUser: vi.fn(),
     create: vi.fn(),
     reactivate: vi.fn(),
+    findInactiveByWorkspaceAndUser: vi.fn(),
   };
 
   const roleRepository = {

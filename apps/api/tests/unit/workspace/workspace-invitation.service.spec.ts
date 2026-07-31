@@ -28,6 +28,7 @@ describe('WorkspaceInvitationService', () => {
     const mockWorkspace = {
       id: workspaceId,
       name: 'LinkFlow Workspace',
+      slug: 'linkflow-workspace',
     };
 
     const mockInviter = {
@@ -136,6 +137,7 @@ describe('WorkspaceInvitationService', () => {
           invitationId: mockInvitation.id,
           workspaceId,
           workspaceName: mockWorkspace.name,
+          slug: mockWorkspace.slug,
           inviterId,
           inviterName: mockInviter.fullName,
           inviteeId: mockInvitee.id,
@@ -275,7 +277,7 @@ describe('WorkspaceInvitationService', () => {
         id: 'member-1',
         workspaceId,
         userId: mockInvitee.id,
-        status: WorkspaceMemberStatus.INACTIVE,
+        status: UserStatus.INACTIVE,
       });
 
       const result = await fixture.workspaceInvitationService.createInvitation(
@@ -454,81 +456,128 @@ describe('WorkspaceInvitationService', () => {
 
   describe('listInvitations', () => {
     const workspaceId = 'workspace-1';
+    const page = 1;
+    const limit = 10;
+    const search = 'john';
 
     const mockWorkspace = {
       id: workspaceId,
       name: 'LinkFlow Workspace',
     };
 
-    const mockInvitations = [
-      {
-        id: 'invitation-1',
-        workspaceId,
-        email: 'user1@example.com',
-        status: 'PENDING',
+    const mockResponse = {
+      data: [
+        {
+          id: 'invitation-1',
+          workspaceId,
+          email: 'john@example.com',
+          status: 'PENDING',
+        },
+        {
+          id: 'invitation-2',
+          workspaceId,
+          email: 'john2@example.com',
+          status: 'ACCEPTED',
+        },
+      ],
+      pagination: {
+        page,
+        limit,
+        total: 2,
+        totalPages: 1,
       },
-      {
-        id: 'invitation-2',
-        workspaceId,
-        email: 'user2@example.com',
-        status: 'ACCEPTED',
-      },
-    ];
+    };
 
     beforeEach(() => {
       fixture.workspaceRepository.findById.mockResolvedValue(mockWorkspace);
     });
 
-    it('should list workspace invitations successfully', async () => {
-      fixture.workspaceInvitationRepository.findAllByWorkspaceId.mockResolvedValue(mockInvitations);
+    it('should list invitations successfully', async () => {
+      fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination.mockResolvedValue(
+        mockResponse,
+      );
 
-      const result = await fixture.workspaceInvitationService.listInvitations(workspaceId);
+      const result = await fixture.workspaceInvitationService.listInvitations(
+        workspaceId,
+        page,
+        limit,
+        search,
+      );
 
-      expect(result).toEqual(mockInvitations);
+      expect(result).toEqual(mockResponse);
 
-      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(workspaceId);
-
-      expect(fixture.workspaceInvitationRepository.findAllByWorkspaceId).toHaveBeenCalledWith(
+      expect(fixture.workspaceRepository.findById).toHaveBeenCalledWith(
         workspaceId,
       );
+
+      expect(
+        fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination,
+      ).toHaveBeenCalledWith(workspaceId, page, limit, search);
     });
 
-    it('should return an empty array when workspace has no invitations', async () => {
-      fixture.workspaceInvitationRepository.findAllByWorkspaceId.mockResolvedValue([]);
+    it('should return empty result when no invitations found', async () => {
+      const emptyResponse = {
+        data: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        },
+      };
 
-      const result = await fixture.workspaceInvitationService.listInvitations(workspaceId);
-
-      expect(result).toEqual([]);
-
-      expect(fixture.workspaceInvitationRepository.findAllByWorkspaceId).toHaveBeenCalledWith(
-        workspaceId,
+      fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination.mockResolvedValue(
+        emptyResponse,
       );
+
+      const result = await fixture.workspaceInvitationService.listInvitations(
+        workspaceId,
+        page,
+        limit,
+      );
+
+      expect(result).toEqual(emptyResponse);
+
+      expect(
+        fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination,
+      ).toHaveBeenCalledWith(workspaceId, page, limit, undefined);
     });
 
     it('should throw ConflictError when workspace does not exist', async () => {
       fixture.workspaceRepository.findById.mockResolvedValue(null);
 
       await expect(
-        fixture.workspaceInvitationService.listInvitations(workspaceId),
+        fixture.workspaceInvitationService.listInvitations(
+          workspaceId,
+          page,
+          limit,
+        ),
       ).rejects.toMatchObject({
         code: ERROR_CODE.WORKSPACE_NOT_FOUND,
       });
 
-      expect(fixture.workspaceInvitationRepository.findAllByWorkspaceId).not.toHaveBeenCalled();
+      expect(
+        fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination,
+      ).not.toHaveBeenCalled();
     });
 
     it('should propagate repository errors', async () => {
-      fixture.workspaceInvitationRepository.findAllByWorkspaceId.mockRejectedValue(
+      fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination.mockRejectedValue(
         new Error('Database error'),
       );
 
-      await expect(fixture.workspaceInvitationService.listInvitations(workspaceId)).rejects.toThrow(
-        'Database error',
-      );
+      await expect(
+        fixture.workspaceInvitationService.listInvitations(
+          workspaceId,
+          page,
+          limit,
+          search,
+        ),
+      ).rejects.toThrow('Database error');
 
-      expect(fixture.workspaceInvitationRepository.findAllByWorkspaceId).toHaveBeenCalledWith(
-        workspaceId,
-      );
+      expect(
+        fixture.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination,
+      ).toHaveBeenCalledWith(workspaceId, page, limit, search);
     });
   });
 
@@ -642,31 +691,32 @@ describe('WorkspaceInvitationService', () => {
     });
 
     it('should create a new workspace member and accept invitation successfully', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        null,
+      );
 
       fixture.workspaceMemberRepository.create.mockResolvedValue(workspaceMember);
 
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
-
-      const publishSpy = fixture.workspaceInvitationPublisher.workspaceInvitationAccepted;
-
-      const result = await fixture.workspaceInvitationService.acceptInvitation(
-        workspaceId,
-        invitationId,
-        userId,
-        ipAddress,
-        token,
+      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(
+        updatedInvitation,
       );
 
-      expect(fixture.workspaceInvitationService.validateInvitationForAccept).toHaveBeenCalledWith(
-        token,
-      );
+      const result =
+        await fixture.workspaceInvitationService.acceptInvitation(
+          workspaceId,
+          invitationId,
+          userId,
+          ipAddress,
+          token,
+        );
 
-      expect(fixture.workspaceMemberRepository.findByWorkspaceAndUser).toHaveBeenCalledWith(
-        workspaceId,
-        userId,
-        'mock-tx',
-      );
+      expect(
+        fixture.workspaceInvitationService.validateInvitationForAccept,
+      ).toHaveBeenCalledWith(token);
+
+      expect(
+        fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser,
+      ).toHaveBeenCalledWith(workspaceId, userId, 'mock-tx');
 
       expect(fixture.workspaceMemberRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -690,7 +740,9 @@ describe('WorkspaceInvitationService', () => {
         'mock-tx',
       );
 
-      expect(fixture.workspaceInvitationRepository.updateStatus).toHaveBeenCalledWith(
+      expect(
+        fixture.workspaceInvitationRepository.updateStatus,
+      ).toHaveBeenCalledWith(
         invitationId,
         InvitationStatus.ACCEPTED,
         'mock-tx',
@@ -701,7 +753,9 @@ describe('WorkspaceInvitationService', () => {
         updatedInvitation,
       });
 
-      expect(publishSpy).toHaveBeenCalledWith(
+      expect(
+        fixture.workspaceInvitationPublisher.workspaceInvitationAccepted,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           invitationId,
           workspaceId,
@@ -722,7 +776,7 @@ describe('WorkspaceInvitationService', () => {
       );
     });
 
-    it('should reactivate an existing LEFT member and accept invitation', async () => {
+    it('should reactivate LEFT member successfully', async () => {
       const existingMember = {
         id: 'member-1',
         workspaceId,
@@ -737,19 +791,26 @@ describe('WorkspaceInvitationService', () => {
         status: WorkspaceMemberStatus.ACTIVE,
       };
 
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(existingMember);
-
-      fixture.workspaceMemberRepository.reactivate.mockResolvedValue(reactivatedMember);
-
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
-
-      const result = await fixture.workspaceInvitationService.acceptInvitation(
-        workspaceId,
-        invitationId,
-        userId,
-        ipAddress,
-        token,
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        existingMember,
       );
+
+      fixture.workspaceMemberRepository.reactivate.mockResolvedValue(
+        reactivatedMember,
+      );
+
+      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(
+        updatedInvitation,
+      );
+
+      const result =
+        await fixture.workspaceInvitationService.acceptInvitation(
+          workspaceId,
+          invitationId,
+          userId,
+          ipAddress,
+          token,
+        );
 
       expect(fixture.workspaceMemberRepository.reactivate).toHaveBeenCalledWith(
         existingMember.id,
@@ -764,10 +825,12 @@ describe('WorkspaceInvitationService', () => {
         updatedInvitation,
       });
 
-      expect(fixture.workspaceInvitationPublisher.workspaceInvitationAccepted).toHaveBeenCalled();
+      expect(
+        fixture.workspaceInvitationPublisher.workspaceInvitationAccepted,
+      ).toHaveBeenCalled();
     });
 
-    it('should reactivate an existing REMOVED member and accept invitation', async () => {
+    it('should reactivate REMOVED member successfully', async () => {
       const existingMember = {
         id: 'member-1',
         workspaceId,
@@ -782,19 +845,26 @@ describe('WorkspaceInvitationService', () => {
         status: WorkspaceMemberStatus.ACTIVE,
       };
 
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(existingMember);
-
-      fixture.workspaceMemberRepository.reactivate.mockResolvedValue(reactivatedMember);
-
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
-
-      const result = await fixture.workspaceInvitationService.acceptInvitation(
-        workspaceId,
-        invitationId,
-        userId,
-        ipAddress,
-        token,
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        existingMember,
       );
+
+      fixture.workspaceMemberRepository.reactivate.mockResolvedValue(
+        reactivatedMember,
+      );
+
+      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(
+        updatedInvitation,
+      );
+
+      const result =
+        await fixture.workspaceInvitationService.acceptInvitation(
+          workspaceId,
+          invitationId,
+          userId,
+          ipAddress,
+          token,
+        );
 
       expect(fixture.workspaceMemberRepository.reactivate).toHaveBeenCalledWith(
         existingMember.id,
@@ -805,71 +875,16 @@ describe('WorkspaceInvitationService', () => {
       expect(result.workspaceMember).toEqual(reactivatedMember);
     });
 
-    it('should throw ConflictError when user is already an active member', async () => {
-      const existingMember = {
-        id: 'member-1',
-        workspaceId,
-        userId,
-        roleId: 'role-1',
-        status: WorkspaceMemberStatus.ACTIVE,
-      };
-
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(existingMember);
-
-      await expect(
-        fixture.workspaceInvitationService.acceptInvitation(
-          workspaceId,
-          invitationId,
-          userId,
-          ipAddress,
-          token,
-        ),
-      ).rejects.toMatchObject({
-        code: ERROR_CODE.WORKSPACE_MEMBER_ALREADY_EXISTS,
-      });
-
-      expect(fixture.workspaceMemberRepository.reactivate).not.toHaveBeenCalled();
-
-      expect(fixture.workspaceMemberRepository.create).not.toHaveBeenCalled();
-
-      expect(fixture.workspaceInvitationRepository.updateStatus).not.toHaveBeenCalled();
-
-      expect(
-        fixture.workspaceInvitationPublisher.workspaceInvitationAccepted,
-      ).not.toHaveBeenCalled();
-    });
-
-    it('should not create a new member when an existing member is LEFT', async () => {
-      const existingMember = {
-        id: 'member-1',
-        status: WorkspaceMemberStatus.LEFT,
-      };
-
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(existingMember);
-
-      fixture.workspaceMemberRepository.reactivate.mockResolvedValue(workspaceMember);
-
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
-
-      await fixture.workspaceInvitationService.acceptInvitation(
-        workspaceId,
-        invitationId,
-        userId,
-        ipAddress,
-        token,
+    it('should pass transaction client to repository methods', async () => {
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        null,
       );
-
-      expect(fixture.workspaceMemberRepository.create).not.toHaveBeenCalled();
-
-      expect(fixture.workspaceMemberRepository.reactivate).toHaveBeenCalled();
-    });
-
-    it('should pass the transaction client to repository methods', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
 
       fixture.workspaceMemberRepository.create.mockResolvedValue(workspaceMember);
 
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
+      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(
+        updatedInvitation,
+      );
 
       await fixture.workspaceInvitationService.acceptInvitation(
         workspaceId,
@@ -879,18 +894,18 @@ describe('WorkspaceInvitationService', () => {
         token,
       );
 
-      expect(fixture.workspaceMemberRepository.findByWorkspaceAndUser).toHaveBeenCalledWith(
-        workspaceId,
-        userId,
-        'mock-tx',
-      );
+      expect(
+        fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser,
+      ).toHaveBeenCalledWith(workspaceId, userId, 'mock-tx');
 
       expect(fixture.workspaceMemberRepository.create).toHaveBeenCalledWith(
         expect.any(Object),
         'mock-tx',
       );
 
-      expect(fixture.workspaceInvitationRepository.updateStatus).toHaveBeenCalledWith(
+      expect(
+        fixture.workspaceInvitationRepository.updateStatus,
+      ).toHaveBeenCalledWith(
         invitationId,
         InvitationStatus.ACCEPTED,
         'mock-tx',
@@ -898,9 +913,9 @@ describe('WorkspaceInvitationService', () => {
     });
 
     it('should propagate transaction errors', async () => {
-      const transactionError = new Error('Transaction error');
-
-      fixture.transactionService.run.mockRejectedValue(transactionError);
+      fixture.transactionService.run.mockRejectedValue(
+        new Error('Transaction error'),
+      );
 
       await expect(
         fixture.workspaceInvitationService.acceptInvitation(
@@ -918,9 +933,13 @@ describe('WorkspaceInvitationService', () => {
     });
 
     it('should propagate member creation errors', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        null,
+      );
 
-      fixture.workspaceMemberRepository.create.mockRejectedValue(new Error('Database error'));
+      fixture.workspaceMemberRepository.create.mockRejectedValue(
+        new Error('Database error'),
+      );
 
       await expect(
         fixture.workspaceInvitationService.acceptInvitation(
@@ -932,7 +951,9 @@ describe('WorkspaceInvitationService', () => {
         ),
       ).rejects.toThrow('Database error');
 
-      expect(fixture.workspaceInvitationRepository.updateStatus).not.toHaveBeenCalled();
+      expect(
+        fixture.workspaceInvitationRepository.updateStatus,
+      ).not.toHaveBeenCalled();
 
       expect(
         fixture.workspaceInvitationPublisher.workspaceInvitationAccepted,
@@ -940,7 +961,9 @@ describe('WorkspaceInvitationService', () => {
     });
 
     it('should propagate invitation update errors', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        null,
+      );
 
       fixture.workspaceMemberRepository.create.mockResolvedValue(workspaceMember);
 
@@ -964,11 +987,15 @@ describe('WorkspaceInvitationService', () => {
     });
 
     it('should propagate publisher errors', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        null,
+      );
 
       fixture.workspaceMemberRepository.create.mockResolvedValue(workspaceMember);
 
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
+      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(
+        updatedInvitation,
+      );
 
       fixture.workspaceInvitationPublisher.workspaceInvitationAccepted.mockRejectedValue(
         new Error('RabbitMQ error'),
@@ -985,12 +1012,16 @@ describe('WorkspaceInvitationService', () => {
       ).rejects.toThrow('RabbitMQ error');
     });
 
-    it('should pass null ipAddress to the event', async () => {
-      fixture.workspaceMemberRepository.findByWorkspaceAndUser.mockResolvedValue(null);
+    it('should pass null ipAddress to published event', async () => {
+      fixture.workspaceMemberRepository.findInactiveByWorkspaceAndUser.mockResolvedValue(
+        null,
+      );
 
       fixture.workspaceMemberRepository.create.mockResolvedValue(workspaceMember);
 
-      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(updatedInvitation);
+      fixture.workspaceInvitationRepository.updateStatus.mockResolvedValue(
+        updatedInvitation,
+      );
 
       await fixture.workspaceInvitationService.acceptInvitation(
         workspaceId,
@@ -1000,7 +1031,9 @@ describe('WorkspaceInvitationService', () => {
         token,
       );
 
-      expect(fixture.workspaceInvitationPublisher.workspaceInvitationAccepted).toHaveBeenCalledWith(
+      expect(
+        fixture.workspaceInvitationPublisher.workspaceInvitationAccepted,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           ipAddress: null,
         }),

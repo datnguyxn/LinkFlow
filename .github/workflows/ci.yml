@@ -2,41 +2,277 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
 
 jobs:
-  build:
+
+  # ============================================================
+  # API
+  # ============================================================
+
+  api:
+    name: API CI
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        package: [api, web]
+    services:
+
+      # --------------------------------------------------------
+      # PostgreSQL
+      # --------------------------------------------------------
+
+      postgres:
+        image: postgres:16
+
+        ports:
+          - 5433:5432
+
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: linkflow_test
+
+        options: >-
+          --health-cmd "pg_isready -U postgres -d linkflow_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
+      # --------------------------------------------------------
+      # Redis
+      # --------------------------------------------------------
+
+      redis:
+        image: redis:7
+
+        ports:
+          - 6379:6379
+
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
+      # --------------------------------------------------------
+      # RabbitMQ
+      # --------------------------------------------------------
+
+      rabbitmq:
+        image: rabbitmq:3-management
+
+        ports:
+          - 5672:5672
+          - 15672:15672
+
+        env:
+          RABBITMQ_DEFAULT_USER: admin
+          RABBITMQ_DEFAULT_PASS: password123
+
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+
+      # --------------------------------------------------------
+      # MinIO
+      # --------------------------------------------------------
+
+      minio:
+        image: minio/minio
+
+        ports:
+          - 9000:9000
+          - 9001:9001
+
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+        command: server /data --console-address ":9001"
+
 
     steps:
-      - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      # --------------------------------------------------------
+      # Checkout
+      # --------------------------------------------------------
 
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # --------------------------------------------------------
+      # pnpm
+      # --------------------------------------------------------
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+
+      # --------------------------------------------------------
+      # Node.js
+      # --------------------------------------------------------
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+
+      # --------------------------------------------------------
+      # Install
+      # --------------------------------------------------------
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm --filter ${{ matrix.package }} lint
 
-      - name: Build
-        run: pnpm --filter ${{ matrix.package }} build
+      # --------------------------------------------------------
+      # Test environment
+      # --------------------------------------------------------
+
+      - name: Create test environment
+        run: cp apps/api/.env.test.example apps/api/.env.test
+
+
+      # --------------------------------------------------------
+      # Prisma
+      # --------------------------------------------------------
 
       - name: Generate Prisma Client
-        run: cd apps/api && pnpm prisma generate
+        run: |
+          cd apps/api
+          pnpm prisma generate
 
-      - name: Test
-        run: pnpm --filter ${{ matrix.package }} test
+
+      - name: Run Prisma migrations
+        run: |
+          cd apps/api
+          pnpm prisma migrate deploy
+
+
+      # --------------------------------------------------------
+      # Lint
+      # --------------------------------------------------------
+
+      - name: Lint API
+        run: pnpm --filter api lint
+
+
+      # --------------------------------------------------------
+      # Format
+      # --------------------------------------------------------
+
+      - name: Format API
+        run: pnpm --filter api format
+
+      # --------------------------------------------------------
+      # Build
+      # --------------------------------------------------------
+
+      - name: Build API
+        run: pnpm --filter api build
+
+
+      # --------------------------------------------------------
+      # Unit tests
+      # --------------------------------------------------------
+
+      - name: Unit tests
+        run: pnpm --filter api test:unit
+
+
+      # --------------------------------------------------------
+      # Integration tests
+      # --------------------------------------------------------
+
+      - name: Integration tests
+        run: pnpm --filter api test:integration
+
+
+  # ============================================================
+  # WEB
+  # ============================================================
+
+  web:
+    name: Web CI
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # --------------------------------------------------------
+      # Checkout
+      # --------------------------------------------------------
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # --------------------------------------------------------
+      # pnpm
+      # --------------------------------------------------------
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+
+      # --------------------------------------------------------
+      # Node.js
+      # --------------------------------------------------------
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+
+      # --------------------------------------------------------
+      # Install
+      # --------------------------------------------------------
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+
+      # --------------------------------------------------------
+      # Lint
+      # --------------------------------------------------------
+
+      - name: Lint Web
+        run: pnpm --filter web lint
+
+      # --------------------------------------------------------
+      # Format
+      # --------------------------------------------------------
+
+      - name: Format Web
+        run: pnpm --filter web format
+
+      # --------------------------------------------------------
+      # Build
+      # --------------------------------------------------------
+
+      - name: Build Web
+        run: pnpm --filter web build
