@@ -135,6 +135,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # --------------------------------------------------------
+      # Build shared packages
+      # -------------------------------------------------------- 
+
+      - name: Build shared packages
+        run: pnpm --filter @linkflow/logger build
+
+      # --------------------------------------------------------
       # Test environment
       # --------------------------------------------------------
 
