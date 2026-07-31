@@ -2,6 +2,7 @@ export interface WorkspaceInvitationCreatedEvent {
   invitationId: string;
   workspaceId: string;
   workspaceName: string;
+  slug: string;
 
   inviterId: string;
   inviterName: string;

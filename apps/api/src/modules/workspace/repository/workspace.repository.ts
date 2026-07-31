@@ -1,5 +1,5 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
-import { Prisma, PrismaClient, WorkspaceMemberStatus } from '@prisma/client';
+import { Prisma, PrismaClient, WorkspaceMemberStatus, WorkspaceStatus } from '@prisma/client';
 import { generateWorkspaceSlug } from '../../../utils/slug.util.ts';
 
 /**
@@ -169,9 +169,11 @@ export class WorkspaceRepository {
     // Use Prisma to find all workspaces where the user is a member, including their roles
     return prisma.workspace.findMany({
       where: {
+        status: WorkspaceStatus.ACTIVE, // Only include active workspaces
         members: {
           some: {
             userId,
+            status: WorkspaceMemberStatus.ACTIVE, // Only include active members
           },
         },
       },

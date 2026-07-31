@@ -183,6 +183,7 @@ export class WorkspaceInvitationService {
     const event: WorkspaceInvitationCreatedEvent = {
       invitationId: invitation.id, // Set the ID of the created invitation
       workspaceId: workspace.id, // Set the ID of the workspace associated with the invitation
+      slug: workspace.slug, // Set the slug of the workspace associated with the invitation
       workspaceName: workspace.name, // Set the name of the workspace associated with the invitation
       inviterId: inviterId, // Set the ID of the inviter who created the invitation
       inviterName: inviterMember.fullName || inviterMember.email, // Set the name of the inviter, using full name if available, otherwise use email
@@ -211,7 +212,7 @@ export class WorkspaceInvitationService {
    * @param workspaceId - The ID of the workspace for which to list invitations.
    * @returns An array of workspace invitations or throws an error if the workspace does not exist.
    */
-  async listInvitations(workspaceId: string) {
+  async listInvitations(workspaceId: string, page: number, limit: number, search?: string) {
     // Validate the existence of the workspace
     const workspace = await this.workspaceRepository.findById(workspaceId);
 
@@ -221,7 +222,7 @@ export class WorkspaceInvitationService {
     }
 
     // Fetch and return the list of invitations for the specified workspace
-    const invitations = await this.workspaceInvitationRepository.findAllByWorkspaceId(workspaceId);
+    const invitations = await this.workspaceInvitationRepository.findAllByWorkspaceIdWithPagination(workspaceId, page, limit, search);
 
     // Return the list of invitations to the caller
     return invitations;
@@ -281,7 +282,7 @@ export class WorkspaceInvitationService {
     // Use a transaction to create a new workspace member and update the invitation status atomically
     const result = await this.transactionService.run(async (tx) => {
       // Find existing membership
-      const existingMember = await this.workspaceMemberRepository.findByWorkspaceAndUser(
+      const existingMember = await this.workspaceMemberRepository.findInactiveByWorkspaceAndUser(
         workspaceId,
         userId,
         tx,

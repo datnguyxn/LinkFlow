@@ -92,14 +92,22 @@ export class WorkspaceMemberController {
       Params: {
         id: string;
       };
+      Querystring: {
+        page: number;
+        limit: number;
+        search?: string;
+      };
     }>,
     reply: FastifyReply,
   ) {
     // Extract the workspace ID from the request parameters.
     const { id: workspaceId } = request.params;
 
+    // Extract pagination parameters (page, limit, search) from the request query string.
+    const { page = 1, limit = 10, search } = request.query;
+
     // Call the listWorkspaceMembers method of the WorkspaceMemberService to retrieve the list of members for the specified workspace.
-    const response = await this.workspaceMemberService.listWorkspaceMembers(workspaceId);
+    const response = await this.workspaceMemberService.listWorkspaceMembers(workspaceId, page, limit, search);
 
     // If the listWorkspaceMembers method returns a falsy value (indicating failure), return an error response with a BAD_REQUEST status and an appropriate error message.
     if (!response) {
@@ -271,7 +279,7 @@ export class WorkspaceMemberController {
       reply,
       null,
       'workspace.member.leaveWorkspaceSuccess',
-      HTTP_STATUS.NO_CONTENT,
+      HTTP_STATUS.OK,
     );
   }
 
@@ -320,7 +328,7 @@ export class WorkspaceMemberController {
       reply,
       null,
       'workspace.member.removeWorkspaceMemberSuccess',
-      HTTP_STATUS.NO_CONTENT,
+      HTTP_STATUS.OK,
     );
   }
 }

@@ -16,8 +16,30 @@ export class AuditLogRepository {
     });
   }
 
-  async findAll() {
-    return prisma.auditLog.findMany();
+  async findAllInWorkspaceByWorkspaceId(
+    workspaceId: string,
+  ) {
+
+    return prisma.auditLog.findMany({
+      where: {
+        resourceId: workspaceId,
+        resource: {
+          in: ['WORKSPACE', 'WORKSPACE_MEMBER', 'WORKSPACE_INVITATION']
+        }
+      },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            avatarUrl: true,
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 3,
+    });
   }
 
   async deleteOldLogs() {

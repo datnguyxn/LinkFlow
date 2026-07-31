@@ -73,7 +73,7 @@ export class WorkspaceMemberAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_MEMBER,
 
-            resourceId: event.memberId,
+            resourceId: event.workspaceId,
 
             metadata: {
               memberId: event.memberId,
@@ -109,7 +109,7 @@ export class WorkspaceMemberAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_MEMBER,
 
-            resourceId: event.memberId,
+            resourceId: event.workspaceId,
 
             metadata: {
               email: event.email,
@@ -145,7 +145,7 @@ export class WorkspaceMemberAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_MEMBER,
 
-            resourceId: event.memberId,
+            resourceId: event.workspaceId,
 
             metadata: {
               email: event.email,

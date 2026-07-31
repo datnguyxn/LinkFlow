@@ -16,7 +16,7 @@ import { AUDIT_ACTION, AUDIT_RESOURCE } from '../../common/constants/audit.const
 import { createAuditLog } from '../../utils/create-audit.util.ts';
 
 export class WorkspaceAuditWorker {
-  constructor(private readonly auditRepository: AuditLogRepository) {}
+  constructor(private readonly auditRepository: AuditLogRepository) { }
 
   async start() {
     // Consume workspace created events and create audit logs
@@ -101,7 +101,7 @@ export class WorkspaceAuditWorker {
           {
             user: {
               connect: {
-                id: event.deletedBy,
+                id: event.ownerId,
               },
             },
 
@@ -112,7 +112,15 @@ export class WorkspaceAuditWorker {
             resourceId: event.id,
 
             metadata: {
+              id: event.id,
+              members: event.members.map((member) => ({
+                id: member.id,
+                name: member.name,
+                email: member.email,
+              })),
+              deletedBy: event.deletedBy,
               deletedAt: event.deletedAt,
+              workspaceName: event.workspaceName,
             },
 
             ipAddress: event.ipAddress || null,

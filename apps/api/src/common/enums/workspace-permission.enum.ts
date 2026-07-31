@@ -19,21 +19,40 @@ export const WORKSPACE_PERMISSION = {
   INVITATION_CANCEL: 'workspace.invitation.cancel',
 
   // URLs
-  URL_CREATE: 'workspace.url.create',
-  URL_READ: 'workspace.url.read',
-  URL_UPDATE: 'workspace.url.update',
-  URL_DELETE: 'workspace.url.delete',
+  URL_CREATE: 'url.create',
+  URL_READ: 'url.read',
+  URL_UPDATE: 'url.update',
+  URL_DELETE: 'url.delete',
 
   // Tags
-  TAG_CREATE: 'workspace.tag.create',
-  TAG_READ: 'workspace.tag.read',
-  TAG_UPDATE: 'workspace.tag.update',
-  TAG_DELETE: 'workspace.tag.delete',
+  TAG_CREATE: 'tag.create',
+  TAG_READ: 'tag.read',
+  TAG_UPDATE: 'tag.update',
+  TAG_DELETE: 'tag.delete',
 
   // API Keys
-  API_KEY_CREATE: 'workspace.apiKey.create',
-  API_KEY_READ: 'workspace.apiKey.read',
-  API_KEY_REVOKE: 'workspace.apiKey.revoke',
+  API_KEY_CREATE: 'apikey.create',
+  API_KEY_READ: 'apikey.read',
+  API_KEY_REVOKE: 'apikey.revoke',
+
+  // QR Codes
+  QRCODE_CREATE: 'qrcode.create',
+  QRCODE_READ: 'qrcode.read',
+  QRCODE_UPDATE: 'qrcode.update',
+  QRCODE_DELETE: 'qrcode.delete',
+
+  // Analytics
+  ANALYTICS_READ: 'analytics.read',
+  ANALYTICS_EXPORT: 'analytics.export',
+  ANALYTICS_DELETE: 'analytics.delete',
+
+  // Audit Logs
+  AUDIT_READ: 'audit.read',
+
+  // Billing
+  BILLING_READ: 'billing.read',
+  BILLING_UPDATE: 'billing.update',
+  BILLING_CANCEL: 'billing.cancel',
 } as const;
 
 export type WorkspacePermission = (typeof WORKSPACE_PERMISSION)[keyof typeof WORKSPACE_PERMISSION];

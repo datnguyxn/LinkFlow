@@ -60,6 +60,7 @@ export const RABBITMQ_QUEUE = {
   EMAIL_USER_WELCOME: 'email.user.welcome',
   EMAIL_USER_ACTION: 'email.user.action',
   EMAIL_PASSWORD_RESET_REQUESTED: 'email.password.reset.requested',
+  EMAIL_WORKSPACE_DELETED: 'email.workspace.deleted',
   EMAIL_WORKSPACE_INVITATION_CREATED: 'email.workspace.invitation.created',
   EMAIL_WORKSPACE_INVITATION_ACCEPTED: 'email.workspace.invitation.accepted',
   EMAIL_WORKSPACE_INVITATION_REJECTED: 'email.workspace.invitation.rejected',
@@ -115,6 +116,8 @@ export const RABBITMQ_QUEUE = {
   AUDIT_WORKSPACE_MEMBER_ROLE_UPDATED: 'audit.workspace.member.role.updated',
   AUDIT_WORKSPACE_MEMBER_LEAVE: 'audit.workspace.member.leave',
   AUDIT_WORKSPACE_MEMBER_REMOVE: 'audit.workspace.member.remove',
+
+  NOTIFICATION_WORKSPACE_DELETED: 'notification.workspace.deleted',
 
   NOTIFICATION_WORKSPACE_INVITATION_CREATED: 'notification.workspace.invitation.created',
   NOTIFICATION_WORKSPACE_INVITATION_ACCEPTED: 'notification.workspace.invitation.accepted',

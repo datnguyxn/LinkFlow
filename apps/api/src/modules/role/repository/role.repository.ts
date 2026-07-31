@@ -32,4 +32,19 @@ export class RoleRepository {
       },
     });
   }
+
+  /**
+   * Get all roles from the database
+   * @returns An array of all role objects
+   */
+  async getAllRoles() {
+    // Use Prisma to retrieve all role records from the database
+    return prisma.role.findMany({
+      where: {
+        name: {
+          not: 'OWNER', // Exclude the OWNER role from the results
+        },
+      }
+    });
+  }
 }

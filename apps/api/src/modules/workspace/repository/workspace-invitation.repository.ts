@@ -1,5 +1,6 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
 import { InvitationStatus, Prisma, PrismaClient } from '@prisma/client';
+import { buildPagination, buildPaginationMeta } from '../../../utils/pagination.util.ts';
 
 /**
  * WorkspaceInvitationRepository class provides methods to interact with the workspace invitation data in the database.
@@ -59,6 +60,14 @@ export class WorkspaceInvitationRepository {
         expiresAt: true, // Include the expiration date of the invitation
         createdAt: true, // Include the creation date of the invitation
 
+        inviter: {
+          select: {
+            id: true, // Include the ID of the user who sent the invitation
+            fullName: true, // Include the full name of the user who sent the invitation
+            email: true, // Include the email address of the user who sent the invitation
+          },
+        },
+
         user: {
           select: {
             id: true, // Include the ID of the user who sent the invitation
@@ -81,6 +90,133 @@ export class WorkspaceInvitationRepository {
     });
   }
 
+  /**
+   * Find all workspace invitations by workspace ID with pagination and optional search
+   * @param workspaceId - The ID of the workspace
+   * @param page - The page number for pagination
+   * @param limit - The number of invitations per page
+   * @param search - Optional search term to filter invitations by email
+   * @returns An object containing the invitations and pagination metadata
+   */
+  async findAllByWorkspaceIdWithPagination(
+    workspaceId: string,
+    page: number,
+    limit: number,
+    search?: string,
+  ) {
+    
+    // Calculate the pagination parameters (skip and take) based on the provided page and limit values
+    const { skip, take } = buildPagination(page, limit); 
+
+    // Build the where condition for the query, including workspaceId and optional search term for email
+    const where: Prisma.WorkspaceInvitationWhereInput = {
+      workspaceId, // Filter invitations by the specified workspace ID
+      ...(search && { // If a search term is provided, add a condition to filter invitations by email
+        email: { // Filter invitations by email address
+          contains: search, // Use a case-insensitive search to find invitations where the email contains the search term
+          mode: 'insensitive', // Set the search mode to case-insensitive for email filtering
+        },
+      }),
+    };
+
+    // Execute a transaction to fetch invitations, total count, and counts for different statuses (pending, accepted, rejected, expired) in a single query
+    const [
+      invitations,
+      total,
+      pending,
+      accepted,
+      rejected,
+      expired,
+    ] = await prisma.$transaction([
+      prisma.workspaceInvitation.findMany({
+        where,
+        skip,
+        take,
+        select: {
+          id: true,
+          email: true,
+          status: true,
+          token: true,
+          expiresAt: true,
+          createdAt: true,
+
+          inviter: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            },
+          },
+
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            },
+          },
+
+          role: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+
+      prisma.workspaceInvitation.count({
+        where,
+      }),
+
+      prisma.workspaceInvitation.count({
+        where: {
+          ...where,
+          status: 'PENDING',
+        },
+      }),
+
+      prisma.workspaceInvitation.count({
+        where: {
+          ...where,
+          status: 'ACCEPTED',
+        },
+      }),
+
+      prisma.workspaceInvitation.count({
+        where: {
+          ...where,
+          status: 'DECLINED',
+        },
+      }),
+
+      prisma.workspaceInvitation.count({
+        where: {
+          ...where,
+          status: 'EXPIRED',
+        },
+      }),
+    ]);
+
+    return {
+      invitations,
+
+      summary: {
+        total,
+        pending,
+        accepted,
+        rejected,
+        expired,
+      },
+
+      pagination: buildPaginationMeta(page, limit, total), // Build pagination metadata using the provided page, limit, and total count of invitations
+    };
+  }
+
   async findById(invitationId: string) {
     // Use Prisma to find a workspace invitation record by its ID
     return prisma.workspaceInvitation.findUnique({
@@ -88,6 +224,12 @@ export class WorkspaceInvitationRepository {
         id: invitationId, // Filter the invitation by its unique ID
       },
       include: {
+        workspace: {
+          select: {
+            slug: true, // Include the slug of the workspace associated with the invitation
+          },
+        },
+
         inviter: {
           select: {
             id: true, // Include the ID of the user who sent the invitation

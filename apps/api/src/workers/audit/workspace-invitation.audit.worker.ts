@@ -37,7 +37,7 @@ export class WorkspaceInvitationAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
 
-            resourceId: event.invitationId,
+            resourceId: event.workspaceId,
 
             metadata: {
               workspaceId: event.workspaceId,
@@ -77,7 +77,7 @@ export class WorkspaceInvitationAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
 
-            resourceId: event.invitationId,
+            resourceId: event.workspaceId,
 
             metadata: {
               invitationId: event.invitationId,
@@ -118,7 +118,7 @@ export class WorkspaceInvitationAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
 
-            resourceId: event.invitationId,
+            resourceId: event.workspaceId,
 
             metadata: {
               invitationId: event.invitationId,
@@ -158,7 +158,7 @@ export class WorkspaceInvitationAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
 
-            resourceId: event.invitationId,
+            resourceId: event.workspaceId,
 
             metadata: {
               invitationId: event.invitationId,
@@ -198,7 +198,7 @@ export class WorkspaceInvitationAuditWorker {
 
             resource: AUDIT_RESOURCE.WORKSPACE_INVITATION,
 
-            resourceId: event.invitationId,
+            resourceId: event.workspaceId,
 
             metadata: {
               invitationId: event.invitationId,

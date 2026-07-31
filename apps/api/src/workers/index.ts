@@ -10,6 +10,8 @@ export * from './mail/auth.mail.worker.ts';
 export * from './mail/admin-user.mail.worker.ts';
 export * from './mail/workspace-invitation.mail.worker.ts';
 export * from './mail/workspace-member.mail.worker.ts';
+export * from './mail/workspace.mail.worker.ts';
 
 export * from './notification/workspace-invitation.notification.worker.ts';
 export * from './notification/workspace-member.notification.worker.ts';
+export * from './notification/workspace.notification.worker.ts';

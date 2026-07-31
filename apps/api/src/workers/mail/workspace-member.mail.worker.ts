@@ -45,6 +45,7 @@ export class WorkspaceMemberEmailWorker {
           await this.mailService.sendWorkspaceMemberRoleUpdatedEmail({
             workspaceId: event.workspaceId,
             workspaceName: event.workspaceName,
+            slug: event.slug,
             memberId: event.memberId,
             userId: event.userId,
             memberName: event.memberName,

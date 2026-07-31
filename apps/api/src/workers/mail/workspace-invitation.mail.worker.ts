@@ -34,12 +34,14 @@ export class WorkspaceInvitationMailWorker {
         try {
           await this.mailService.sendWorkspaceInvitationEmail({
             workspaceId: event.workspaceId,
+            slug: event.slug, // Assuming workspaceName is used as slug; adjust if needed
             name: event.inviteeName || '',
             email: event.inviteeEmail || '',
             inviterName: event.inviterName,
             workspaceName: event.workspaceName,
             inviteToken: event.token,
             roleName: event.roleName,
+            invitationId: event.invitationId,
           });
 
           console.log(`Workspace invitation email sent to ${event.inviteeEmail || ''}`);

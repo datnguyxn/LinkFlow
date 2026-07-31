@@ -4,6 +4,7 @@ import { HTTP_STATUS } from '../../../common/constants/index.ts';
 import { WorkspaceService } from '../service/workspace.service.ts';
 import type { WorkspaceInput } from '../validator/workspace.validator.ts';
 import { WorkspaceSerializer } from '../../../common/serializers/workspace.serializer.ts';
+import type { MultipartFile } from '@fastify/multipart';
 
 /**
  * WorkspaceController class handles HTTP requests related to workspaces.
@@ -238,7 +239,7 @@ export class WorkspaceController {
     }
 
     // If the workspace deletion is successful, return a success response with the deleted workspace
-    return ResponseHandler.success(reply, deletedWorkspace, 'workspace.deleted', HTTP_STATUS.OK);
+    return ResponseHandler.success(reply, null, 'workspace.deleted', HTTP_STATUS.OK);
   }
 
   /**
@@ -288,5 +289,112 @@ export class WorkspaceController {
 
     // If the workspace restoration is successful, return a success response with the restored workspace
     return ResponseHandler.success(reply, restoredWorkspace, 'workspace.restored', HTTP_STATUS.OK);
+  }
+
+  /**
+   * Handles the update of a workspace's logo.
+   * Flow:
+   * 1. Extracts the user ID from the request object.
+   * 2. Extracts the workspace ID from the request parameters.
+   * 3. Retrieves the IP address from the request object.
+   * 4. Calls the WorkspaceService to update the workspace logo associated with the provided workspace ID and user ID.
+   * 5. If the workspace logo update fails, returns an error response indicating that the update failed.
+   * 6. If the workspace logo update is successful, returns a success response with the updated workspace.
+   *
+   * @param request - The FastifyRequest object containing the request data.
+   * @param reply - The FastifyReply object used to send the response.
+   * @returns A success response with the updated workspace or an error response if the update fails.
+   */
+  async updateWorkspaceLogo(
+    request: FastifyRequest<{
+      Params: { id: string }, Body: { file: MultipartFile | null, logoUrl: string | null };
+    }>,
+    reply: FastifyReply,
+  ) {
+
+    // Extract the user ID from the request object
+    const file = (request.body as { file: MultipartFile }).file;
+
+    // Extract the user ID from the request object
+    const id = request.user?.id as string;
+
+    // Extract the logo URL from the request body
+    const logoUrl = (request.body as { logoUrl: string | null }).logoUrl;
+
+    // Extract the workspace ID from the request parameters
+    const workspaceId = request.params.id;
+
+    // Retrieve the IP address from the request object
+    const ipAddress = request.ip;
+
+    // Call the WorkspaceService to update the workspace logo associated with the provided workspace ID and user ID
+    const updatedWorkspace = await this.workspaceService.updateWorkspaceLogo(
+      workspaceId,
+      logoUrl,
+      file,
+      id,
+      ipAddress,
+    );
+
+    // If the workspace logo update fails, return an error response indicating that the update failed
+    if (!updatedWorkspace) {
+      return ResponseHandler.error(
+        reply,
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        'workspace.logoUpdateFailed',
+      );
+    }
+
+    // If the workspace logo update is successful, return a success response with the updated workspace
+    return ResponseHandler.success(reply, updatedWorkspace, 'workspace.logoUpdated', HTTP_STATUS.OK);
+  } 
+
+  /**
+   * Handles the deletion of a workspace's logo.
+   * Flow:
+   * 1. Extracts the user ID from the request object.
+   * 2. Extracts the workspace ID from the request parameters.
+   * 3. Retrieves the IP address from the request object.
+   * 4. Calls the WorkspaceService to delete the workspace logo associated with the provided workspace ID and user ID.
+   * 5. If the workspace logo deletion fails, returns an error response indicating that the deletion failed.
+   * 6. If the workspace logo deletion is successful, returns a success response with the updated workspace.
+   *
+   * @param request - The FastifyRequest object containing the request data.
+   * @param reply - The FastifyReply object used to send the response.
+   * @returns A success response with the updated workspace or an error response if the deletion fails.
+   */
+  async deleteWorkspaceLogo(
+    request: FastifyRequest<{
+      Params: { id: string };
+    }>,
+    reply: FastifyReply,
+  ) {
+    // Extract the user ID from the request object
+    const id = request.user?.id as string;
+
+    // Extract the workspace ID from the request parameters
+    const workspaceId = request.params.id;
+
+    // Retrieve the IP address from the request object
+    const ipAddress = request.ip;
+
+    // Call the WorkspaceService to delete the workspace logo associated with the provided workspace ID and user ID
+    const updatedWorkspace = await this.workspaceService.deleteWorkspaceLogo(
+      workspaceId,
+      id,
+      ipAddress,
+    );
+
+    // If the workspace logo deletion fails, return an error response indicating that the deletion failed
+    if (!updatedWorkspace) {
+      return ResponseHandler.error(
+        reply,
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        'workspace.logoDeletionFailed',
+      );
+    }
+
+    // If the workspace logo deletion is successful, return a success response with the updated workspace
+    return ResponseHandler.success(reply, null, 'workspace.logoDeleted', HTTP_STATUS.OK);
   }
 }

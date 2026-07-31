@@ -12,6 +12,28 @@ import {
 } from '../validator/workspace-invitation.validator.ts';
 import { WORKSPACE_PERMISSION } from '../../../common/enums/workspace-permission.enum.ts';
 import { WorkspaceMemberController } from '../controller/workspace-member.controller.ts';
+import type { MultipartFile } from '@fastify/multipart';
+import {
+  getAllWorkspacesSwagger,
+  getWorkspaceByIdSwagger,
+  createWorkspaceSwagger,
+  updateWorkspaceSwagger,
+  deleteWorkspaceSwagger,
+  updateWorkspaceLogoSwagger,
+  deleteWorkspaceLogoSwagger,
+  createWorkspaceInvitationSwagger,
+  listWorkspaceInvitationsSwagger,
+  getWorkspaceInvitationByIdSwagger,
+  revokeWorkspaceInvitationSwagger,
+  rejectWorkspaceInvitationSwagger,
+  acceptWorkspaceInvitationSwagger,
+  getWorkspaceMemberByIdSwagger,
+  listWorkspaceMembersSwagger,
+  transferWorkspaceOwnershipSwagger,
+  updateWorkspaceMemberRoleSwagger,
+  leaveWorkspaceMemberSwagger,
+  removeWorkspaceMemberSwagger,
+} from '../../../swaggers/index.ts';
 
 // Initialize controller instance
 const controller = new WorkspaceController();
@@ -48,10 +70,18 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preValidation: [validate(workspaceValidator)], // Validate workspace input before processing the request
+      schema: createWorkspaceSwagger, // Swagger schema for creating a workspace
     },
     controller.createWorkspace.bind(controller),
   );
 
+  /**
+   * GET /workspaces
+   *
+   * Features:
+   * - Retrieve all workspaces
+   * - Rate limiting to prevent abuse
+   */
   app.get(
     '/',
     {
@@ -61,6 +91,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: getAllWorkspacesSwagger, // Swagger schema for retrieving all workspaces
     },
     controller.getAllWorkspaces.bind(controller),
   );
@@ -72,7 +103,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - Retrieve a workspace by its ID
    * - Rate limiting to prevent abuse
    */
-  app.get(
+  app.get<{ Params: { id: string } }>(
     '/:id',
     {
       config: {
@@ -81,6 +112,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: getWorkspaceByIdSwagger, // Swagger schema for retrieving a workspace by ID
     },
     controller.getWorkspaceById.bind(controller),
   );
@@ -102,8 +134,51 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preValidation: [validate(workspaceValidator)], // Validate workspace input before processing the request
+      schema: updateWorkspaceSwagger, // Swagger schema for updating a workspace
     },
     controller.updateWorkspace.bind(controller),
+  );
+
+  /**
+   * PATCH /workspaces/:id/logo
+   *
+   * Features:
+   * - Update the logo of a workspace by its ID
+   * - Rate limiting to prevent abuse
+   */
+  app.patch<{ Params: { id: string }, Body: { file: MultipartFile | null, logoUrl: string | null } }>(
+    '/:id/logo',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      schema: updateWorkspaceLogoSwagger, // Swagger schema for updating a workspace logo
+    },
+    controller.updateWorkspaceLogo.bind(controller),
+  );
+
+  /**
+   * DELETE /workspaces/:id/logo
+   *
+   * Features:
+   * - Delete the logo of a workspace by its ID
+   * - Rate limiting to prevent abuse
+   */
+  app.delete<{ Params: { id: string } }>(
+    '/:id/logo',
+    {
+      config: {
+        rateLimit: {
+          max: 20, // Maximum 20 requests
+          timeWindow: '1 minute', // Per minute
+        },
+      },
+      schema: deleteWorkspaceLogoSwagger, // Swagger schema for deleting a workspace logo
+    },
+    controller.deleteWorkspaceLogo.bind(controller),
   );
 
   /**
@@ -122,6 +197,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: deleteWorkspaceSwagger, // Swagger schema for deleting a workspace
     },
     controller.deleteWorkspace.bind(controller),
   );
@@ -164,6 +240,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.INVITATION_CREATE)], // Ensure user is authenticated before processing the request
       preValidation: [validate(createWorkspaceInvitationSchema)], // Validate workspace input before processing the request
+      schema: createWorkspaceInvitationSwagger, // Swagger schema for creating a workspace invitation
     },
     workspaceInvitationController.createInvitation.bind(workspaceInvitationController),
   );
@@ -175,7 +252,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - List all invitations for a specific workspace
    * - Rate limiting to prevent abuse
    */
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: { id: string }, Querystring: { page: number; limit: number; search?: string } }>(
     '/:id/invitations',
     {
       config: {
@@ -185,6 +262,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.INVITATION_READ)], // Ensure user is authenticated before processing the request
+      schema: listWorkspaceInvitationsSwagger, // Swagger schema for listing workspace invitations
     },
     workspaceInvitationController.listInvitations.bind(workspaceInvitationController),
   );
@@ -206,6 +284,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.INVITATION_READ)], // Ensure user is authenticated before processing the request
+      schema: getWorkspaceInvitationByIdSwagger, // Swagger schema for retrieving a workspace invitation by ID
     },
     workspaceInvitationController.getInvitationById.bind(workspaceInvitationController),
   );
@@ -226,6 +305,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: acceptWorkspaceInvitationSwagger, // Swagger schema for accepting a workspace invitation
     },
     workspaceInvitationController.acceptInvitation.bind(workspaceInvitationController),
   );
@@ -267,6 +347,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.INVITATION_CANCEL)], // Ensure user is authenticated before processing the request
+      schema: revokeWorkspaceInvitationSwagger, // Swagger schema for revoking a workspace invitation
     },
     workspaceInvitationController.revokeInvitation.bind(workspaceInvitationController),
   );
@@ -287,6 +368,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      schema: rejectWorkspaceInvitationSwagger, // Swagger schema for rejecting a workspace invitation
     },
     workspaceInvitationController.rejectInvitation.bind(workspaceInvitationController),
   );
@@ -310,6 +392,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.WORKSPACE_UPDATE)], // Ensure user is authenticated before processing the request
+      schema: transferWorkspaceOwnershipSwagger, // Swagger schema for transferring workspace ownership
     },
     workspaceMemberController.transferOwnership.bind(workspaceMemberController),
   );
@@ -322,7 +405,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - Rate limiting to prevent abuse
    * - Requires the user to have the WORKSPACE_READ permission for the workspace
    */
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: { id: string }; Querystring: { page: number; limit: number; search?: string } }>(
     '/:id/members',
     {
       config: {
@@ -332,6 +415,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_READ)], // Ensure user is authenticated before processing the request
+      schema: listWorkspaceMembersSwagger, // Swagger schema for listing workspace members
     },
     workspaceMemberController.listWorkspaceMembers.bind(workspaceMemberController),
   );
@@ -354,6 +438,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_READ)], // Ensure user is authenticated before processing the request
+      schema: getWorkspaceMemberByIdSwagger, // Swagger schema for retrieving a workspace member by ID
     },
     workspaceMemberController.getWorkspaceMember.bind(workspaceMemberController),
   );
@@ -377,6 +462,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_UPDATE)], // Ensure user is authenticated before processing the request
+      schema: updateWorkspaceMemberRoleSwagger, // Swagger schema for updating a workspace member's role
     },
     workspaceMemberController.updateWorkspaceMemberRole.bind(workspaceMemberController),
   );
@@ -399,6 +485,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_LEAVE)], // Ensure user is authenticated before processing the request
+      schema: leaveWorkspaceMemberSwagger, // Swagger schema for leaving a workspace
     },
     workspaceMemberController.leaveWorkspace.bind(workspaceMemberController),
   );
@@ -421,6 +508,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
         },
       },
       preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.MEMBER_REMOVE)], // Ensure user is authenticated before processing the request
+      schema: removeWorkspaceMemberSwagger, // Swagger schema for removing a workspace member
     },
     workspaceMemberController.removeWorkspaceMember.bind(workspaceMemberController),
   );

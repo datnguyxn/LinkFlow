@@ -22,3 +22,25 @@ export * from './admin/users/unban.swagger.ts';
 export * from './admin/users/change-role.swagger.ts';
 export * from './admin/users/delete.swagger.ts';
 export * from './admin/users/restore.swagger.ts';
+
+export * from './workspace/get-all-workspaces.swagger.ts';
+export * from './workspace/get-workspace.swagger.ts';
+export * from './workspace/create-workspace.swagger.ts';
+export * from './workspace/update-workspace.swagger.ts';
+export * from './workspace/delete-workspace.swagger.ts';
+export * from './workspace/update-logo-workspace.swagger.ts';
+export * from './workspace/delete-logo-workspace.swagger.ts';
+
+export * from './workspace/workspace-invitation/create-workspace-invitation.swagger.ts';
+export * from './workspace/workspace-invitation/get-all-workspace-invitations.swagger.ts';
+export * from './workspace/workspace-invitation/get-workspace-invitation.swagger.ts';
+export * from './workspace/workspace-invitation/accept-workspace-invitation.swagger.ts';
+export * from './workspace/workspace-invitation/reject-workspace-invitation.swagger.ts';
+export * from './workspace/workspace-invitation/revoke-workspace-invitation.swagger.ts';
+
+export * from './workspace/workspace-member/get-all-workspace-members.swagger.ts';
+export * from './workspace/workspace-member/get-workspace-member.swagger.ts';
+export * from './workspace/workspace-member/update-role-workspace-member.swagger.ts';
+export * from './workspace/workspace-member/transfer-ownership-workspace-member.swagger.ts';
+export * from './workspace/workspace-member/leave-workspace-member.swagger.ts';
+export * from './workspace/workspace-member/remove-workspace-member.swagger.ts';

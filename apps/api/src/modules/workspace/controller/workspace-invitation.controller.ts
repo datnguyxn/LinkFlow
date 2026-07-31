@@ -79,12 +79,18 @@ export class WorkspaceInvitationController {
    * @param reply - The Fastify reply object used to send the response back to the client.
    * @returns A success response with the list of invitations or an error response if retrieval fails.
    */
-  async listInvitations(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+  async listInvitations(request: FastifyRequest<{
+    Params: { id: string },
+    Querystring: { page: number; limit: number; search?: string }
+  }>, reply: FastifyReply) {
     // Extract the workspace ID from the request parameters
     const { id } = request.params;
 
+    // Extract pagination parameters from the query string
+    const { page = 1, limit = 10, search } = request.query;
+
     // Call the WorkspaceInvitationService to list invitations for the specified workspace
-    const invitations = await this.workspaceInvitationService.listInvitations(id);
+    const invitations = await this.workspaceInvitationService.listInvitations(id, page, limit, search);
 
     // Return a success response with the list of invitations
     return ResponseHandler.success(
@@ -256,7 +262,7 @@ export class WorkspaceInvitationController {
     }
 
     // Return a success response indicating that the invitation was revoked successfully
-    return ResponseHandler.success(reply, result, 'workspace.invitationRevoked', HTTP_STATUS.OK);
+    return ResponseHandler.success(reply, null, 'workspace.invitationRevoked', HTTP_STATUS.OK);
   }
 
   /**

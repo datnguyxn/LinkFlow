@@ -15,10 +15,16 @@ export interface PaginationQuery {
  * @param limit - The number of items per page (default is 10)
  * @returns An object containing 'skip' and 'take' values for database queries
  */
-export function buildPagination(page = 1, limit = 10) {
+export function buildPagination(
+  page: number | string,
+  limit: number | string,
+) {
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+
   return {
-    skip: (page - 1) * limit,
-    take: limit,
+    skip: (pageNumber - 1) * limitNumber,
+    take: limitNumber,
   };
 }
 
@@ -30,18 +36,20 @@ export function buildPagination(page = 1, limit = 10) {
  * @returns An object containing pagination metadata including total pages and navigation flags
  */
 export function buildPaginationMeta(
-  page: number,
-  limit: number,
+  page: number | string,
+  limit: number | string,
   totalItems: number,
 ): PaginationMeta {
-  const totalPages = Math.ceil(totalItems / limit);
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+  const totalPages = Math.ceil(totalItems / limitNumber);
 
   return {
-    page,
-    limit,
+    page: pageNumber,
+    limit: limitNumber,
     totalItems,
     totalPages,
-    hasNext: page < totalPages,
-    hasPrevious: page > 1,
+    hasNext: pageNumber < totalPages,
+    hasPrevious: pageNumber > 1,
   };
 }

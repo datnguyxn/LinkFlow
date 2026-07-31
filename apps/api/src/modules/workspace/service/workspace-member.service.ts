@@ -14,6 +14,7 @@ import type {
   WorkspaceMemberLeaveEvent,
   WorkspaceMemberRemoveEvent,
 } from '../../../events/index.ts';
+import { MinioStorageService } from '../../../infrastructure/storage/index.ts';
 
 /**
  * WorkspaceMemberService is responsible for managing workspace members and their roles.
@@ -33,7 +34,8 @@ export class WorkspaceMemberService {
     private workspaceMemberPublisher: WorkspaceMemberPublisher = new WorkspaceMemberPublisher(
       new Publisher(),
     ),
-  ) {}
+    private storageService: MinioStorageService = new MinioStorageService(), // Assuming you have a MinioStorageService for handling storage operations
+  ) { }
 
   /**
    * Transfers ownership of a workspace from the current owner to a new owner.
@@ -195,10 +197,13 @@ export class WorkspaceMemberService {
   /**
    * Lists all members of a specified workspace.
    * @param workspaceId - The ID of the workspace for which to list members.
+   * @param page - The page number for pagination (1-based index).
+   * @param limit - The number of items per page for pagination.
+   * @param search - Optional search term to filter members by user full name or email.
    * @returns An array of workspace members belonging to the specified workspace.
    * @throws NotFoundError - If the workspace does not exist.
    */
-  async listWorkspaceMembers(workspaceId: string) {
+  async listWorkspaceMembers(workspaceId: string, page: number, limit: number, search?: string) {
     // Validate that the workspace exists
     const workspace = await this.workspaceRepository.findById(workspaceId);
 
@@ -208,7 +213,16 @@ export class WorkspaceMemberService {
     }
 
     // Retrieve and return all members of the specified workspace
-    return this.workspaceMemberRepository.findAllByWorkspaceId(workspaceId);
+    const result = await this.workspaceMemberRepository.findAllByWorkspaceIdWithPagination(workspaceId, page, limit, search);
+
+    await Promise.all(result.members.map(async (member) => {
+      // Ensure that the member's user object has a valid avatarUrl, defaulting to null if not present
+      if (member.user.avatarUrl && !member.user.avatarUrl.startsWith('http') && !member.user.avatarUrl.startsWith('https')) {
+        member.user.avatarUrl = await this.storageService.getPresignedUrl(member.user.avatarUrl, 60 * 60); // Generate a presigned URL for the avatar with a 1-hour expiration
+      }
+    }));
+    
+    return result;
   }
   /**
    * Retrieves a specific workspace member by workspace ID and user ID.
@@ -224,6 +238,10 @@ export class WorkspaceMemberService {
     // Validate that the workspace member exists
     if (!member) {
       throw new NotFoundError('workspace.memberNotFound', ERROR_CODE.WORKSPACE_MEMBER_NOT_FOUND);
+    }
+
+    if (member.user.avatarUrl && !member.user.avatarUrl.startsWith('http') && !member.user.avatarUrl.startsWith('https')) {
+      member.user.avatarUrl = await this.storageService.getPresignedUrl(member.user.avatarUrl, 60 * 60); // Generate a presigned URL for the avatar with a 1-hour expiration
     }
 
     // Return the workspace member object
@@ -286,7 +304,8 @@ export class WorkspaceMemberService {
     const event: WorkspaceMemberRoleUpdatedEvent = {
       workspaceId, // The ID of the workspace where the member's role is being updated
       workspaceName: member.workspace.name, // The name of the workspace where the member's role is being updated
-
+      slug: member.workspace.slug, // The slug of the workspace where the member's role is being updated
+      
       memberId: member.id, // The ID of the workspace member whose role is being updated
       userId: member.userId, // The ID of the user associated with the workspace member whose role is being updated
 

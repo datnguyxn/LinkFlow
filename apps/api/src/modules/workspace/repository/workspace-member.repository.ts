@@ -1,5 +1,6 @@
 import { prisma } from '../../../infrastructure/database/index.ts';
 import { Prisma, PrismaClient, WorkspaceMemberStatus } from '@prisma/client';
+import { buildPagination, buildPaginationMeta } from '../../../utils/pagination.util.ts';
 
 /**
  * WorkspaceMemberRepository class provides methods to interact with the workspace member data in the database.
@@ -70,9 +71,80 @@ export class WorkspaceMemberRepository {
         status: WorkspaceMemberStatus.ACTIVE,
       },
       include: {
-        user: true,
-        role: true,
-        workspace: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        role: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            ownerId: true,
+            logoUrl: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Find a workspace member by workspace ID and user ID, including inactive members (LEFT or REMOVED)
+   * @param workspaceId - The ID of the workspace
+   * @param userId - The ID of the user whose membership to find
+   * @param db - The Prisma client or transaction client for database operations (default is the main Prisma client)
+   * @returns The workspace member object if found, otherwise null
+   */
+  async findInactiveByWorkspaceAndUser(
+    workspaceId: string,
+    userId: string,
+    db: PrismaClient | Prisma.TransactionClient = prisma,
+  ) {
+    return db.workspaceMember.findFirst({
+      where: {
+        workspaceId,
+        userId,
+        status: {
+          in: [
+            WorkspaceMemberStatus.LEFT,
+            WorkspaceMemberStatus.REMOVED,
+          ],
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        role: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            ownerId: true,
+            logoUrl: true,
+          },
+        },
       },
     });
   }
@@ -153,6 +225,118 @@ export class WorkspaceMemberRepository {
       },
     });
   }
+
+  /**
+   * Find all workspace members by workspace ID with pagination and optional search
+   * @param workspaceId - The ID of the workspace whose members to retrieve
+   * @param page - The page number for pagination (1-based index)
+   * @param limit - The number of items per page for pagination
+   * @param search - Optional search term to filter members by user full name or email
+   * @returns An object containing the array of workspace member objects and pagination metadata
+   */
+  async findAllByWorkspaceIdWithPagination(
+    workspaceId: string,
+    page: number,
+    limit: number,
+    search?: string,
+  ) {
+    const { skip, take } = buildPagination(page, limit);
+
+    const where: Prisma.WorkspaceMemberWhereInput = {
+      workspaceId,
+      ...(search
+        ? {
+          user: {
+            OR: [
+              {
+                fullName: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                email: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          },
+        }
+        : {}),
+    };
+
+    return prisma.$transaction(async (tx) => {
+      const [
+        members,
+        totalItems,
+        active,
+        left,
+        removed,
+      ] = await Promise.all([
+        tx.workspaceMember.findMany({
+          where,
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+            role: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          skip,
+          take,
+        }),
+
+        tx.workspaceMember.count({
+          where,
+        }),
+
+        tx.workspaceMember.count({
+          where: {
+            ...where,
+            status: WorkspaceMemberStatus.ACTIVE,
+          },
+        }),
+
+        tx.workspaceMember.count({
+          where: {
+            ...where,
+            status: WorkspaceMemberStatus.LEFT,
+          },
+        }),
+
+        tx.workspaceMember.count({
+          where: {
+            ...where,
+            status: WorkspaceMemberStatus.REMOVED,
+          },
+        }),
+      ]);
+
+      return {
+        members,
+
+        summary: {
+          total: totalItems,
+          active,
+          left,
+          removed,
+        },
+
+        pagination: buildPaginationMeta(page, limit, totalItems),
+      };
+    });
+  }
+
 
   /**
    * Update a workspace member's information

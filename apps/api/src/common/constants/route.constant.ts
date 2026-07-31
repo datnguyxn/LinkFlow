@@ -7,4 +7,6 @@ export const ROUTE = {
   ANALYTICS: '/analytics',
   ADMIN: '/admin',
   WORKSPACE: '/workspaces',
+  ROLE: '/roles',
+  ACTIVITY_LOG: '/activity-logs',
 } as const;

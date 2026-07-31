@@ -1,5 +1,4 @@
-import type { WorkspaceWithRole } from '../../modules/workspace/types/workspace.type.ts';
-import type { Workspace } from '@prisma/client';
+import type { WorkspaceWithRole, WorkspaceWithRoleAndUser } from '../../modules/workspace/types/workspace.type.ts';
 
 export class WorkspaceSerializer {
   static serializeWithMember(workspace: WorkspaceWithRole) {
@@ -23,7 +22,11 @@ export class WorkspaceSerializer {
     };
   }
 
-  static serialize(workspace: Workspace) {
+  static serialize(
+    workspace: WorkspaceWithRoleAndUser,
+  ) {
+    const member = workspace.members[0];
+
     return {
       id: workspace.id,
       name: workspace.name,
@@ -31,10 +34,19 @@ export class WorkspaceSerializer {
       logoUrl: workspace.logoUrl,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
+
+      role: member?.role
+        ? {
+          id: member.role.id,
+          name: member.role.name,
+          description: member.role.description,
+        }
+        : null,
     };
   }
-
-  static serializeMany(workspaces: Workspace[]) {
-    return workspaces.map(this.serialize);
+  static serializeMany(workspaces: WorkspaceWithRoleAndUser[]) {
+    return workspaces.map((workspace) =>
+      this.serialize(workspace),
+    );
   }
 }
