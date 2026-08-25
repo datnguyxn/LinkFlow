@@ -133,6 +133,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.WORKSPACE_UPDATE)], // Ensure user is authenticated before processing the request
       preValidation: [validate(workspaceValidator)], // Validate workspace input before processing the request
       schema: updateWorkspaceSwagger, // Swagger schema for updating a workspace
     },
@@ -158,6 +159,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.WORKSPACE_UPDATE)], // Ensure user is authenticated before processing the request
       schema: updateWorkspaceLogoSwagger, // Swagger schema for updating a workspace logo
     },
     controller.updateWorkspaceLogo.bind(controller),
@@ -179,6 +181,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.WORKSPACE_UPDATE)], // Ensure user is authenticated before processing the request
       schema: deleteWorkspaceLogoSwagger, // Swagger schema for deleting a workspace logo
     },
     controller.deleteWorkspaceLogo.bind(controller),
@@ -191,7 +194,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
    * - Delete a workspace by its ID
    * - Rate limiting to prevent abuse
    */
-  app.delete(
+  app.delete<{ Params: { id: string } }>(
     '/:id',
     {
       config: {
@@ -200,6 +203,7 @@ export const workspaceRoutes = async (app: FastifyInstance) => {
           timeWindow: '1 minute', // Per minute
         },
       },
+      preHandler: [requireWorkspacePermission(WORKSPACE_PERMISSION.WORKSPACE_DELETE)], // Ensure user is authenticated before processing the request
       schema: deleteWorkspaceSwagger, // Swagger schema for deleting a workspace
     },
     controller.deleteWorkspace.bind(controller),

@@ -1,10 +1,14 @@
-# URL Module Design
+# URL Management Module Design
 
 ## Overview
 
-The URL module is responsible for creating, managing, and tracking shortened URLs within a workspace.
+The URL Management module is the core feature of LinkFlow.
 
-Each URL belongs to a workspace and is created by a user. The module supports custom short codes, password protection, expiration, click limits, QR code generation, tagging, and detailed analytics.
+It enables workspace members to create, organize, update, and manage shortened URLs within their workspaces. Every URL belongs to exactly one workspace and can be associated with tags, QR codes, analytics, and access restrictions.
+
+The module is designed for high performance and scalability by leveraging Redis for caching, RabbitMQ for asynchronous processing, MinIO for object storage, and PostgreSQL as the primary database.
+
+Workspace isolation ensures that members can only access URLs belonging to workspaces they are authorized to use.
 
 Supported features:
 
@@ -13,14 +17,11 @@ Supported features:
 - Get URL Details
 - Update URL
 - Delete URL
-- Redirect Short URL
+- Redirect URL
 - Generate QR Code
-- Manage Tags
 - View Analytics
 
-All management endpoints require authentication.
-
-The redirect endpoint is publicly accessible.
+All management endpoints require authentication, while URL redirection is publicly accessible.
 
 ---
 
@@ -31,30 +32,48 @@ flowchart TD
 
 User
 
-User --> Workspace
+User --> API
 
-Workspace --> URL
+Visitor --> API
+
+API --> Redis
+
+Redis --> PostgreSQL
+
+API --> PostgreSQL
+
+API --> RabbitMQ
+
+RabbitMQ --> Worker
+
+Worker --> PostgreSQL
+
+API --> MinIO
+
+PostgreSQL --> URL
 
 URL --> QRCode
 
-URL --> Tags
+URL --> Analytics
 
-URL --> ClickEvent
+Analytics --> ClickEvent
 
-URL --> DailyStatistic
+Analytics --> DailyStatistic
 
-URL --> BrowserStatistic
+Analytics --> BrowserStatistic
 
-URL --> CountryStatistic
+Analytics --> DeviceStatistic
 
-URL --> DeviceStatistic
+Analytics --> CountryStatistic
+
+URL --> Tag
 ```
 
 ---
 
-# URL Flow
+# URL Management Flow
 
-## URL Management Flow
+## URL Management
 
 ```mermaid
 flowchart TD
@@ -62,278 +81,282 @@ flowchart TD
 A[Authenticated User]
 
 A --> B[Create URL]
+
 A --> C[List URLs]
+
 A --> D[View URL]
+
 A --> E[Update URL]
+
 A --> F[Delete URL]
+
 A --> G[Generate QR Code]
-A --> H[Manage Tags]
-A --> I[View Analytics]
 
-B --> Validate[Validate Request]
+A --> H[View Analytics]
 
-Validate --> Slug[Generate or Validate Short Code]
+Visitor[Visitor]
 
-Slug --> DB[(Database)]
+Visitor --> I[Redirect URL]
 
-C --> DB
+B --> Validate
 
-D --> DB
+Validate --> Permission
+
+Permission --> DB[(PostgreSQL)]
+
+DB --> Cache[(Redis)]
+
+C --> Cache
+
+Cache --> DB
+
+D --> Cache
+
+Cache --> DB
 
 E --> DB
 
+DB --> InvalidateCache[Invalidate Cache]
+
 F --> DB
 
-G --> Storage[(Object Storage)]
+DB --> RemoveCache[Remove Cache]
+
+G --> QR
+
+QR --> Storage[(MinIO)]
 
 Storage --> DB
 
+I --> RedirectEngine
+
+RedirectEngine --> Cache
+
+Cache --> DB
+
+RedirectEngine --> Queue[(RabbitMQ)]
+
+Queue --> Worker
+
+Worker --> AnalyticsDB[(PostgreSQL)]
+
 H --> DB
-
-I --> Analytics[(Analytics)]
-
-Public[Visitor]
-
-Public --> Redirect[Access Short URL]
-
-Redirect --> DB
-
-DB --> Password{Password Protected?}
-
-Password -->|Yes| VerifyPassword
-
-Password -->|No| Expiration
-
-VerifyPassword --> Expiration
-
-Expiration --> ClickLimit
-
-ClickLimit --> Status
-
-Status --> RedirectType
-
-RedirectType --> OriginalURL[Original URL]
 ```
-
----
-
-# URL Ownership
-
-```mermaid
-flowchart TD
-
-User
-
-User --> WorkspaceA[Workspace]
-
-WorkspaceA --> URL1[URL]
-
-WorkspaceA --> URL2[URL]
-
-WorkspaceA --> Tag1[Tag]
-
-URL1 --> QRCode
-
-URL1 --> Analytics
-```
-
-Business Rules:
-
-- A user can own multiple workspaces.
-- A workspace can have multiple members.
-- A workspace can contain multiple URLs.
-- A URL belongs to exactly one workspace.
-- Every URL records its creator.
-- Users can only manage URLs within workspaces where they are members.
 
 ---
 
 # URL Structure
 
-A shortened URL consists of two parts.
+Each URL belongs to exactly one workspace.
 
 ```
-https://{domain}/{shortCode}
+Workspace
+
+├── URLs
+
+│   ├── QR Code
+
+│   ├── Analytics
+
+│   └── Tags
 ```
 
-Examples:
-
-```
-https://lf.io/openai
-
-https://lf.io/github
-
-https://lf.io/A82KxP
-```
+A URL cannot exist without its parent workspace.
 
 ---
 
 # URL Features
 
-## Generated Short Code
+## URL Creation
 
-The system automatically generates a unique short code.
+Workspace members can create shortened URLs.
 
-Example
+Supported options include:
 
-```
-https://lf.io/A82KxP
-```
+- Custom short code
+- Auto-generated short code
+- Expiration date
+- Maximum click limit
+- Password protection
+- Tags
 
----
-
-## Custom Short Code
-
-Users may specify their own short code.
-
-Example
-
-```
-https://lf.io/docs
-```
-
-Requirements
-
-- Unique
-- Valid format
-- Not reserved
+New URLs are stored in PostgreSQL and cached in Redis for faster access.
 
 ---
 
-## Password Protection
+## URL Management
 
-A URL may be protected by a password.
+Authorized workspace members can:
 
-When enabled:
+- View URLs
+- Update URL information
+- Delete URLs
+- Generate QR Codes
+- View Analytics
+
+Whenever a URL is updated or deleted, related Redis cache entries are invalidated automatically.
+
+---
+
+## URL Redirection
+
+Visitors access shortened URLs through the public redirect endpoint.
+
+The redirect engine performs the following validation:
+
+- URL exists
+- Not deleted
+- Active status
+- Not expired
+- Maximum click limit not exceeded
+- Password validation (optional)
+
+The redirect engine first attempts to retrieve the URL from Redis.
 
 ```
-Visitor
+Redis
 
 ↓
 
-Enter Password
-
-↓
-
-Verify Password
+Cache Hit
 
 ↓
 
 Redirect
 ```
 
-Passwords are stored as hashed values.
-
----
-
-## Expiration
-
-URLs may expire at a specified date.
+If the cache is missed:
 
 ```
-Current Time >= expiresAt
+Redis
 
 ↓
 
-URL becomes unavailable.
+PostgreSQL
+
+↓
+
+Redis
+
+↓
+
+Redirect
 ```
 
----
+After a successful redirect:
 
-## Click Limit
+- Click counter is updated
+- Analytics event is published to RabbitMQ
+- Worker persists analytics asynchronously
 
-URLs may define a maximum number of redirects.
-
-Example
-
-```
-maxClicks = 100
-```
-
-When
-
-```
-clickCount >= maxClicks
-```
-
-the URL can no longer be redirected.
+This minimizes redirect latency while keeping analytics accurate.
 
 ---
 
 ## QR Code
 
-Each URL may have one QR Code.
+Each URL may have one generated QR Code.
 
-The QR Code always contains the shortened URL.
-
-Example
+Generation flow:
 
 ```
-https://lf.io/docs
+URL
+
+↓
+
+QR Generator
+
+↓
+
+MinIO
+
+↓
+
+PostgreSQL
 ```
 
-QR Code images are stored in Object Storage.
+The QR image is stored in MinIO while metadata is stored in PostgreSQL.
 
 ---
 
-## Tags
+## Analytics
 
-URLs can be categorized using tags.
+Analytics are generated asynchronously.
 
-Example
+Collected statistics include:
 
-```
-Marketing
-
-Promotion
-
-Internal
-
-Social
-```
-
-Tags are unique within a workspace.
-
----
-
-# Analytics
-
-Every successful redirect may generate analytics data.
-
-The system stores:
-
-- Click Event
+- Total Clicks
 - Daily Statistics
 - Browser Statistics
-- Country Statistics
 - Device Statistics
+- Country Statistics
+- Referrer Statistics (future)
 
-Analytics are generated automatically during redirect.
+RabbitMQ decouples redirect traffic from analytics processing.
 
 ---
 
-# Redirect Strategy
+# Cache Strategy
 
-Supported redirect types
+Redis is used to improve performance and reduce database load.
 
-| Type | Description        |
-| ---- | ------------------ |
-| 301  | Permanent Redirect |
-| 302  | Temporary Redirect |
+Cached resources include:
 
-The redirect type is configurable for each URL.
+- URL by short code
+- Workspace permissions
+- Workspace information
+- Click counters
+
+Cache is automatically invalidated whenever URL information changes.
+
+---
+
+# Background Processing
+
+RabbitMQ is responsible for asynchronous processing.
+
+Current background jobs include:
+
+- Record click events
+- Update analytics
+- Aggregate statistics
+- Send notifications (future)
+
+Workers consume queue messages independently from API requests.
+
+---
+
+# Workspace Isolation
+
+URLs are isolated by workspace.
+
+```
+Workspace A
+
+├── URL A
+
+├── URL B
+
+
+Workspace B
+
+├── URL C
+```
+
+Members can only manage URLs within workspaces they belong to.
 
 ---
 
 # URL Validation
 
-The following validations are performed during URL creation.
+The following validations are performed during URL creation and updates.
 
 ## Original URL
 
-- Must be a valid URL
-- HTTPS recommended
-- Maximum length determined by system configuration
+Requirements
+
+- Required
+- Valid HTTP or HTTPS URL
 
 ---
 
@@ -341,14 +364,14 @@ The following validations are performed during URL creation.
 
 Requirements
 
-- Unique
-- Configurable length
+- Globally unique
+- URL-safe
 - Supports
 
 ```
-A-Z
-
 a-z
+
+A-Z
 
 0-9
 
@@ -357,58 +380,42 @@ a-z
 _
 ```
 
-Reserved words cannot be used.
-
-Examples
-
-```
-admin
-
-login
-
-api
-
-health
-
-docs
-```
+Reserved short codes cannot be used.
 
 ---
 
 # URL Information
 
-| Field        | Description                 |
-| ------------ | --------------------------- |
-| id           | URL identifier              |
-| workspaceId  | Workspace owner             |
-| userId       | URL creator                 |
-| shortCode    | Unique short code           |
-| originalUrl  | Original destination        |
-| title        | Website title               |
-| description  | Website description         |
-| faviconUrl   | Website favicon             |
-| passwordHash | Hashed password             |
-| expiresAt    | Expiration time             |
-| maxClicks    | Maximum redirects           |
-| clickCount   | Current redirects           |
-| status       | ACTIVE / DISABLED / EXPIRED |
-| createdAt    | Creation timestamp          |
-| updatedAt    | Last updated                |
-| deletedAt    | Soft delete timestamp       |
+| Field | Description |
+|--------|-------------|
+| id | URL identifier |
+| workspaceId | Parent workspace |
+| originalUrl | Destination URL |
+| shortCode | Unique short code |
+| title | URL title |
+| description | URL description |
+| status | Current status |
+| clickCount | Total redirects |
+| expiresAt | Expiration date |
+| maxClicks | Maximum redirects |
+| createdAt | Creation timestamp |
+| updatedAt | Last update |
 
 ---
 
 # Security
 
+The URL module includes multiple security layers.
+
 - JWT Authentication
-- Workspace permission validation
-- Password hashing
-- URL validation
-- Short code validation
-- Soft Delete
+- Workspace membership validation
+- Permission validation
+- Short code uniqueness validation
 - Input sanitization
+- Password-protected URLs
 - Rate limiting
-- Analytics collection
+
+Public redirect endpoints do not require authentication.
 
 ---
 
@@ -416,29 +423,29 @@ docs
 
 Possible future improvements include:
 
-- Custom Domains
-- Scheduled Activation
-- Scheduled Expiration
-- Bulk URL Import
-- Team Sharing
-- Public API
-- URL Templates
+- Bulk URL import/export
+- Custom domains
+- Smart redirects
 - UTM Builder
-- Webhooks
-- AI Generated Short Codes
+- A/B testing
+- Link scheduling
+- Link archive
+- Link restoration
+- AI-generated short codes
+- Geo-based redirects
+- Device-based redirects
 
 ---
 
 # Module Summary
 
-| Feature          | Authentication Required |
-| ---------------- | ----------------------- |
-| Create URL       | ✅                      |
-| List URLs        | ✅                      |
-| Get URL Details  | ✅                      |
-| Update URL       | ✅                      |
-| Delete URL       | ✅                      |
-| Generate QR Code | ✅                      |
-| Manage Tags      | ✅                      |
-| View Analytics   | ✅                      |
-| Redirect URL     | ❌                      |
+| Feature | Authentication | Infrastructure |
+|----------|----------------|----------------|
+| Create URL | ✅ | PostgreSQL + Redis |
+| List URLs | ✅ | Redis + PostgreSQL |
+| Get URL Details | ✅ | Redis + PostgreSQL |
+| Update URL | ✅ | PostgreSQL + Redis |
+| Delete URL | ✅ | PostgreSQL + Redis |
+| Redirect URL | ❌ | Redis + PostgreSQL + RabbitMQ |
+| Generate QR Code | ✅ | MinIO + PostgreSQL |
+| View Analytics | ✅ | PostgreSQL |

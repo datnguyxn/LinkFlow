@@ -1,12 +1,12 @@
-# URL Lifecycle Design
+# URL Management Lifecycle Design
 
 ## Overview
 
 The URL lifecycle defines the state transitions of a shortened URL throughout its lifetime.
 
-A URL begins in the ACTIVE state after creation and may become DISABLED, EXPIRED, or be soft deleted depending on user actions or system conditions.
+A URL is created by an authorized workspace member and remains active until it expires, reaches its click limit, is archived, or is deleted. During its lifetime, the URL can be updated, redirected, analyzed, and associated with QR codes and tags.
 
-The lifecycle ensures consistent behavior for redirection, analytics collection, QR code availability, and URL management.
+The lifecycle ensures that only valid URLs are accessible while maintaining accurate analytics and consistent data management.
 
 ---
 
@@ -17,14 +17,23 @@ stateDiagram-v2
 
 [*] --> ACTIVE : Create URL
 
-ACTIVE --> DISABLED : Disable URL
-DISABLED --> ACTIVE : Enable URL
+ACTIVE --> UPDATED : Update URL
+UPDATED --> ACTIVE
 
 ACTIVE --> EXPIRED : Expiration Time Reached
 
-ACTIVE --> DELETED : Soft Delete
-DISABLED --> DELETED : Soft Delete
-EXPIRED --> DELETED : Soft Delete
+ACTIVE --> LIMIT_REACHED : Max Clicks Reached
+
+ACTIVE --> ARCHIVED : Archive URL
+
+ARCHIVED --> ACTIVE : Restore URL
+
+ACTIVE --> DELETED : Delete URL
+UPDATED --> DELETED : Delete URL
+ARCHIVED --> DELETED : Delete URL
+
+EXPIRED --> DELETED : Delete URL
+LIMIT_REACHED --> DELETED : Delete URL
 
 DELETED --> [*]
 ```
@@ -35,79 +44,84 @@ DELETED --> [*]
 
 ## ACTIVE
 
-The URL is available for normal use.
+The URL is available for public access.
 
 Characteristics
 
-- Redirect is allowed.
-- Analytics are recorded.
-- Click count increases.
-- QR Code is accessible.
-- URL settings can be updated.
-- Tags can be managed.
+- Publicly accessible.
+- Redirects visitors successfully.
+- Analytics are collected.
+- QR Code remains available.
+- URL information can be updated.
 
 ---
 
-## DISABLED
+## UPDATED
 
-The URL exists but cannot be redirected.
+The URL configuration has been modified.
 
-Characteristics
+Typical changes
 
-- Redirect is denied.
-- Analytics are no longer recorded.
-- QR Code still exists.
-- URL may be re-enabled.
-- URL information can still be edited.
+- Original URL
+- Title
+- Description
+- Expiration Date
+- Maximum Clicks
+- Password Protection
+- Tags
 
-Typical use cases
-
-- Temporarily disable a campaign.
-- Security reasons.
-- Administrative action.
+After the update completes successfully, the URL returns to the ACTIVE state.
 
 ---
 
 ## EXPIRED
 
-The URL has reached its expiration time.
-
-Expiration occurs automatically.
-
-Condition
-
-```
-Current Time >= expiresAt
-```
+The expiration date has passed.
 
 Characteristics
 
-- Redirect is denied.
-- Analytics stop recording.
-- QR Code remains available but redirect will fail.
-- Expiration date may be updated if business rules allow.
+- Redirects are blocked.
+- Analytics are no longer collected.
+- QR Code remains available.
+- URL information may still be viewed by workspace members.
+
+---
+
+## LIMIT_REACHED
+
+The maximum click limit has been reached.
+
+Characteristics
+
+- Redirects are blocked.
+- Analytics stop increasing.
+- URL configuration can still be updated.
+
+---
+
+## ARCHIVED
+
+The URL has been manually archived.
+
+Characteristics
+
+- Redirects are disabled.
+- Analytics remain available.
+- URL can be restored.
 
 ---
 
 ## DELETED
 
-The URL is soft deleted.
-
-Deletion is implemented using the deletedAt field instead of UrlStatus.
-
-Changes
-
-```
-deletedAt = Current Timestamp
-```
+The URL has been permanently removed.
 
 Characteristics
 
-- Redirect is denied.
-- URL is hidden from normal queries.
-- Analytics remain for historical purposes.
-- QR Code is inaccessible.
-- Data remains in the database.
+- Redirect endpoint no longer exists.
+- QR Code is removed.
+- Analytics are deleted.
+- Cache is invalidated.
+- Associated tags are detached.
 
 ---
 
@@ -120,11 +134,27 @@ Request
 
 ↓
 
-Validate
+Validate Workspace
 
 ↓
 
-Generate Short Code
+Validate Permission
+
+↓
+
+Validate Original URL
+
+↓
+
+Generate or Validate Short Code
+
+↓
+
+Create URL
+
+↓
+
+Cache URL
 
 ↓
 
@@ -140,120 +170,167 @@ Conditions
 
 ---
 
-## Disable URL
+## Update URL
 
 ```
 ACTIVE
 
 ↓
 
-DISABLED
+UPDATED
+
+↓
+
+Refresh Cache
+
+↓
+
+ACTIVE
 ```
 
 Trigger
 
-User manually disables the URL.
+Workspace member updates URL information.
 
-Effects
+Editable Fields
 
-- Redirect blocked.
-- Analytics stop recording.
-- URL remains editable.
-
----
-
-## Enable URL
-
-```
-DISABLED
-
-↓
-
-ACTIVE
-```
-
-Conditions
-
-- URL is not expired.
-- URL has not been deleted.
+- Original URL
+- Title
+- Description
+- Expiration Date
+- Maximum Clicks
+- Password
+- Tags
 
 ---
 
-## URL Expiration
-
-```
-ACTIVE
-
-↓
-
-EXPIRED
-```
-
-Trigger
-
-System checks expiration during redirect or scheduled background jobs.
-
-Condition
-
-```
-Current Time >= expiresAt
-```
-
----
-
-## Maximum Click Limit
-
-A URL may define a maximum number of allowed redirects.
-
-Condition
-
-```
-clickCount >= maxClicks
-```
-
-Behavior
-
-- New redirect requests are rejected.
-- Click count no longer increases.
-
-Business Note
-
-The URL status does not automatically change to another state.
-The redirect endpoint simply rejects further requests.
-
----
-
-## Password Verification
-
-If password protection is enabled
+## Redirect URL
 
 ```
 Visitor
 
 ↓
 
-Enter Password
+Lookup URL
 
 ↓
 
-Verify Password
+Validate Status
+
+↓
+
+Record Analytics
+
+↓
+
+Increase Click Count
 
 ↓
 
 Redirect
 ```
 
-Incorrect password
+Validation
 
-↓
-
-Redirect denied.
-
-Password verification does not change the lifecycle state.
+- URL exists.
+- URL is active.
+- URL has not expired.
+- Click limit has not been reached.
+- Password validation succeeds (if enabled).
 
 ---
 
-## Soft Delete
+## Expire URL
+
+```
+ACTIVE
+
+↓
+
+EXPIRED
+```
+
+Trigger
+
+Current time exceeds
+
+```
+expiresAt
+```
+
+Effects
+
+- Redirect disabled.
+- Analytics stop increasing.
+
+---
+
+## Reach Click Limit
+
+```
+ACTIVE
+
+↓
+
+LIMIT_REACHED
+```
+
+Trigger
+
+```
+clickCount >= maxClicks
+```
+
+Effects
+
+- Redirect disabled.
+- Statistics remain available.
+
+---
+
+## Archive URL
+
+```
+ACTIVE
+
+↓
+
+ARCHIVED
+```
+
+Trigger
+
+Workspace member archives the URL.
+
+Effects
+
+- Redirect disabled.
+- Analytics preserved.
+
+---
+
+## Restore URL
+
+```
+ARCHIVED
+
+↓
+
+ACTIVE
+```
+
+Trigger
+
+Workspace member restores the URL.
+
+Conditions
+
+- URL has not expired.
+- Click limit has not been reached.
+
+---
+
+## Delete URL
 
 ```
 ACTIVE
@@ -263,143 +340,164 @@ ACTIVE
 DELETED
 ```
 
-or
-
-```
-DISABLED
-
-↓
-
-DELETED
-```
-
-or
-
-```
-EXPIRED
-
-↓
-
-DELETED
-```
-
 Trigger
 
-User deletes the URL.
+Workspace member deletes the URL.
 
 Effects
 
-- Set deletedAt.
-- URL disappears from normal listing.
-- Redirect becomes unavailable.
+- Remove QR Code.
+- Remove analytics.
+- Remove cache.
+- Remove tag mappings.
+
+Deletion is performed through cascading relationships.
 
 ---
 
-# Redirect Behavior
-
-| State    | Redirect |
-| -------- | -------- |
-| ACTIVE   | ✅       |
-| DISABLED | ❌       |
-| EXPIRED  | ❌       |
-| DELETED  | ❌       |
-
-Additional validations
-
-- Password verification
-- Maximum click limit
-- Soft delete check
-
-All validations must pass before redirecting.
-
----
-
-# Analytics Behavior
-
-Analytics are recorded only after a successful redirect.
-
-Requirements
-
-- URL is ACTIVE.
-- Password verification succeeds (if enabled).
-- URL has not expired.
-- Maximum click limit has not been reached.
-
-Generated data
-
-- ClickEvent
-- DailyStatistic
-- BrowserStatistic
-- CountryStatistic
-- DeviceStatistic
-
----
-
-# QR Code Behavior
-
-QR Codes always point to the shortened URL.
-
-Availability
-
-| State    | QR Code |
-| -------- | ------- |
-| ACTIVE   | ✅      |
-| DISABLED | ✅      |
-| EXPIRED  | ✅      |
-| DELETED  | ❌      |
-
-Scanning a QR Code follows the same redirect validation as visiting the short URL directly.
-
----
-
-# Update Behavior
-
-| State    | Editable |
-| -------- | -------- |
-| ACTIVE   | ✅       |
-| DISABLED | ✅       |
-| EXPIRED  | ✅       |
-| DELETED  | ❌       |
-
-Editable fields may include
-
-- Original URL
-- Title
-- Description
-- Password
-- Expiration
-- Maximum Clicks
-- Tags
-
----
-
-# Soft Delete Strategy
-
-Instead of removing the record from the database, the system marks it as deleted.
-
-Changes
+# QR Code Lifecycle
 
 ```
-deletedAt = Current Timestamp
+URL Created
+
+↓
+
+Generate QR Code
+
+↓
+
+QRCode Available
+
+↓
+
+Delete URL
+
+↓
+
+QRCode Deleted
 ```
 
-Benefits
+Each URL owns at most one QR Code.
 
-- Preserve analytics.
-- Maintain audit history.
-- Prevent accidental data loss.
-- Support future recovery features.
+---
+
+# Analytics Lifecycle
+
+```
+Redirect
+
+↓
+
+Click Event
+
+↓
+
+Queue
+
+↓
+
+Worker
+
+↓
+
+Aggregate Statistics
+
+↓
+
+Dashboard
+```
+
+Analytics are generated asynchronously to minimize redirect latency.
+
+---
+
+# Cache Lifecycle
+
+Redis is used to accelerate URL lookups.
+
+```
+Create URL
+
+↓
+
+Cache URL
+
+↓
+
+Redirect
+
+↓
+
+Read Redis
+
+↓
+
+Update/Delete URL
+
+↓
+
+Invalidate Cache
+
+↓
+
+Next Redirect
+
+↓
+
+Reload Cache
+```
+
+---
+
+# Access Behavior
+
+| State | Public Redirect | Editable |
+|---------|:---------------:|:--------:|
+| ACTIVE | ✅ | ✅ |
+| UPDATED | ✅ | ✅ |
+| EXPIRED | ❌ | ✅ |
+| LIMIT_REACHED | ❌ | ✅ |
+| ARCHIVED | ❌ | ✅ |
+| DELETED | ❌ | ❌ |
+
+---
+
+# Resource Lifecycle
+
+A URL owns several dependent resources.
+
+```
+URL
+
+├── QR Code
+
+├── Click Events
+
+├── Daily Statistics
+
+├── Browser Statistics
+
+├── Device Statistics
+
+├── Country Statistics
+
+└── Tags
+```
+
+Deleting the URL automatically removes all owned resources.
 
 ---
 
 # Lifecycle Summary
 
-| State    | Redirect | Analytics | Editable | QR Code |
-| -------- | -------- | --------- | -------- | ------- |
-| ACTIVE   | ✅       | ✅        | ✅       | ✅      |
-| DISABLED | ❌       | ❌        | ✅       | ✅      |
-| EXPIRED  | ❌       | ❌        | ✅       | ✅      |
-| DELETED  | ❌       | ❌        | ❌       | ❌      |
+| State | Redirect | Editable | Analytics |
+|---------|:--------:|:--------:|:----------:|
+| ACTIVE | ✅ | ✅ | ✅ |
+| UPDATED | ✅ | ✅ | ✅ |
+| EXPIRED | ❌ | ✅ | View Only |
+| LIMIT_REACHED | ❌ | ✅ | View Only |
+| ARCHIVED | ❌ | ✅ | View Only |
+| DELETED | ❌ | ❌ | ❌ |
 
 ---
 
@@ -407,9 +505,13 @@ Benefits
 
 Possible future lifecycle extensions include
 
-- Scheduled activation
-- One-time URLs
-- Automatic archival
-- Auto-disable after inactivity
-- Maximum lifetime
-- Restore deleted URL
+- Soft Delete
+- Scheduled Publishing
+- Temporary Disable
+- Link Versioning
+- A/B Testing
+- Custom Domains
+- Link Approval Workflow
+- Restore Deleted URL
+- Automatic Expiration Notification
+- Automatic Cache Warm-up

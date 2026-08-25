@@ -39,6 +39,7 @@ export const RABBITMQ_ROUTING_KEY = {
   WORKSPACE_DELETED: 'workspace.deleted',
 
   URL_CREATED: 'url.created',
+  URL_UPDATED: 'url.updated',
   URL_DELETED: 'url.deleted',
 
   USER_SESSION_REVOKED: 'user.session.revoked',
@@ -117,6 +118,10 @@ export const RABBITMQ_QUEUE = {
   AUDIT_WORKSPACE_MEMBER_LEAVE: 'audit.workspace.member.leave',
   AUDIT_WORKSPACE_MEMBER_REMOVE: 'audit.workspace.member.remove',
 
+  AUDIT_URL_CREATED: 'audit.url.created',
+  AUDIT_URL_UPDATED: 'audit.url.updated',
+  AUDIT_URL_DELETED: 'audit.url.deleted',
+
   NOTIFICATION_WORKSPACE_DELETED: 'notification.workspace.deleted',
 
   NOTIFICATION_WORKSPACE_INVITATION_CREATED: 'notification.workspace.invitation.created',
@@ -128,4 +133,8 @@ export const RABBITMQ_QUEUE = {
   NOTIFICATION_WORKSPACE_MEMBER_ROLE_UPDATED: 'notification.workspace.member.role.updated',
   NOTIFICATION_WORKSPACE_MEMBER_LEAVE: 'notification.workspace.member.leave',
   NOTIFICATION_WORKSPACE_MEMBER_REMOVE: 'notification.workspace.member.remove',
+
+  CACHE_URL_CREATED: 'cache.url.created',
+  CACHE_URL_UPDATED: 'cache.url.updated',
+  CACHE_URL_DELETED: 'cache.url.deleted',
 } as const;

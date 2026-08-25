@@ -29,7 +29,7 @@ export default function WorkspaceManagement({ workspace }: { workspace: Workspac
             icon={Link2}
             title="Links"
             description="Create and manage short links."
-            href="/links"
+            href={`/dashboard/w/${workspace?.slug}/links`}
           />
         </PermissionGuard>
 

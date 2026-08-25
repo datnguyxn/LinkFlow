@@ -31,3 +31,8 @@ export * from './workspace/workspace-member-create.event.ts';
 export * from './workspace/workspace-member-update-role.event.ts';
 export * from './workspace/workspace-member-leave.event.ts';
 export * from './workspace/workspace-member-remove.event.ts';
+
+// URL-related events
+export * from './url/url-create.event.ts';
+export * from './url/url-update.event.ts';
+export * from './url/url-delete.event.ts';

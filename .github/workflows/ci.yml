@@ -15,7 +15,7 @@ jobs:
   # ============================================================
 
   api:
-    name: API CI
+    name: API
     runs-on: ubuntu-latest
 
     services:
@@ -202,7 +202,7 @@ jobs:
   # ============================================================
 
   web:
-    name: Web CI
+    name: WEB
     runs-on: ubuntu-latest
 
     steps:

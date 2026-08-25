@@ -1,15 +1,21 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import LinksPage from '@/components/links/LinksPage';
+
+import { useWorkspaceContext } from '@/contexts/workspace.context';
+
+import LinksPageSkeleton from '@/components/links/LinksPageSkeleton';
 
 export default function WorkspaceLinksPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const { currentWorkspace, loading } = useWorkspaceContext();
+
+  if (loading || !currentWorkspace) {
+    return <LinksPageSkeleton />;
+  }
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Links</h1>
-
-      <p className="text-sm text-slate-500">Workspace: {slug}</p>
-    </main>
+    <div className="flex flex-col gap-6">
+      <LinksPage workspaceId={currentWorkspace?.id} slug={currentWorkspace?.slug} />
+    </div>
   );
 }

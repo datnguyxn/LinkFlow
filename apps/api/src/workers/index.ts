@@ -6,6 +6,8 @@ export * from './audit/workspace.audit.worker.ts';
 export * from './audit/workspace-member.audit.worker.ts';
 export * from './audit/workspace-invitation.audit.worker.ts';
 
+export * from './audit/url.audit.worker.ts';
+
 export * from './mail/auth.mail.worker.ts';
 export * from './mail/admin-user.mail.worker.ts';
 export * from './mail/workspace-invitation.mail.worker.ts';
@@ -15,3 +17,5 @@ export * from './mail/workspace.mail.worker.ts';
 export * from './notification/workspace-invitation.notification.worker.ts';
 export * from './notification/workspace-member.notification.worker.ts';
 export * from './notification/workspace.notification.worker.ts';
+
+export * from './cache/url.cache.worker.ts';

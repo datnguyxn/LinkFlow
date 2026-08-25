@@ -2,9 +2,13 @@
 
 ## Overview
 
-The URL module is designed using a relational database model to support URL management, workspace collaboration, tagging, QR code generation, and analytics collection.
+The URL module is the core business component of LinkFlow.
 
-Each URL belongs to a workspace and is created by a user. Related entities are connected through foreign key constraints to ensure data consistency and integrity.
+It stores shortened URLs created by workspace members and manages their lifecycle, access rules, analytics, QR codes, and tags.
+
+Every URL belongs to exactly one workspace and is isolated from URLs in other workspaces.
+
+The database design focuses on scalability, high-performance lookups, and efficient redirection.
 
 ---
 
@@ -13,43 +17,28 @@ Each URL belongs to a workspace and is created by a user. Related entities are c
 ```mermaid
 erDiagram
 
-    User ||--o{ Workspace : owns
-    User ||--o{ WorkspaceMember : joins
-    Workspace ||--o{ WorkspaceMember : contains
-
     Workspace ||--o{ Url : contains
-    User ||--o{ Url : creates
 
-    Workspace ||--o{ Tag : contains
-    Url ||--o{ UrlTag : has
-    Tag ||--o{ UrlTag : assigned
-
-    Url ||--|| QRCode : generates
+    Url ||--|| QRCode : has
 
     Url ||--o{ ClickEvent : records
+
     Url ||--o{ DailyStatistic : aggregates
+
     Url ||--o{ BrowserStatistic : aggregates
-    Url ||--o{ CountryStatistic : aggregates
+
     Url ||--o{ DeviceStatistic : aggregates
+
+    Url ||--o{ CountryStatistic : aggregates
+
+    Url ||--o{ UrlTag : contains
+
+    Tag ||--o{ UrlTag : assigned
 ```
 
 ---
 
 # Relationship Overview
-
-## User → Workspace
-
-Relationship
-
-```
-One-to-Many
-```
-
-A user can own multiple workspaces.
-
-Each workspace has exactly one owner.
-
----
 
 ## Workspace → URL
 
@@ -59,73 +48,19 @@ Relationship
 One-to-Many
 ```
 
-A workspace may contain multiple shortened URLs.
+A workspace may contain multiple URLs.
 
-Each URL belongs to exactly one workspace.
+Every URL belongs to exactly one workspace.
 
----
+Purpose
 
-## User → URL
-
-Relationship
-
-```
-One-to-Many
-```
-
-Each URL stores the user who created it.
-
-This relationship supports:
-
-- Audit history
-- Ownership tracking
-- Permission checking
+- Multi-tenant isolation
+- Permission validation
+- Workspace organization
 
 ---
 
-## Workspace → Tag
-
-Relationship
-
-```
-One-to-Many
-```
-
-Each workspace manages its own tag collection.
-
-Tag names must be unique within the same workspace.
-
----
-
-## URL ↔ Tag
-
-Relationship
-
-```
-Many-to-Many
-```
-
-Implemented through the UrlTag table.
-
-Example
-
-```
-Marketing
-
-↓
-
-Spring Campaign
-
-↓
-
-Black Friday
-```
-
-can all be assigned to the same URL.
-
----
-
-## URL → QR Code
+## URL → QRCode
 
 Relationship
 
@@ -133,9 +68,9 @@ Relationship
 One-to-One
 ```
 
-Each URL may have one generated QR Code.
+Each URL may have one QR Code.
 
-A QR Code cannot exist without a URL.
+The QR code references the URL and stores its generated image location.
 
 ---
 
@@ -147,22 +82,19 @@ Relationship
 One-to-Many
 ```
 
-Every redirect creates a click event.
+Each successful redirect creates one click event.
 
-Each click event stores detailed visitor information.
+Click events are immutable.
 
-Examples
+Purpose
 
-- Browser
-- Device
-- Country
-- City
-- Referrer
-- User Agent
+- Analytics
+- Reporting
+- Historical tracking
 
 ---
 
-## URL → DailyStatistic
+## URL → Statistics
 
 Relationship
 
@@ -170,95 +102,40 @@ Relationship
 One-to-Many
 ```
 
-Stores aggregated click statistics by date.
+Statistics are pre-aggregated for fast dashboard queries.
 
-Used for dashboard visualization.
+Supported tables
+
+- DailyStatistic
+- BrowserStatistic
+- DeviceStatistic
+- CountryStatistic
 
 ---
 
-## URL → BrowserStatistic
+## URL → Tag
 
 Relationship
 
 ```
-One-to-Many
+Many-to-Many
 ```
 
-Aggregated clicks grouped by browser.
-
-Example
+Implemented through
 
 ```
-Chrome
-
-Firefox
-
-Safari
-
-Edge
+UrlTag
 ```
 
----
+A URL may have multiple tags.
 
-## URL → CountryStatistic
-
-Relationship
-
-```
-One-to-Many
-```
-
-Aggregated clicks grouped by country.
-
----
-
-## URL → DeviceStatistic
-
-Relationship
-
-```
-One-to-Many
-```
-
-Aggregated clicks grouped by device type.
-
-Example
-
-```
-Desktop
-
-Mobile
-
-Tablet
-```
+A tag may belong to multiple URLs within the same workspace.
 
 ---
 
 # Database Tables
 
-## Workspace
-
-Purpose
-
-Stores workspace information.
-
-Primary Key
-
-```
-id
-```
-
-Relations
-
-- Owner
-- Members
-- URLs
-- Tags
-- API Keys
-
----
-
-## URL
+## Url
 
 Purpose
 
@@ -272,22 +149,24 @@ id
 
 Important Fields
 
-- shortCode
+- workspaceId
 - originalUrl
-- passwordHash
+- shortCode
+- title
+- description
 - expiresAt
+- passwordHash
 - maxClicks
 - clickCount
 - status
-- deletedAt
 
 Relations
 
 - Workspace
-- Creator
-- QR Code
-- Tags
-- Analytics
+- QRCode
+- UrlTag
+- ClickEvent
+- Statistics
 
 ---
 
@@ -295,7 +174,7 @@ Relations
 
 Purpose
 
-Stores generated QR Code metadata.
+Stores generated QR Codes.
 
 Primary Key
 
@@ -303,45 +182,10 @@ Primary Key
 id
 ```
 
-Foreign Key
+Important Fields
 
-```
-urlId
-```
-
-Relationship
-
-```
-1 : 1
-```
-
----
-
-## Tag
-
-Purpose
-
-Categorizes URLs inside a workspace.
-
-Unique Constraint
-
-```
-(workspaceId, name)
-```
-
----
-
-## UrlTag
-
-Purpose
-
-Many-to-many bridge table.
-
-Composite Key
-
-```
-(urlId, tagId)
-```
+- urlId
+- imageUrl
 
 ---
 
@@ -351,122 +195,87 @@ Purpose
 
 Stores every redirect event.
 
-Contains
-
-- IP Address
-- Country
-- City
-- Browser
-- Device
-- Referrer
-- User Agent
-- Timestamp
-
----
-
-## DailyStatistic
-
-Purpose
-
-Stores daily aggregated analytics.
-
-Unique Constraint
+Primary Key
 
 ```
-(urlId, date)
+id
 ```
 
----
+Important Fields
 
-## BrowserStatistic
-
-Purpose
-
-Stores aggregated browser statistics.
-
-Unique Constraint
-
-```
-(urlId, browser)
-```
-
----
-
-## CountryStatistic
-
-Purpose
-
-Stores aggregated country statistics.
-
-Unique Constraint
-
-```
-(urlId, country)
-```
-
----
-
-## DeviceStatistic
-
-Purpose
-
-Stores aggregated device statistics.
-
-Unique Constraint
-
-```
-(urlId, device)
-```
+- urlId
+- ipAddress
+- browser
+- device
+- country
+- referer
+- clickedAt
 
 ---
 
 # Foreign Key Strategy
 
-| Child Table      | Parent Table | Delete Strategy |
-| ---------------- | ------------ | --------------- |
-| Workspace        | User         | Cascade         |
-| WorkspaceMember  | Workspace    | Cascade         |
-| WorkspaceMember  | User         | Cascade         |
-| URL              | Workspace    | Cascade         |
-| URL              | User         | Cascade         |
-| QRCode           | URL          | Cascade         |
-| UrlTag           | URL          | Cascade         |
-| UrlTag           | Tag          | Cascade         |
-| ClickEvent       | URL          | Cascade         |
-| DailyStatistic   | URL          | Cascade         |
-| BrowserStatistic | URL          | Cascade         |
-| CountryStatistic | URL          | Cascade         |
-| DeviceStatistic  | URL          | Cascade         |
+| Child Table | Parent Table | Delete Strategy |
+|-------------|--------------|-----------------|
+| Url | Workspace | Cascade |
+| QRCode | Url | Cascade |
+| UrlTag | Url | Cascade |
+| ClickEvent | Url | Cascade |
+| DailyStatistic | Url | Cascade |
+| BrowserStatistic | Url | Cascade |
+| DeviceStatistic | Url | Cascade |
+| CountryStatistic | Url | Cascade |
+
+Benefits
+
+- Automatic cleanup
+- Referential integrity
+- No orphan records
+
+---
+
+# Constraint Strategy
+
+## Url
+
+Unique Constraint
+
+```
+shortCode
+```
+
+Every short code must be globally unique.
+
+---
+
+## UrlTag
+
+Composite Unique Constraint
+
+```
+(urlId, tagId)
+```
+
+Prevents duplicate tag assignments.
 
 ---
 
 # Index Strategy
 
-## URL
+## Url
 
 Indexes
 
 - workspaceId
-- userId
 - shortCode
+- status
+- expiresAt
 
 Purpose
 
-- Fast workspace filtering
-- Fast creator filtering
 - Fast redirect lookup
-
----
-
-## Tag
-
-Indexes
-
-- workspaceId
-
-Purpose
-
-Fast tag listing.
+- Workspace listing
+- Expiration checks
 
 ---
 
@@ -476,105 +285,223 @@ Indexes
 
 - urlId
 - clickedAt
-- country
 
 Purpose
 
 - Analytics queries
 - Timeline reports
-- Geographic reports
 
 ---
 
-## Statistics Tables
+## Statistics
 
 Indexes
 
-```
-urlId
-```
+- urlId
+- date
 
 Purpose
 
-Fast aggregation queries.
+- Dashboard performance
+- Time-series aggregation
 
 ---
 
-# Soft Delete Strategy
+# Redis Strategy
 
-The URL table implements soft delete.
+Redis is used as a caching layer to reduce database load during URL redirection.
+
+## Cached Data
 
 ```
-deletedAt IS NULL
-```
+shortCode
 
 ↓
 
-Visible
+URL Metadata
+```
+
+Example
 
 ```
-deletedAt IS NOT NULL
-```
+abc123
 
 ↓
 
-Hidden
+{
+  originalUrl,
+  status,
+  expiresAt,
+  maxClicks,
+  passwordHash
+}
+```
 
-Benefits
+---
 
-- Preserve analytics
-- Audit history
-- Recovery support
-- Historical reporting
+## Cache Flow
+
+```
+Visitor
+
+↓
+
+Redis Lookup
+
+↓
+
+Cache Hit
+
+↓
+
+Redirect
+```
+
+or
+
+```
+Visitor
+
+↓
+
+Redis Miss
+
+↓
+
+PostgreSQL
+
+↓
+
+Redis Cache
+
+↓
+
+Redirect
+```
+
+---
+
+## Cache Invalidation
+
+Redis cache is invalidated when:
+
+- URL updated
+- URL deleted
+- URL disabled
+- Expiration changed
+- Password changed
+
+---
+
+# Workspace Isolation
+
+Every URL belongs to exactly one workspace.
+
+```
+Workspace A
+
+├── URL A
+
+├── URL B
+
+
+Workspace B
+
+├── URL C
+```
+
+Members cannot access URLs outside their workspaces.
+
+---
+
+# Authorization Strategy
+
+Permissions are determined by:
+
+```
+Workspace
+
+↓
+
+WorkspaceMember
+
+↓
+
+Role
+
+↓
+
+Permission
+```
+
+Typical permissions
+
+- url.create
+- url.read
+- url.update
+- url.delete
+- analytics.read
 
 ---
 
 # Design Decisions
 
-## Analytics Normalization
-
-Instead of storing all analytics in a single table, the system separates:
-
-- Click events
-- Daily statistics
-- Browser statistics
-- Country statistics
-- Device statistics
-
-Benefits
-
-- Faster reporting
-- Smaller aggregation queries
-- Better scalability
-
----
-
 ## Workspace Isolation
 
-Every URL belongs to a workspace.
+URLs always belong to one workspace.
 
 Benefits
 
-- Multi-tenancy support
-- Team collaboration
-- Permission isolation
+- Multi-tenant architecture
+- Resource isolation
+- Secure authorization
 
 ---
 
-## Creator Tracking
+## Global Short Code
 
-Each URL stores both
+Short codes are globally unique.
 
-- workspaceId
-- userId
+Benefits
 
-This allows the system to distinguish between:
+- Faster lookup
+- Simpler redirect logic
+- No workspace lookup required
 
-- Workspace owner
-- URL creator
+Example
+
+```
+https://lf.io/abc123
+```
+
+---
+
+## Redis First
+
+Redirection reads Redis before PostgreSQL.
+
+Benefits
+
+- Low latency
+- Reduced database load
+- High scalability
+
+---
+
+## Event-Based Analytics
+
+Every redirect creates a ClickEvent.
+
+Statistics are generated asynchronously by background workers.
+
+Benefits
+
+- Fast redirects
+- Scalable analytics
+- Better reporting performance
 
 ---
 
 # Summary
 
-The database design follows a normalized relational model with clear ownership, efficient analytics storage, and scalable relationships. Foreign keys, indexes, and soft deletion strategies are used to maintain consistency, improve query performance, and support future expansion of the URL management platform.
+The URL database design provides a scalable foundation for LinkFlow's URL shortening service. URLs are isolated by workspace, identified by globally unique short codes, and accelerated through Redis caching. Click events are stored for historical tracking while aggregated statistics enable efficient analytics dashboards. Foreign keys, indexes, and cascade deletion ensure consistency, performance, and maintainability.

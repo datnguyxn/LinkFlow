@@ -6,6 +6,7 @@ import { userRoutes } from '../modules/users/index.ts';
 import { workspaceRoutes } from '../modules/workspace/index.ts';
 import { roleRoutes } from '../modules/role/index.ts';
 import { auditLogRoutes } from '../modules/audit-log/index.ts';
+import { urlRoutes } from '../modules/urls/index.ts';
 
 export async function routes(fastify: FastifyInstance) {
   fastify.register(authRoutes, {
@@ -30,5 +31,9 @@ export async function routes(fastify: FastifyInstance) {
 
   fastify.register(auditLogRoutes, {
     prefix: ROUTE.ACTIVITY_LOG,
+  });
+
+  fastify.register(urlRoutes, {
+    prefix: ROUTE.WORKSPACE, // Prefixing URL routes with /workspaces to maintain context
   });
 }

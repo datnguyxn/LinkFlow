@@ -1,12 +1,12 @@
-# URL API Design
+# URL Management API Design
 
 ## Overview
 
-This document defines the REST API endpoints for the URL module.
+This document defines the REST API endpoints for the URL Management module.
 
-The API allows authenticated users to manage shortened URLs within their workspaces while providing a public endpoint for URL redirection.
+The API enables workspace members to create, manage, organize, and monitor shortened URLs. All management endpoints require authentication and workspace permissions, while URL redirection is publicly accessible.
 
-All responses follow the standard API response format used by the system.
+All responses follow the standard API response format used throughout the system.
 
 ---
 
@@ -14,62 +14,63 @@ All responses follow the standard API response format used by the system.
 
 Management APIs require JWT Authentication.
 
-Public redirect endpoints do not require authentication.
+The public redirect endpoint does not require authentication.
 
 ---
 
 # API Overview
 
-| Method | Endpoint                      | Authentication | Description      |
-| ------ | ----------------------------- | -------------- | ---------------- |
-| POST   | /workspaces/:workspaceId/urls | ✅             | Create URL       |
-| GET    | /workspaces/:workspaceId/urls | ✅             | List URLs        |
-| GET    | /urls/:id                     | ✅             | Get URL Details  |
-| PATCH  | /urls/:id                     | ✅             | Update URL       |
-| DELETE | /urls/:id                     | ✅             | Delete URL       |
-| GET    | /r/:shortCode                 | ❌             | Redirect URL     |
-| POST   | /urls/:id/qrcode              | ✅             | Generate QR Code |
-| GET    | /urls/:id/qrcode              | ✅             | Get QR Code      |
-| GET    | /urls/:id/analytics           | ✅             | Get Analytics    |
+| Method | Endpoint | Authentication | Description |
+|---------|----------|----------------|-------------|
+| POST | /workspaces/:workspaceId/urls | ✅ | Create Short URL |
+| GET | /workspaces/:workspaceId/urls | ✅ | List URLs |
+| GET | /workspaces/:workspaceId/urls/:urlId | ✅ | Get URL Details |
+| PATCH | /workspaces/:workspaceId/urls/:urlId | ✅ | Update URL |
+| DELETE | /workspaces/:workspaceId/urls/:urlId | ✅ | Delete URL |
+| GET | /:shortCode | ❌ | Redirect URL |
+| POST | /workspaces/:workspaceId/urls/:urlId/qrcode | ✅ | Generate QR Code |
+| GET | /workspaces/:workspaceId/urls/:urlId/analytics | ✅ | View Analytics |
 
 ---
 
-# Create URL
+# Create Short URL
 
 ## Description
 
-Creates a shortened URL inside a workspace.
+Creates a new shortened URL inside a workspace.
+
+The requester must have permission to create URLs.
 
 ### Request
 
-```
+```http
 POST /workspaces/{workspaceId}/urls
 ```
 
 ### Request Body
 
-| Field       | Required | Description          |
-| ----------- | -------- | -------------------- |
-| originalUrl | ✅       | Original destination |
-| shortCode   | ❌       | Custom short code    |
-| title       | ❌       | URL title            |
-| description | ❌       | Description          |
-| password    | ❌       | Password protection  |
-| expiresAt   | ❌       | Expiration date      |
-| maxClicks   | ❌       | Maximum redirects    |
-| tags        | ❌       | Tag IDs              |
+| Field | Required | Description |
+|---------|----------|-------------|
+| originalUrl | ✅ | Destination URL |
+| shortCode | ❌ | Custom short code |
+| title | ❌ | URL title |
+| description | ❌ | URL description |
+| expiresAt | ❌ | Expiration date |
+| maxClicks | ❌ | Maximum click limit |
+| password | ❌ | Password protection |
+| tags | ❌ | Tag IDs |
 
 ### Success Response
 
-```
+```http
 201 Created
 ```
 
 Returns
 
-- URL ID
+- URL information
 - Short URL
-- URL Information
+- QR Code availability
 
 ---
 
@@ -77,29 +78,35 @@ Returns
 
 ## Description
 
-Returns all URLs in a workspace.
+Returns all URLs in the workspace.
 
 ### Request
 
-```
+```http
 GET /workspaces/{workspaceId}/urls
 ```
 
 ### Query Parameters
 
-| Parameter | Description    |
-| --------- | -------------- |
-| page      | Page number    |
-| limit     | Items per page |
-| search    | Search keyword |
-| status    | URL status     |
-| tag       | Tag ID         |
+| Parameter | Description |
+|-----------|-------------|
+| page | Page number |
+| limit | Items per page |
+| search | Search title or short code |
+| tag | Filter by tag |
+| status | Filter by status |
 
 ### Success Response
 
-```
+```http
 200 OK
 ```
+
+Returns
+
+- URL list
+- Pagination
+- Basic statistics
 
 ---
 
@@ -107,19 +114,26 @@ GET /workspaces/{workspaceId}/urls
 
 ## Description
 
-Returns information about a URL.
+Returns detailed information about a URL.
 
 ### Request
 
-```
-GET /urls/{id}
+```http
+GET /workspaces/{workspaceId}/urls/{urlId}
 ```
 
 ### Success Response
 
-```
+```http
 200 OK
 ```
+
+Returns
+
+- URL information
+- QR Code
+- Statistics summary
+- Tags
 
 ---
 
@@ -131,26 +145,30 @@ Updates URL information.
 
 ### Request
 
-```
-PATCH /urls/{id}
+```http
+PATCH /workspaces/{workspaceId}/urls/{urlId}
 ```
 
 ### Editable Fields
 
-- originalUrl
 - title
 - description
-- password
+- originalUrl
 - expiresAt
 - maxClicks
+- password
 - status
 - tags
 
 ### Success Response
 
-```
+```http
 200 OK
 ```
+
+Returns
+
+- Updated URL
 
 ---
 
@@ -158,27 +176,25 @@ PATCH /urls/{id}
 
 ## Description
 
-Soft deletes a URL.
+Deletes a shortened URL.
 
 ### Request
 
-```
-DELETE /urls/{id}
+```http
+DELETE /workspaces/{workspaceId}/urls/{urlId}
 ```
 
 ### Success Response
 
-```
+```http
 204 No Content
 ```
 
-Business Rule
+Business Rules
 
-The URL is soft deleted by setting:
-
-```
-deletedAt
-```
+- Analytics are deleted through cascade.
+- QR Code is removed.
+- Cache is invalidated.
 
 ---
 
@@ -186,37 +202,31 @@ deletedAt
 
 ## Description
 
-Redirects visitors to the original URL.
+Redirects visitors to the original destination.
 
 ### Request
 
-```
-GET /r/{shortCode}
+```http
+GET /{shortCode}
 ```
 
-Validation Order
+### Validation
 
-1. Find URL
-2. Check Soft Delete
-3. Check Status
-4. Check Expiration
-5. Check Maximum Clicks
-6. Verify Password (Optional)
-7. Increase Click Count
-8. Record Analytics
-9. Redirect
+The system verifies:
+
+- URL exists
+- URL is active
+- URL has not expired
+- Click limit has not been reached
+- Password (if enabled)
 
 ### Success Response
 
-```
-301 Moved Permanently
-```
-
-or
-
-```
+```http
 302 Found
 ```
+
+The visitor is redirected to the original URL.
 
 ---
 
@@ -224,47 +234,28 @@ or
 
 ## Description
 
-Generates a QR Code for a URL.
+Generates or regenerates a QR Code for a URL.
 
 ### Request
 
-```
-POST /urls/{id}/qrcode
+```http
+POST /workspaces/{workspaceId}/urls/{urlId}/qrcode
 ```
 
 ### Success Response
 
-```
+```http
 201 Created
 ```
 
 Returns
 
-- QR Code URL
+- QR Code image
+- Download URL
 
 ---
 
-# Get QR Code
-
-## Description
-
-Returns the QR Code image for a URL.
-
-### Request
-
-```
-GET /urls/{id}/qrcode
-```
-
-### Success Response
-
-```
-200 OK
-```
-
----
-
-# Get Analytics
+# View Analytics
 
 ## Description
 
@@ -272,72 +263,110 @@ Returns analytics for a URL.
 
 ### Request
 
-```
-GET /urls/{id}/analytics
+```http
+GET /workspaces/{workspaceId}/urls/{urlId}/analytics
 ```
 
 ### Query Parameters
 
 | Parameter | Description |
-| --------- | ----------- |
-| from      | Start date  |
-| to        | End date    |
+|-----------|-------------|
+| from | Start date |
+| to | End date |
 
 ### Success Response
 
-```
+```http
 200 OK
 ```
 
 Returns
 
-- Total Clicks
-- Daily Statistics
-- Browser Statistics
-- Country Statistics
-- Device Statistics
+- Total clicks
+- Daily statistics
+- Browser statistics
+- Device statistics
+- Country statistics
 
 ---
 
 # Common Error Responses
 
-| Status | Description                           |
-| ------ | ------------------------------------- |
-| 400    | Bad Request                           |
-| 401    | Unauthorized                          |
-| 403    | Forbidden                             |
-| 404    | Resource Not Found                    |
-| 409    | Short Code Already Exists             |
-| 410    | URL Expired or Maximum Clicks Reached |
-| 422    | Invalid URL                           |
-| 500    | Internal Server Error                 |
+| Status | Description |
+|---------|-------------|
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | URL Not Found |
+| 409 | Short Code Already Exists |
+| 410 | URL Expired |
+| 423 | Click Limit Reached |
+| 500 | Internal Server Error |
 
 ---
 
 # Permission Matrix
 
-| Feature          | Workspace Member | Workspace Admin | Workspace Owner |
-| ---------------- | ---------------- | --------------- | --------------- |
-| List URLs        | ✅               | ✅              | ✅              |
-| View URL         | ✅               | ✅              | ✅              |
-| Create URL       | ✅               | ✅              | ✅              |
-| Update URL       | ✅               | ✅              | ✅              |
-| Delete URL       | ❌               | ✅              | ✅              |
-| View Analytics   | ✅               | ✅              | ✅              |
-| Generate QR Code | ✅               | ✅              | ✅              |
+| Feature | Member | Owner |
+|----------|:------:|:-----:|
+| Create URL | ✅ | ✅ |
+| List URLs | ✅ | ✅ |
+| View URL | ✅ | ✅ |
+| Update URL | ✅* | ✅ |
+| Delete URL | ✅* | ✅ |
+| Generate QR Code | ✅ | ✅ |
+| View Analytics | ✅ | ✅ |
+
+\* Depending on workspace permissions.
+
+---
+
+# Validation Rules
+
+## Original URL
+
+Requirements
+
+- Required
+- Valid HTTP or HTTPS URL
+
+---
+
+## Short Code
+
+Requirements
+
+- Unique
+- URL-safe
+- Maximum length defined by system
+
+---
+
+## Expiration
+
+Requirements
+
+- Must be a future date
+
+---
+
+## Maximum Clicks
+
+Requirements
+
+- Greater than zero
 
 ---
 
 # Rate Limiting
 
-To prevent abuse, the following limits should be applied.
-
-| Endpoint         | Recommendation     |
-| ---------------- | ------------------ |
-| Create URL       | 50 requests/minute |
-| Redirect         | Unlimited          |
-| Generate QR Code | 10 requests/minute |
-| Analytics        | 30 requests/minute |
+| Endpoint | Recommendation |
+|----------|----------------|
+| Create URL | 30 requests/minute |
+| Update URL | 60 requests/minute |
+| Delete URL | 20 requests/minute |
+| Generate QR Code | 20 requests/minute |
+| Redirect URL | Unlimited (handled by Redis + CDN) |
 
 ---
 
@@ -355,4 +384,4 @@ Example
 /api/v1/workspaces/{workspaceId}/urls
 ```
 
-Future versions should maintain backward compatibility whenever possible.
+Future API versions should remain backward compatible whenever possible.

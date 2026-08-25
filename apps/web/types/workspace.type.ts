@@ -1,3 +1,5 @@
+import { Pagination } from './pagination.type';
+
 export interface Workspace {
   id: string;
   name: string;
@@ -132,17 +134,4 @@ export interface WorkspaceInvitationListResponse {
   invitations: WorkspaceInvitation[];
   summary: WorkspaceInvitationSummary;
   pagination: Pagination;
-}
-
-/* =========================================================
- * Pagination
- * ======================================================= */
-
-export interface Pagination {
-  page: number;
-  limit: number;
-  totalItems: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
 }

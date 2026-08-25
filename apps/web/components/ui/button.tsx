@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
-  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive';
+  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon' | 'icon-sm';
   asChild?: boolean;
 }
@@ -36,6 +36,9 @@ export default function Button({ loading, children, className, variant, size, ..
         variant === 'link' && 'bg-transparent text-blue-600 hover:underline dark:text-blue-400',
         variant === 'destructive' &&
           'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600',
+        variant === 'secondary' &&
+          'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+        size === 'default' && 'h-14 px-6 py-3 text-base',
         size === 'sm' && 'h-10 px-4 py-2 text-sm',
         size === 'lg' && 'h-16 px-6 py-3 text-lg',
         size === 'icon' && 'h-10 w-10 p-0',
